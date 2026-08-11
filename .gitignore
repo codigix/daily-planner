@@ -7,8 +7,12 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Dependencies and Builds
+node_modules/
+frontend/node_modules/
+backend/node_modules/
 dist
+frontend/dist/
 dist-ssr
 *.local
 
@@ -23,5 +27,12 @@ dist-ssr
 *.sln
 *.sw?
 
-# env
+# Environment Files (Root & Subdirectories)
 .env
+*.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/*.env
+backend/.env
+backend/*.env

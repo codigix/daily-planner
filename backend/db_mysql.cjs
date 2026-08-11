@@ -1,16 +1,17 @@
+require('dotenv').config();
 const mysql = require('mysql2/promise');
 const { EXECUTIVE_DOMAINS } = require('./domains.cjs');
-
-const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_USER = process.env.DB_USER || 'root';
-const DB_PASSWORD = process.env.DB_PASSWORD || '';
-const DB_NAME = process.env.DB_NAME || 'codigix_executive_os';
-const DB_PORT = process.env.DB_PORT || 3306;
 
 let pool = null;
 
 async function getPool() {
   if (pool) return pool;
+
+  const DB_HOST = process.env.DB_HOST || 'localhost';
+  const DB_USER = process.env.DB_USER || 'root';
+  const DB_PASSWORD = process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : '';
+  const DB_NAME = process.env.DB_NAME || 'codigix_executive_os';
+  const DB_PORT = Number(process.env.DB_PORT) || 3306;
 
   try {
     const rootConn = await mysql.createConnection({
