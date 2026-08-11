@@ -210,7 +210,7 @@ export default function DashboardView({
         {/* Monthly Execution Trend */}
         <div className="card-base p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm bg-red-700">Monthly Execution Trend</h3>
+            <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm bg-green-600">Monthly Execution Trend</h3>
             <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300 text-[10px] font-bold rounded-md">Live</span>
           </div>
 
