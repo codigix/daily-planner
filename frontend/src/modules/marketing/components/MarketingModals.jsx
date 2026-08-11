@@ -53,7 +53,7 @@ export default function MarketingModals({
 
             <div className="flex flex-col gap-2 pt-2">
               <a
-                href="https://www.facebook.com/v24.0/dialog/oauth?client_id=1702132520841033&redirect_uri=http%3A%2F%2Flocalhost%3A5001%2Fapi%2Fmeta%2Fcallback&config_id=2206329326871875&response_type=code&state=codigixinfotech"
+                href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}/api/meta/login`}
                 target="_blank"
                 rel="noreferrer"
                 className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold transition-all shadow-md text-center flex items-center justify-center gap-1.5"
@@ -100,7 +100,7 @@ export default function MarketingModals({
               <div>
                 <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Webhook Callback URL</label>
                 <code className="bg-white dark:bg-slate-900 px-3 py-2 rounded-xl text-brand-600 dark:text-brand-400 font-mono text-[11px] block border border-slate-200 dark:border-slate-800 select-all">
-                  http://localhost:5001/api/webhooks/meta
+                  {`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}/api/webhooks/meta`}
                 </code>
               </div>
 

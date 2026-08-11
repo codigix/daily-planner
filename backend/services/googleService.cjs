@@ -2,8 +2,8 @@ const https = require('https');
 const { getPool } = require('../db_mysql.cjs');
 
 // Google OAuth Configuration
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '1076041429416-vbhnps6tsp4f7b2654acv5onubqrlfun.apps.googleusercontent.com';
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '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';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5001/api/google/callback';
 const GOOGLE_SCOPE = process.env.GOOGLE_SCOPE || 'https://www.googleapis.com/auth/business.manage';
 const GOOGLE_TOKEN_URL = process.env.GOOGLE_TOKEN_URL || 'https://oauth2.googleapis.com/token';

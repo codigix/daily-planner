@@ -29,7 +29,7 @@ export default function AuthModal({ open, onClose }) {
 
   React.useEffect(() => {
     if (!open) return;
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '436553075988-f4p9pbpikuf8kkp891qtn2591lh55esc.apps.googleusercontent.com';
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
     const initGoogle = () => {
       if (window.google?.accounts?.id) {
@@ -77,7 +77,7 @@ export default function AuthModal({ open, onClose }) {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '436553075988-f4p9pbpikuf8kkp891qtn2591lh55esc.apps.googleusercontent.com';
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
       if (window.google?.accounts?.id) {
         window.google.accounts.id.initialize({
           client_id: clientId,

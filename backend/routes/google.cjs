@@ -42,6 +42,7 @@ const handleGoogleCallback = async (req, res) => {
   const error = req.query.error || req.body?.error;
 
   if (error) {
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
     console.error('[GoogleController] OAuth Error:', error);
     return res.status(400).send(`
       <!DOCTYPE html>
@@ -50,7 +51,7 @@ const handleGoogleCallback = async (req, res) => {
       <body style="font-family:system-ui;background:#0f172a;color:#fff;padding:3rem;text-align:center;">
         <h2 style="color:#ef4444;">⚠️ Google OAuth Authorization Failed</h2>
         <p>${error}</p>
-        <a href="http://localhost:5173" style="color:#f59e0b;font-weight:bold;">Return to Dashboard</a>
+        <a href="${FRONTEND_URL}" style="color:#f59e0b;font-weight:bold;">Return to Dashboard</a>
       </body>
       </html>
     `);
@@ -76,6 +77,7 @@ const handleGoogleCallback = async (req, res) => {
       return res.json({ success: true, message: 'Google OAuth connected successfully', token: tokenData.access_token });
     }
 
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.send(`
       <!DOCTYPE html>
       <html>
@@ -93,7 +95,7 @@ const handleGoogleCallback = async (req, res) => {
           <p style="color:#94a3b8;font-size:0.9rem;margin-top:0.5rem;">
             Google OAuth 2.0 token exchanged & business accounts synced with MySQL.
           </p>
-          <a href="http://localhost:5173" class="btn">Return to Marketing Dashboard ↗</a>
+          <a href="${FRONTEND_URL}" class="btn">Return to Marketing Dashboard ↗</a>
         </div>
         <script>
           setTimeout(() => {
@@ -101,7 +103,7 @@ const handleGoogleCallback = async (req, res) => {
               window.opener.postMessage('google_auth_success', '*');
               window.close();
             } else {
-              window.location.href = "http://localhost:5173";
+              window.location.href = "${FRONTEND_URL}";
             }
           }, 1500);
         </script>

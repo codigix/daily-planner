@@ -4,7 +4,8 @@
  * with automatic fallback caching.
  */
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api` : '/api';
+const BACKEND_FALLBACK = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 
 async function fetchAPI(endpoint, options = {}) {
   try {
@@ -16,7 +17,7 @@ async function fetchAPI(endpoint, options = {}) {
     return await res.json();
   } catch (err) {
     try {
-      const fallbackRes = await fetch(`http://localhost:5001/api${endpoint}`, {
+      const fallbackRes = await fetch(`${BACKEND_FALLBACK}/api${endpoint}`, {
         headers: { 'Content-Type': 'application/json' },
         ...options,
       });

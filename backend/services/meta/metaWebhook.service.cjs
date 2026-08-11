@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const { getPool } = require('../../db_mysql.cjs');
 
 const VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN || 'codigix_meta_webhook_secret_verify_2026';
-const APP_SECRET = process.env.META_WEBHOOK_APP_SECRET || process.env.META_APP_SECRET || 'dfbca6cabd9f532a8ba0a68a64df9ad7';
+const APP_SECRET = process.env.META_WEBHOOK_APP_SECRET || process.env.META_APP_SECRET || '';
 
 class MetaWebhookService {
   /**

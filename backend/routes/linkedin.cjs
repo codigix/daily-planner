@@ -4,8 +4,8 @@ const https = require('https');
 const { getPool } = require('../db_mysql.cjs');
 
 // LinkedIn OAuth Credentials from environment
-const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID || '77q92cas67bz6c';
-const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET || 'WPL_AP1.HUbBOKyLr6nB0ekt.9/vU4w==';
+const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID || '';
+const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET || '';
 const REDIRECT_URI = process.env.LINKEDIN_REDIRECT_URI || 'http://localhost:5001/api/linkedin/callback';
 const LINKEDIN_SCOPES = process.env.LINKEDIN_SCOPE || ['openid', 'profile', 'email', 'w_member_social'].join(' ');
 
@@ -185,6 +185,7 @@ const handleLinkedInCallback = async (req, res) => {
   const error = req.query.error || req.body?.error;
 
   if (error) {
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
     return res.status(400).send(`
       <!DOCTYPE html>
       <html>
@@ -192,7 +193,7 @@ const handleLinkedInCallback = async (req, res) => {
       <body style="font-family:system-ui;background:#0f172a;color:#fff;padding:3rem;text-align:center;">
         <h2 style="color:#ef4444;">⚠️ LinkedIn OAuth Authorization Failed</h2>
         <p>${error}</p>
-        <a href="http://localhost:5173" style="color:#60a5fa;font-weight:bold;">Return to Dashboard</a>
+        <a href="${FRONTEND_URL}" style="color:#60a5fa;font-weight:bold;">Return to Dashboard</a>
       </body>
       </html>
     `);
@@ -261,6 +262,7 @@ const handleLinkedInCallback = async (req, res) => {
       return res.json({ success: true, message: 'LinkedIn OAuth connected successfully', access_token: accessToken });
     }
 
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.send(`
       <!DOCTYPE html>
       <html>
@@ -278,7 +280,7 @@ const handleLinkedInCallback = async (req, res) => {
           <p style="color:#94a3b8;font-size:0.9rem;margin-top:0.5rem;">
             OAuth 2.0 authorization code exchanged successfully with <code>https://www.linkedin.com/oauth/v2/accessToken</code>.
           </p>
-          <a href="http://localhost:5173" class="btn">Return to Marketing Dashboard ↗</a>
+          <a href="${FRONTEND_URL}" class="btn">Return to Marketing Dashboard ↗</a>
         </div>
         <script>
           setTimeout(() => {
@@ -286,7 +288,7 @@ const handleLinkedInCallback = async (req, res) => {
               window.opener.postMessage('linkedin_auth_success', '*');
               window.close();
             } else {
-              window.location.href = "http://localhost:5173";
+              window.location.href = "${FRONTEND_URL}";
             }
           }, 1500);
         </script>

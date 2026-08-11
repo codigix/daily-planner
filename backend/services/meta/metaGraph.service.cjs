@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 const GRAPH_API_VERSION = process.env.META_GRAPH_API_VERSION || 'v24.0';
 const BASE_URL = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
-const META_APP_SECRET = process.env.META_APP_SECRET || 'dfbca6cabd9f532a8ba0a68a64df9ad7';
+const META_APP_SECRET = process.env.META_APP_SECRET || '';
 
 class MetaGraphService {
   /**

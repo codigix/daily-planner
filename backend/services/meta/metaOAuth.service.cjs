@@ -4,11 +4,11 @@ const { getPool } = require('../../db_mysql.cjs');
 
 class MetaOAuthService {
   static getAppId() {
-    return process.env.META_APP_ID || process.env.META_CLIENT_ID || '1702132520841033';
+    return process.env.META_APP_ID || process.env.META_CLIENT_ID || '';
   }
 
   static getAppSecret() {
-    return process.env.META_APP_SECRET || 'dfbca6cabd9f532a8ba0a68a64df9ad7';
+    return process.env.META_APP_SECRET || '';
   }
 
   static getRedirectUri() {
