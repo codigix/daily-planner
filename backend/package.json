@@ -1,0 +1,25 @@
+{
+  "name": "daily-planner-backend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.cjs",
+    "dev": "nodemon index.cjs",
+    "db:setup": "node setup_mysql.cjs",
+    "db:test": "node test_mysql.cjs",
+    "db:reset": "node reset_db.cjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.22.1",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
