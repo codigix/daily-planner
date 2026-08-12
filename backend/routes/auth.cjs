@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const { getPool } = require('../db_mysql.cjs');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'codigix_executive_os_secret_key_2026';
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ── Helper: Format User Profile Object ──
 function formatUser(u) {
@@ -104,70 +106,89 @@ router.post('/login', async (req, res) => {
 // ── POST /api/auth/google ──
 router.post('/google', async (req, res) => {
   try {
-    const { credential, userInfo } = req.body;
-    let email, name, picture;
-
-    if (credential) {
-      // Safely decode Base64URL JWT payload from Google GIS Client
-      try {
-        const payloadBase64 = credential.split('.')[1];
-        const base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = Buffer.from(base64, 'base64').toString('utf8');
-        const decodedPayload = JSON.parse(jsonPayload);
-        email = decodedPayload.email;
-        name = decodedPayload.name;
-        picture = decodedPayload.picture;
-      } catch (jwtErr) {
-        console.error('Error parsing Google JWT Credential:', jwtErr);
-        return res.status(400).json({ error: 'Invalid Google credential token format.' });
-      }
-    } else if (userInfo) {
-      email = userInfo.email;
-      name = userInfo.name;
-      picture = userInfo.picture;
-    } else {
-      return res.status(400).json({ error: 'No Google credential provided.' });
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ error: 'No Google credential token provided.' });
     }
 
-    if (!email) {
-      return res.status(400).json({ error: 'Could not extract valid email from Google Account.' });
+    let payload;
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+      payload = ticket.getPayload();
+    } catch (verifyErr) {
+      console.error('[GoogleAuth] Token verification failed:', verifyErr.message);
+      return res.status(400).json({ error: 'Invalid or expired Google credential token.' });
     }
+
+    if (!payload || !payload.email) {
+      return res.status(400).json({ error: 'Could not extract valid email from Google token.' });
+    }
+
+    if (!payload.email_verified) {
+      return res.status(400).json({ error: 'Google email address is not verified.' });
+    }
+
+    const googleSub = payload.sub;
+    const email = payload.email;
+    const name = payload.name || 'Google User';
+    const picture = payload.picture || '';
 
     const cleanEmail = email.trim().toLowerCase();
     const pool = await getPool();
 
-    if (pool) {
-      const [existing] = await pool.query('SELECT * FROM users WHERE LOWER(email) = ?', [cleanEmail]);
+    if (!pool) {
+      console.error('[GoogleAuth] DB connection offline during auth for:', cleanEmail);
+      return res.status(500).json({ error: 'Database temporarily unavailable' });
+    }
 
-      let userObj;
-      if (existing && existing.length > 0) {
-        userObj = formatUser(existing[0]);
-        if (picture && (!existing[0].avatar_url || existing[0].avatar_url.includes('ui-avatars'))) {
-          await pool.query('UPDATE users SET avatar_url = ? WHERE id = ?', [picture, existing[0].id]);
-          userObj.avatarUrl = picture;
-        }
-      } else {
-        const userId = 'usr_g_' + Date.now();
-        const userRole = 'Executive';
-        const avatarUrl = picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Google User')}&background=0D8ABC&color=fff`;
+    const [existing] = await pool.query(
+      'SELECT * FROM users WHERE google_sub = ? OR LOWER(email) = ?',
+      [googleSub, cleanEmail]
+    );
 
-        await pool.query(
-          `INSERT INTO users (id, email, password_hash, full_name, role, avatar_url)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [userId, cleanEmail, 'google_oauth_user', (name || 'Google User').trim(), userRole, avatarUrl]
-        );
+    let userObj;
+    if (existing && existing.length > 0) {
+      const dbUser = existing[0];
+      userObj = formatUser(dbUser);
 
-        userObj = { id: userId, email: cleanEmail, fullName: (name || 'Google User').trim(), role: userRole, avatarUrl };
+      const updates = [];
+      const params = [];
+      if (!dbUser.google_sub) {
+        updates.push('google_sub = ?');
+        params.push(googleSub);
+      }
+      if (picture && (!dbUser.avatar_url || dbUser.avatar_url.includes('ui-avatars'))) {
+        updates.push('avatar_url = ?');
+        params.push(picture);
+        userObj.avatarUrl = picture;
       }
 
-      const token = jwt.sign({ id: userObj.id, email: userObj.email, role: userObj.role }, JWT_SECRET, { expiresIn: '7d' });
-      return res.json({ token, user: userObj });
+      if (updates.length > 0) {
+        params.push(dbUser.id);
+        await pool.query(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
+      }
     } else {
-      return res.status(500).json({ error: 'Database connection offline.' });
+      const userId = 'usr_g_' + Date.now();
+      const userRole = 'Executive';
+      const avatarUrl = picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff`;
+
+      await pool.query(
+        `INSERT INTO users (id, google_sub, email, password_hash, full_name, role, avatar_url)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [userId, googleSub, cleanEmail, 'google_oauth_user', name.trim(), userRole, avatarUrl]
+      );
+
+      userObj = { id: userId, email: cleanEmail, fullName: name.trim(), role: userRole, avatarUrl };
     }
+
+    const token = jwt.sign({ id: userObj.id, email: userObj.email, role: userObj.role }, JWT_SECRET, { expiresIn: '7d' });
+    return res.json({ token, user: userObj });
   } catch (err) {
-    console.error('Google Auth Error:', err);
-    return res.status(500).json({ error: err.message || 'Failed to authenticate with Google Account.' });
+    console.error('[GoogleAuth] Internal Error:', err.message);
+    return res.status(500).json({ error: 'Failed to authenticate with Google Account.' });
   }
 });
 

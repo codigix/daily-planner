@@ -13,17 +13,8 @@ async function getPool() {
   const DB_NAME = process.env.DB_NAME || 'codigix_executive_os';
   const DB_PORT = Number(process.env.DB_PORT) || 3306;
 
+  // Try creating pool directly for DB_NAME first
   try {
-    const rootConn = await mysql.createConnection({
-      host: DB_HOST,
-      user: DB_USER,
-      password: DB_PASSWORD,
-      port: DB_PORT
-    });
-
-    await rootConn.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
-    await rootConn.end();
-
     pool = mysql.createPool({
       host: DB_HOST,
       user: DB_USER,
@@ -35,11 +26,48 @@ async function getPool() {
       queueLimit: 0
     });
 
+    await pool.query('SELECT 1');
+    console.log(`[Database] Connected successfully to host=${DB_HOST}, database=${DB_NAME}, port=${DB_PORT}`);
     await initializeTables();
     return pool;
   } catch (err) {
-    console.error("MySQL Connection Error:", err.message);
-    return null;
+    // If database does not exist, try creating database via root connection
+    if (err.code === 'ER_BAD_DB_ERROR' || err.errno === 1049) {
+      try {
+        console.log(`[Database] Database '${DB_NAME}' missing. Attempting creation...`);
+        const rootConn = await mysql.createConnection({
+          host: DB_HOST,
+          user: DB_USER,
+          password: DB_PASSWORD,
+          port: DB_PORT
+        });
+        await rootConn.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
+        await rootConn.end();
+
+        pool = mysql.createPool({
+          host: DB_HOST,
+          user: DB_USER,
+          password: DB_PASSWORD,
+          database: DB_NAME,
+          port: DB_PORT,
+          waitForConnections: true,
+          connectionLimit: 10,
+          queueLimit: 0
+        });
+        await pool.query('SELECT 1');
+        console.log(`[Database] Database created and pool established successfully.`);
+        await initializeTables();
+        return pool;
+      } catch (createErr) {
+        console.error(`[Database] Connection/Creation failed: host=${DB_HOST}, database=${DB_NAME}, port=${DB_PORT}, user=${DB_USER}, passwordConfigured=${Boolean(DB_PASSWORD)}, err=${createErr.message}`);
+        pool = null;
+        return null;
+      }
+    } else {
+      console.error(`[Database] Connection failed: host=${DB_HOST}, database=${DB_NAME}, port=${DB_PORT}, user=${DB_USER}, passwordConfigured=${Boolean(DB_PASSWORD)}, err=${err.message}`);
+      pool = null;
+      return null;
+    }
   }
 }
 
@@ -125,6 +153,15 @@ async function initializeTables() {
 
   // Dynamic schema migration — add missing columns to existing tables
   try {
+    const [userCols] = await pool.query('SHOW COLUMNS FROM users');
+    const userColNames = userCols.map(c => c.Field);
+    if (!userColNames.includes('google_sub'))    await pool.query('ALTER TABLE users ADD COLUMN google_sub VARCHAR(255)');
+    if (!userColNames.includes('email'))         await pool.query('ALTER TABLE users ADD COLUMN email VARCHAR(255)');
+    if (!userColNames.includes('password_hash')) await pool.query('ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)');
+    if (!userColNames.includes('full_name'))     await pool.query('ALTER TABLE users ADD COLUMN full_name VARCHAR(255)');
+    if (!userColNames.includes('role'))          await pool.query('ALTER TABLE users ADD COLUMN role VARCHAR(100) DEFAULT "Executive"');
+    if (!userColNames.includes('avatar_url'))    await pool.query('ALTER TABLE users ADD COLUMN avatar_url VARCHAR(255)');
+
     const [plannerCols] = await pool.query('SHOW COLUMNS FROM planner_tasks');
     const plannerColNames = plannerCols.map(c => c.Field);
     if (!plannerColNames.includes('date'))       await pool.query('ALTER TABLE planner_tasks ADD COLUMN date VARCHAR(100)');
@@ -789,4 +826,16 @@ async function initializeTables() {
   }
 }
 
-module.exports = { getPool };
+async function checkDbConnection() {
+  try {
+    const p = await getPool();
+    if (!p) return false;
+    await p.query('SELECT 1');
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+module.exports = { getPool, checkDbConnection };
+

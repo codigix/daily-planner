@@ -21,8 +21,23 @@ const googleRoutes = require('./routes/google.cjs');
 const linkedinRoutes = require('./routes/linkedin.cjs');
 const notificationsRoutes = require('./routes/notifications.cjs');
 
+const { checkDbConnection } = require('./db_mysql.cjs');
+
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+// Startup Environment Validation (Logs status without leaking secrets)
+function validateEnvironment() {
+  console.log('[Config] Validating Environment Configuration...');
+  console.log(`[Config] GOOGLE_CLIENT_ID configured: ${Boolean(process.env.GOOGLE_CLIENT_ID)}`);
+  console.log(`[Config] GOOGLE_CLIENT_SECRET configured: ${Boolean(process.env.GOOGLE_CLIENT_SECRET)}`);
+  console.log(`[Config] DB_HOST: ${process.env.DB_HOST || 'localhost'}`);
+  console.log(`[Config] DB_PORT: ${process.env.DB_PORT || 3306}`);
+  console.log(`[Config] DB_NAME: ${process.env.DB_NAME || 'codigix_executive_os'}`);
+  console.log(`[Config] DB_USER: ${process.env.DB_USER || 'root'}`);
+  console.log(`[Config] DB_PASSWORD configured: ${Boolean(process.env.DB_PASSWORD)}`);
+}
+validateEnvironment();
 
 app.use(cors());
 app.use(express.json());
@@ -64,8 +79,23 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/ai', aiRoutes);
 
 // Health Check Endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'CODIGIX Executive OS Node Backend', timestamp: new Date() });
+app.get('/api/health', async (req, res) => {
+  const isDbConnected = await checkDbConnection();
+  if (isDbConnected) {
+    return res.status(200).json({
+      success: true,
+      database: 'connected',
+      service: 'daily-planner-api',
+      timestamp: new Date().toISOString()
+    });
+  } else {
+    return res.status(503).json({
+      success: false,
+      database: 'disconnected',
+      service: 'daily-planner-api',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 function startServer(portToTry) {
@@ -90,3 +120,4 @@ function startServer(portToTry) {
 }
 
 startServer(PORT);
+

@@ -29,7 +29,7 @@ export default function AuthModal({ open, onClose }) {
 
   React.useEffect(() => {
     if (!open) return;
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
     const initGoogle = () => {
       if (window.google?.accounts?.id) {
@@ -40,7 +40,7 @@ export default function AuthModal({ open, onClose }) {
               if (response.credential) {
                 setLoading(true);
                 try {
-                  await loginWithGoogle(response.credential, null);
+                  await loginWithGoogle(response.credential);
                   onClose();
                 } catch (err) {
                   // Handled in AuthContext
@@ -77,36 +77,18 @@ export default function AuthModal({ open, onClose }) {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
       if (window.google?.accounts?.id) {
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: async (response) => {
             if (response.credential) {
-              await loginWithGoogle(response.credential, null);
+              await loginWithGoogle(response.credential);
               onClose();
             }
           }
         });
-        window.google.accounts.id.prompt(async (notification) => {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            const mockGoogleUser = {
-              email: 'ashwini.google@codigix.com',
-              name: 'Ashwini Khedekar (Google)',
-              picture: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80'
-            };
-            await loginWithGoogle(null, mockGoogleUser);
-            onClose();
-          }
-        });
-      } else {
-        const mockGoogleUser = {
-          email: 'ashwini.google@codigix.com',
-          name: 'Ashwini Khedekar (Google)',
-          picture: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80'
-        };
-        await loginWithGoogle(null, mockGoogleUser);
-        onClose();
+        window.google.accounts.id.prompt();
       }
     } catch (err) {
       // Handled by AuthContext

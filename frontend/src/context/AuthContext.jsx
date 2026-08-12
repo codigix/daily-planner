@@ -87,13 +87,13 @@ export function AuthProvider({ children }) {
   };
 
   // ── Google OAuth Sign In / Sign Up ──
-  const loginWithGoogle = async (credential, userInfo) => {
+  const loginWithGoogle = async (credential) => {
     setAuthError('');
     try {
       const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential, userInfo })
+        body: JSON.stringify({ credential })
       });
       const data = await res.json();
       if (!res.ok) {
