@@ -35,7 +35,8 @@ router.get('/', async (req, res) => {
 
     res.json({ plannerTasks, scheduleTimeline });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Planner GET Error]:', err.message);
+    res.status(500).json({ error: 'Database connection temporarily unavailable' });
   }
 });
 
@@ -74,7 +75,8 @@ router.post('/tasks', async (req, res) => {
     }
     res.status(201).json(newTask);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Planner POST Error]:', err.message);
+    res.status(500).json({ error: 'Database connection temporarily unavailable' });
   }
 });
 
@@ -116,7 +118,8 @@ router.put('/tasks/:id', async (req, res) => {
     }
     res.json({ message: 'Task details updated in MySQL' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Planner PUT Error]:', err.message);
+    res.status(500).json({ error: 'Database connection temporarily unavailable' });
   }
 });
 
@@ -169,7 +172,8 @@ router.post('/batch', async (req, res) => {
 
     res.status(201).json({ message: 'Batch tasks saved to database', count: tasks.length });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Planner Batch Error]:', err.message);
+    res.status(500).json({ error: 'Database connection temporarily unavailable' });
   }
 });
 
@@ -181,7 +185,8 @@ router.delete('/tasks/:id', async (req, res) => {
     if (pool) await pool.query('DELETE FROM planner_tasks WHERE id = ?', [id]);
     res.json({ message: 'Task deleted from database' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Planner DELETE Task Error]:', err.message);
+    res.status(500).json({ error: 'Database connection temporarily unavailable' });
   }
 });
 
@@ -195,7 +200,8 @@ router.delete('/tasks', async (req, res) => {
     }
     res.json({ message: 'All tasks deleted from database' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Planner DELETE All Tasks Error]:', err.message);
+    res.status(500).json({ error: 'Database connection temporarily unavailable' });
   }
 });
 
@@ -207,7 +213,8 @@ router.delete('/schedule/:id', async (req, res) => {
     if (pool) await pool.query('DELETE FROM schedule_timeline WHERE id = ?', [id]);
     res.json({ message: 'Schedule item deleted from database' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Planner DELETE Schedule Error]:', err.message);
+    res.status(500).json({ error: 'Database connection temporarily unavailable' });
   }
 });
 

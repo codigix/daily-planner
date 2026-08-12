@@ -4,71 +4,118 @@ const { EXECUTIVE_DOMAINS } = require('./domains.cjs');
 
 let pool = null;
 
-async function getPool() {
-  if (pool) return pool;
+function buildCandidateConfigs() {
+  const envHost = process.env.DB_HOST || 'localhost';
+  const envUser = process.env.DB_USER || 'root';
+  const envPass = process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : '';
+  const envName = process.env.DB_NAME || 'codigix_executive_os';
+  const envPort = Number(process.env.DB_PORT) || 3306;
 
-  const DB_HOST = process.env.DB_HOST || 'localhost';
-  const DB_USER = process.env.DB_USER || 'root';
-  const DB_PASSWORD = process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : '';
-  const DB_NAME = process.env.DB_NAME || 'codigix_executive_os';
-  const DB_PORT = Number(process.env.DB_PORT) || 3306;
+  const candidates = [
+    { host: envHost, user: envUser, password: envPass, database: envName, port: envPort }
+  ];
 
-  // Try creating pool directly for DB_NAME first
-  try {
-    pool = mysql.createPool({
-      host: DB_HOST,
-      user: DB_USER,
-      password: DB_PASSWORD,
-      database: DB_NAME,
-      port: DB_PORT,
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0
-    });
+  // If host is localhost, add 127.0.0.1 candidate (and vice versa)
+  if (envHost === 'localhost') {
+    candidates.push({ host: '127.0.0.1', user: envUser, password: envPass, database: envName, port: envPort });
+  } else if (envHost === '127.0.0.1') {
+    candidates.push({ host: 'localhost', user: envUser, password: envPass, database: envName, port: envPort });
+  }
 
-    await pool.query('SELECT 1');
-    console.log(`[Database] Connected successfully to host=${DB_HOST}, database=${DB_NAME}, port=${DB_PORT}`);
-    await initializeTables();
-    return pool;
-  } catch (err) {
-    // If database does not exist, try creating database via root connection
-    if (err.code === 'ER_BAD_DB_ERROR' || err.errno === 1049) {
-      try {
-        console.log(`[Database] Database '${DB_NAME}' missing. Attempting creation...`);
-        const rootConn = await mysql.createConnection({
-          host: DB_HOST,
-          user: DB_USER,
-          password: DB_PASSWORD,
-          port: DB_PORT
-        });
-        await rootConn.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
-        await rootConn.end();
+  // If port is 3307, add 3306 candidate (and vice versa)
+  if (envPort === 3307) {
+    candidates.push({ host: envHost, user: envUser, password: envPass, database: envName, port: 3306 });
+    candidates.push({ host: '127.0.0.1', user: envUser, password: envPass, database: envName, port: 3306 });
+  } else if (envPort === 3306) {
+    candidates.push({ host: envHost, user: envUser, password: envPass, database: envName, port: 3307 });
+    candidates.push({ host: '127.0.0.1', user: envUser, password: envPass, database: envName, port: 3307 });
+  }
 
-        pool = mysql.createPool({
-          host: DB_HOST,
-          user: DB_USER,
-          password: DB_PASSWORD,
-          database: DB_NAME,
-          port: DB_PORT,
-          waitForConnections: true,
-          connectionLimit: 10,
-          queueLimit: 0
-        });
-        await pool.query('SELECT 1');
-        console.log(`[Database] Database created and pool established successfully.`);
-        await initializeTables();
-        return pool;
-      } catch (createErr) {
-        console.error(`[Database] Connection/Creation failed: host=${DB_HOST}, database=${DB_NAME}, port=${DB_PORT}, user=${DB_USER}, passwordConfigured=${Boolean(DB_PASSWORD)}, err=${createErr.message}`);
-        pool = null;
-        return null;
-      }
-    } else {
-      console.error(`[Database] Connection failed: host=${DB_HOST}, database=${DB_NAME}, port=${DB_PORT}, user=${DB_USER}, passwordConfigured=${Boolean(DB_PASSWORD)}, err=${err.message}`);
-      pool = null;
-      return null;
+  // If username has mixed casing (e.g., Daily_planner), add lowercase candidate
+  if (envUser !== envUser.toLowerCase()) {
+    const lowerUser = envUser.toLowerCase();
+    candidates.push({ host: envHost, user: lowerUser, password: envPass, database: envName, port: envPort });
+    if (envHost === 'localhost') {
+      candidates.push({ host: '127.0.0.1', user: lowerUser, password: envPass, database: envName, port: envPort });
     }
   }
+
+  return candidates;
+}
+
+async function getPool() {
+  if (pool) {
+    try {
+      await pool.query('SELECT 1');
+      return pool;
+    } catch (pingErr) {
+      console.warn(`[Database] Existing pool ping failed (${pingErr.message}). Resetting pool...`);
+      try { await pool.end(); } catch (e) {}
+      pool = null;
+    }
+  }
+
+  const candidateConfigs = buildCandidateConfigs();
+
+  for (const config of candidateConfigs) {
+    try {
+      const testPool = mysql.createPool({
+        host: config.host,
+        user: config.user,
+        password: config.password,
+        database: config.database,
+        port: config.port,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0
+      });
+
+      await testPool.query('SELECT 1');
+      console.log(`[Database] Connected successfully to host=${config.host}, database=${config.database}, port=${config.port}, user=${config.user}`);
+      pool = testPool;
+      await initializeTables();
+      return pool;
+    } catch (err) {
+      // If database does not exist (ER_BAD_DB_ERROR), attempt creation
+      if (err.code === 'ER_BAD_DB_ERROR' || err.errno === 1049) {
+        try {
+          console.log(`[Database] Database '${config.database}' missing. Attempting creation via host=${config.host}...`);
+          const rootConn = await mysql.createConnection({
+            host: config.host,
+            user: config.user,
+            password: config.password,
+            port: config.port
+          });
+          await rootConn.query(`CREATE DATABASE IF NOT EXISTS \`${config.database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
+          await rootConn.end();
+
+          const createdPool = mysql.createPool({
+            host: config.host,
+            user: config.user,
+            password: config.password,
+            database: config.database,
+            port: config.port,
+            waitForConnections: true,
+            connectionLimit: 10,
+            queueLimit: 0
+          });
+          await createdPool.query('SELECT 1');
+          console.log(`[Database] Database created and pool established successfully.`);
+          pool = createdPool;
+          await initializeTables();
+          return pool;
+        } catch (createErr) {
+          console.warn(`[Database] Candidate failed (host=${config.host}, user=${config.user}, port=${config.port}): ${createErr.message}`);
+        }
+      } else {
+        console.warn(`[Database] Candidate failed (host=${config.host}, user=${config.user}, port=${config.port}): ${err.message}`);
+      }
+    }
+  }
+
+  console.error('[Database] All database connection candidates failed.');
+  pool = null;
+  return null;
 }
 
 async function initializeTables() {
