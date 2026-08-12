@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { requestNotificationPermission, sendSystemNotification } from '../utils/notificationService';
 
 const AuthContext = createContext(null);
 
@@ -7,6 +8,20 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('codigix_auth_token') || '');
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState('');
+
+  const notifyLoginSuccess = async (userData) => {
+    try {
+      const granted = await requestNotificationPermission();
+      if (granted) {
+        sendSystemNotification('CODIGIX Executive OS Active 🚀', {
+          body: `Welcome back, ${userData.fullName || userData.email}! Native system notifications are active for tasks & meetings.`,
+          tag: 'login-welcome'
+        });
+      }
+    } catch (e) {
+      console.warn('System notification error:', e);
+    }
+  };
 
   // ── Auto-verify stored token on application boot ──
   useEffect(() => {
@@ -25,6 +40,7 @@ export function AuthProvider({ children }) {
           const data = await res.json();
           if (data.user) {
             setUser(data.user);
+            requestNotificationPermission();
           } else {
             logout();
           }
@@ -56,6 +72,7 @@ export function AuthProvider({ children }) {
       setToken(data.token);
       setUser(data.user);
       localStorage.setItem('codigix_auth_token', data.token);
+      notifyLoginSuccess(data.user);
       return data.user;
     } catch (err) {
       setAuthError(err.message);
@@ -79,6 +96,7 @@ export function AuthProvider({ children }) {
       setToken(data.token);
       setUser(data.user);
       localStorage.setItem('codigix_auth_token', data.token);
+      notifyLoginSuccess(data.user);
       return data.user;
     } catch (err) {
       setAuthError(err.message);
@@ -102,6 +120,7 @@ export function AuthProvider({ children }) {
       setToken(data.token);
       setUser(data.user);
       localStorage.setItem('codigix_auth_token', data.token);
+      notifyLoginSuccess(data.user);
       return data.user;
     } catch (err) {
       setAuthError(err.message);

@@ -1,6 +1,7 @@
 import React from 'react';
 import MetaOverview from './meta/MetaOverview.jsx';
 import MetaSettings from './meta/MetaSettings.jsx';
+import DataTable from '../../../components/common/DataTable';
 import {
   RefreshCw,
   Sparkles,
@@ -476,42 +477,21 @@ export default function MetaBusinessView({
       {/* SUB-PROFILE 4: META ADS, CAMPAIGNS & CRM LEADS */}
       {metaSubTab === 'ads' && (
         <div className="space-y-6">
-          <div className="card-base p-0 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-sm">Active Meta Sponsored Campaigns</h3>
-              <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 text-xs font-black rounded-lg">
-                {campaigns?.length || 0} Active Campaigns
-              </span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase font-extrabold text-[10px]">
-                  <tr>
-                    <th className="p-3">Campaign Name</th>
-                    <th className="p-3">Objective</th>
-                    <th className="p-3">Budget</th>
-                    <th className="p-3">Spend</th>
-                    <th className="p-3">Reach</th>
-                    <th className="p-3">Leads</th>
-                    <th className="p-3">ROAS</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                  {(campaigns && campaigns.length > 0 ? campaigns : []).map((camp) => (
-                    <tr key={camp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                      <td className="p-3 font-bold text-slate-900 dark:text-white">{camp.name}</td>
-                      <td className="p-3 text-slate-600"><span className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 font-bold text-[9px]">{camp.objective}</span></td>
-                      <td className="p-3 font-bold text-slate-700 dark:text-slate-300">{camp.budget}</td>
-                      <td className="p-3 text-slate-900 dark:text-white font-extrabold">{camp.spend}</td>
-                      <td className="p-3 text-slate-500">{camp.reach}</td>
-                      <td className="p-3 text-emerald-600 font-black">{camp.leads}</td>
-                      <td className="p-3 text-emerald-600 font-black text-sm">{camp.roas}x</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+            <DataTable
+              title="Active Meta Sponsored Campaigns"
+              columns={[
+                { key: 'name', header: 'Campaign Name', sortable: true, render: (camp) => <span className="font-bold text-slate-900 dark:text-white">{camp.name}</span> },
+                { key: 'objective', header: 'Objective', sortable: true, render: (camp) => <span className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 font-bold text-[9px]">{camp.objective}</span> },
+                { key: 'budget', header: 'Budget', sortable: true, render: (camp) => <span className="font-bold text-slate-700 dark:text-slate-300">{camp.budget}</span> },
+                { key: 'spend', header: 'Spend', sortable: true, render: (camp) => <span className="text-slate-900 dark:text-white font-extrabold">{camp.spend}</span> },
+                { key: 'reach', header: 'Reach', sortable: true, render: (camp) => <span className="text-slate-500">{camp.reach}</span> },
+                { key: 'leads', header: 'Leads', sortable: true, render: (camp) => <span className="text-emerald-600 font-black">{camp.leads}</span> },
+                { key: 'roas', header: 'ROAS', sortable: true, render: (camp) => <span className="text-emerald-600 font-black text-sm">{camp.roas}x</span> }
+              ]}
+              data={campaigns && campaigns.length > 0 ? campaigns : []}
+              defaultPageSize={5}
+              searchable={false}
+            />
         </div>
       )}
 

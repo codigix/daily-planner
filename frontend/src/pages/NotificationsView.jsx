@@ -18,6 +18,7 @@ import {
   X
 } from 'lucide-react';
 import { fetchNotificationsAPI, markNotificationsReadAPI } from '../services/api';
+import { requestNotificationPermission, sendSystemNotification } from '../utils/notificationService';
 
 export default function NotificationsView({ plannerTasks = [], onNavigate, onOpenAI }) {
   const [notifications, setNotifications] = useState([]);
@@ -166,6 +167,23 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={async () => {
+                const granted = await requestNotificationPermission();
+                if (granted) {
+                  sendSystemNotification('System Push Notifications Active 🔔', {
+                    body: 'You will receive real-time push alerts on Mobile & Desktop for tasks & meetings.'
+                  });
+                } else {
+                  alert('Please allow notification permission in browser or mobile phone settings.');
+                }
+              }}
+              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl sm:rounded-2xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+            >
+              <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+              <span>Enable Mobile Push</span>
+            </button>
+
             <button
               onClick={handleMarkAllRead}
               className="px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-xs rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer"

@@ -21,13 +21,7 @@ import GenericModuleView from './pages/GenericModuleView';
 import ModalContainer from './components/modals/ModalContainer';
 
 import { 
-  initialUser, 
-  navItems, 
-  initialPlannerTasks, 
-  initialScheduleTimeline, 
-  initialDomains, 
-  initialMeetings, 
-  initialClients 
+  navItems 
 } from './data/mockData';
 
 import { 
@@ -40,8 +34,10 @@ import {
   createClientAPI 
 } from './services/api';
 
-import { AuthProvider } from './context/AuthContext';
+import { Lock, LogIn } from 'lucide-react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
+import { sendSystemNotification } from './utils/notificationService';
 
 const normalizeTab = (rawTab) => {
   if (!rawTab) return 'dashboard';
@@ -64,6 +60,7 @@ const getTabFromLocation = () => {
 };
 
 function AppContent() {
+  const { user, loading: authLoading } = useAuth();
   const [activeTab, setActiveTabState] = useState(() => getTabFromLocation());
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -93,8 +90,7 @@ function AppContent() {
     };
   }, []);
 
-  // Application Data States — planner tasks always loaded fresh from DB
-  // Do NOT pre-load planner tasks from localStorage to avoid stale/duplicate data
+  // Application Data States — loaded per authenticated user account
   const [plannerTasks, setPlannerTasks] = useState([]);
   const [scheduleTimeline, setScheduleTimeline] = useState([]);
   const [plannerLoading, setPlannerLoading] = useState(true);
@@ -103,56 +99,68 @@ function AppContent() {
   const [meetings, setMeetings] = useState([]);
   const [clients, setClients] = useState([]);
 
-  // Load from Express Backend API on Mount — DB is the canonical source
+  // Load from Express Backend API per authenticated user — DB is the canonical source
   useEffect(() => {
     async function initBackendData() {
-      try {
-        const pData = await getPlannerAPI();
-        if (pData && Array.isArray(pData.plannerTasks)) {
-          setPlannerTasks(pData.plannerTasks);
-          if (Array.isArray(pData.scheduleTimeline)) setScheduleTimeline(pData.scheduleTimeline);
+      if (user) {
+        setPlannerLoading(true);
+        try {
+          const pData = await getPlannerAPI();
+          if (pData && Array.isArray(pData.plannerTasks)) {
+            setPlannerTasks(pData.plannerTasks);
+            if (Array.isArray(pData.scheduleTimeline)) setScheduleTimeline(pData.scheduleTimeline);
+          }
+        } finally {
+          setPlannerLoading(false);
         }
-      } finally {
+        const dData = await getDomainsAPI();
+        if (dData && Array.isArray(dData.domains)) {
+          setDomains(dData.domains);
+        }
+        const mData = await getMeetingsAPI();
+        if (mData && Array.isArray(mData.meetings)) {
+          setMeetings(mData.meetings);
+        }
+        const cData = await getClientsAPI();
+        if (cData && Array.isArray(cData.clients)) {
+          setClients(cData.clients);
+        }
+      } else {
+        setPlannerTasks([]);
+        setScheduleTimeline([]);
+        setMeetings([]);
+        setClients([]);
+        setDomains([]);
         setPlannerLoading(false);
-      }
-      const dData = await getDomainsAPI();
-      if (dData && Array.isArray(dData.domains)) {
-        setDomains(dData.domains);
-      }
-      const mData = await getMeetingsAPI();
-      if (mData && Array.isArray(mData.meetings)) {
-        setMeetings(mData.meetings);
-      }
-      const cData = await getClientsAPI();
-      if (cData && Array.isArray(cData.clients)) {
-        setClients(cData.clients);
       }
     }
     initBackendData();
-  }, []);
+  }, [user?.id]);
 
-  // Sync planner tasks to localStorage as optional client cache (DB is authoritative)
-  useEffect(() => {
-    if (!plannerLoading) {
-      localStorage.setItem('codigix_planner_tasks', JSON.stringify(plannerTasks));
+  // Data passed down to views — if not logged in (user is null), display 0 data / empty state
+  const displayPlannerTasks = user ? plannerTasks : [];
+  const displayScheduleTimeline = user ? scheduleTimeline : [];
+  const displayMeetings = user ? meetings : [];
+  const displayClients = user ? clients : [];
+  const displayDomains = user ? domains : [];
+
+  // Dynamic navigation items with real badge counts
+  const dynamicNavItems = navItems.map(item => {
+    if (item.id === 'planner') {
+      return { ...item, badge: displayPlannerTasks.length };
     }
-  }, [plannerTasks, plannerLoading]);
-
-  useEffect(() => {
-    localStorage.setItem('codigix_schedule_timeline', JSON.stringify(scheduleTimeline));
-  }, [scheduleTimeline]);
-
-  useEffect(() => {
-    localStorage.setItem('codigix_domains', JSON.stringify(domains));
-  }, [domains]);
-
-  useEffect(() => {
-    localStorage.setItem('codigix_meetings', JSON.stringify(meetings));
-  }, [meetings]);
-
-  useEffect(() => {
-    localStorage.setItem('codigix_clients', JSON.stringify(clients));
-  }, [clients]);
+    if (item.id === 'meetings') {
+      return { ...item, badge: displayMeetings.length };
+    }
+    if (item.id === 'followups') {
+      return { ...item, badge: displayClients.length };
+    }
+    if (item.id === 'notifications') {
+      const pendingCount = displayPlannerTasks.filter(t => !t.completed).length;
+      return { ...item, badge: pendingCount };
+    }
+    return item;
+  });
 
   // Dark mode effect
   useEffect(() => {
@@ -165,20 +173,32 @@ function AppContent() {
 
   const toggleTheme = () => setIsDark(prev => !prev);
 
-  // Handlers for adding new items with API calls
+  // Handlers for adding new items with API calls & native system notifications
   const handleAddPlannerTask = async (newTask) => {
     setPlannerTasks(prev => [newTask, ...prev]);
     await createPlannerTaskAPI(newTask);
+    sendSystemNotification('New Task Added 📋', {
+      body: `"${newTask.title || 'Task'}" added to Daily Planner.`,
+      tag: 'task-' + Date.now()
+    });
   };
 
   const handleAddMeeting = async (newMeeting) => {
     setMeetings(prev => [newMeeting, ...prev]);
     await createMeetingAPI(newMeeting);
+    sendSystemNotification('Meeting Scheduled 📅', {
+      body: `"${newMeeting.title || 'Meeting'}" with ${newMeeting.client || 'Client'}.`,
+      tag: 'meeting-' + Date.now()
+    });
   };
 
   const handleAddClient = async (newClient) => {
     setClients(prev => [newClient, ...prev]);
     await createClientAPI(newClient);
+    sendSystemNotification('Client Follow-up Logged 🤝', {
+      body: `${newClient.name || 'Client'} added to Follow-ups.`,
+      tag: 'client-' + Date.now()
+    });
   };
 
   return (
@@ -187,7 +207,7 @@ function AppContent() {
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        navItems={navItems}
+        navItems={dynamicNavItems}
         collapsed={collapsed}
         setCollapsed={setCollapsed}
         isDark={isDark}
@@ -198,7 +218,7 @@ function AppContent() {
 
       {/* Common Header */}
       <Header
-        user={initialUser}
+        user={user}
         collapsed={collapsed}
         activeTab={activeTab}
         isDark={isDark}
@@ -209,21 +229,21 @@ function AppContent() {
         onNavigate={(tab) => setActiveTab(tab)}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
-        plannerTasks={plannerTasks}
-        meetings={meetings}
-        clients={clients}
+        plannerTasks={displayPlannerTasks}
+        meetings={displayMeetings}
+        clients={displayClients}
       />
 
-      {/* Main Content Area */}
+      {/* Main Content Area — All Pages Accessible & Display 0/Empty State when Unauthenticated */}
       <main className={`p-3 sm:p-6 transition-all duration-300 ml-0 ${collapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <div className="max-w-7xl mx-auto">
           {activeTab === 'dashboard' && (
             <DashboardView
-              user={initialUser}
-              plannerTasks={plannerTasks}
-              domains={domains}
-              meetings={meetings}
-              clients={clients}
+              user={user}
+              plannerTasks={displayPlannerTasks}
+              domains={displayDomains}
+              meetings={displayMeetings}
+              clients={displayClients}
               onNavigate={(tab) => setActiveTab(tab)}
               onOpenAI={() => setActiveModal('ai')}
             />
@@ -231,9 +251,9 @@ function AppContent() {
 
           {activeTab === 'planner' && (
             <DailyPlannerView
-              plannerTasks={plannerTasks}
+              plannerTasks={displayPlannerTasks}
               setPlannerTasks={setPlannerTasks}
-              scheduleTimeline={scheduleTimeline}
+              scheduleTimeline={displayScheduleTimeline}
               setScheduleTimeline={setScheduleTimeline}
               onOpenAI={() => setActiveModal('ai')}
               onAddTask={() => setActiveModal('task')}
@@ -243,19 +263,19 @@ function AppContent() {
 
           {activeTab === 'logger' && (
             <DailyTaskLoggerView
-              domains={domains}
+              domains={displayDomains}
               setDomains={setDomains}
-              plannerTasks={plannerTasks}
+              plannerTasks={displayPlannerTasks}
               setPlannerTasks={setPlannerTasks}
-              meetings={meetings}
-              clients={clients}
+              meetings={displayMeetings}
+              clients={displayClients}
               onNavigate={(tab) => setActiveTab(tab)}
             />
           )}
 
           {activeTab === 'meetings' && (
             <MeetingManagerView
-              meetings={meetings}
+              meetings={displayMeetings}
               setMeetings={setMeetings}
               onScheduleMeeting={() => setActiveModal('meeting')}
               onOpenAI={() => setActiveModal('ai')}
@@ -264,7 +284,7 @@ function AppContent() {
 
           {activeTab === 'followups' && (
             <ClientFollowupsView
-              clients={clients}
+              clients={displayClients}
               setClients={setClients}
               onAddFollowup={() => setActiveModal('client')}
               onOpenAI={() => setActiveModal('ai')}
@@ -273,33 +293,33 @@ function AppContent() {
 
           {activeTab === 'sales' && (
             <SalesKPIView 
-              clients={clients}
+              clients={displayClients}
               setClients={setClients}
-              plannerTasks={plannerTasks}
+              plannerTasks={displayPlannerTasks}
               onOpenAI={() => setActiveModal('ai')} 
             />
           )}
 
           {activeTab === 'projects' && (
             <ProjectKPIView 
-              plannerTasks={plannerTasks}
-              clients={clients}
+              plannerTasks={displayPlannerTasks}
+              clients={displayClients}
               onOpenAI={() => setActiveModal('ai')} 
             />
           )}
 
           {activeTab === 'team' && (
             <TeamPerformanceView 
-              domains={domains}
-              plannerTasks={plannerTasks}
+              domains={displayDomains}
+              plannerTasks={displayPlannerTasks}
               onOpenAI={() => setActiveModal('ai')} 
             />
           )}
 
           {activeTab === 'finance' && (
             <FinanceDashboardView 
-              clients={clients}
-              plannerTasks={plannerTasks}
+              clients={displayClients}
+              plannerTasks={displayPlannerTasks}
               onNavigate={(tab) => setActiveTab(tab)}
               onOpenAI={() => setActiveModal('ai')} 
             />
@@ -313,31 +333,38 @@ function AppContent() {
 
           {activeTab === 'marketing' && (
             <MarketingDashboardView 
-              clients={clients}
+              clients={displayClients}
               onOpenAI={() => setActiveModal('ai')} 
             />
           )}
 
           {activeTab === 'ai-assistant' && (
-            <AIExecutiveAssistantView onOpenAI={() => setActiveModal('ai')} />
+            <AIExecutiveAssistantView
+              user={user}
+              plannerTasks={displayPlannerTasks}
+              meetings={displayMeetings}
+              clients={displayClients}
+              domains={displayDomains}
+              onOpenAI={() => setActiveModal('ai')}
+            />
           )}
 
           {activeTab === 'reports' && (
             <ReportsView 
-              plannerTasks={plannerTasks}
-              meetings={meetings}
-              clients={clients}
+              plannerTasks={displayPlannerTasks}
+              meetings={displayMeetings}
+              clients={displayClients}
               onOpenAI={() => setActiveModal('ai')} 
             />
           )}
 
           {activeTab === 'profile' && (
             <ProfileView 
-              user={initialUser}
-              plannerTasks={plannerTasks}
-              meetings={meetings}
-              clients={clients}
-              domains={domains}
+              user={user}
+              plannerTasks={displayPlannerTasks}
+              meetings={displayMeetings}
+              clients={displayClients}
+              domains={displayDomains}
               onNavigate={(tab) => setActiveTab(tab)}
               onOpenAI={() => setActiveModal('ai')} 
             />
@@ -345,7 +372,7 @@ function AppContent() {
 
           {activeTab === 'notifications' && (
             <NotificationsView 
-              plannerTasks={plannerTasks}
+              plannerTasks={displayPlannerTasks}
               onNavigate={(tab) => setActiveTab(tab)}
               onOpenAI={() => setActiveModal('ai')} 
             />

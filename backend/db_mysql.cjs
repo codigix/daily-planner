@@ -214,9 +214,11 @@ async function initializeTables() {
     if (!plannerColNames.includes('date'))       await pool.query('ALTER TABLE planner_tasks ADD COLUMN date VARCHAR(100)');
     if (!plannerColNames.includes('targetDay'))  await pool.query('ALTER TABLE planner_tasks ADD COLUMN targetDay VARCHAR(50)');
     if (!plannerColNames.includes('recurring'))  await pool.query("ALTER TABLE planner_tasks ADD COLUMN recurring VARCHAR(50) DEFAULT 'None'");
-    if (!plannerColNames.includes('notes'))      await pool.query('ALTER TABLE planner_tasks ADD COLUMN notes TEXT');
-    if (!plannerColNames.includes('checkpoints'))await pool.query('ALTER TABLE planner_tasks ADD COLUMN checkpoints JSON');
-    if (!plannerColNames.includes('domain_id'))  await pool.query('ALTER TABLE planner_tasks ADD COLUMN domain_id INT DEFAULT 4');
+    if (!plannerColNames.includes('user_id'))    await pool.query('ALTER TABLE planner_tasks ADD COLUMN user_id VARCHAR(255)');
+
+    const [scheduleCols] = await pool.query('SHOW COLUMNS FROM schedule_timeline');
+    const scheduleColNames = scheduleCols.map(c => c.Field);
+    if (!scheduleColNames.includes('user_id'))   await pool.query('ALTER TABLE schedule_timeline ADD COLUMN user_id VARCHAR(255)');
 
     const [timelineCols] = await pool.query('SHOW COLUMNS FROM schedule_timeline');
     const timelineColNames = timelineCols.map(c => c.Field);
@@ -274,6 +276,17 @@ async function initializeTables() {
       source VARCHAR(100),
       notes TEXT,
       starred BOOLEAN DEFAULT FALSE
+    );
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS generated_reports (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      category VARCHAR(100) NOT NULL,
+      description TEXT,
+      created_by VARCHAR(150) DEFAULT 'System',
+      frequency VARCHAR(50) DEFAULT 'On Demand',
+      file_url VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 

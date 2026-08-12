@@ -20,11 +20,37 @@ import {
   CheckSquare
 } from 'lucide-react';
 
-export default function AIExecutiveAssistantView({ onOpenAI }) {
+export default function AIExecutiveAssistantView({ 
+  user, 
+  plannerTasks = [], 
+  meetings = [], 
+  clients = [], 
+  domains = [], 
+  onOpenAI 
+}) {
   const [promptText, setPromptText] = useState('');
+  const userName = user?.name || (user?.email ? user.email.split('@')[0] : 'User');
+
   const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', text: "Hello Ashwini! How can I assist you with your schedule, tasks, or executive insights today?" }
+    { role: 'assistant', text: `Hello ${userName}! How can I assist you with your schedule, tasks, or executive insights today?` }
   ]);
+
+  // Real Database Telemetry Computations
+  const completedTasks = plannerTasks.filter(t => t.completed);
+  const pendingTasks = plannerTasks.filter(t => !t.completed);
+  const timeSavedHrs = (completedTasks.length * 0.75).toFixed(1);
+  const totalWorkspaceItems = plannerTasks.length + meetings.length + clients.length;
+  const accuracyRate = plannerTasks.length > 0 ? Math.round((completedTasks.length / plannerTasks.length) * 100) : 100;
+
+  const totalPipelineVal = clients.reduce((acc, c) => {
+    const val = parseInt(String(c.expectedValue || '0').replace(/[^0-9]/g, '')) || 0;
+    return acc + val;
+  }, 0);
+
+  const highPriorityClients = clients.filter(c => c.priority === 'High' || c.starred);
+  const upcomingMeetings = meetings.filter(m => m.status !== 'Completed' && m.status !== 'Cancelled');
+  const nextMeeting = upcomingMeetings[0] || meetings[0];
+  const currentDateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
   const handleSend = () => {
     if (!promptText.trim()) return;
@@ -35,7 +61,7 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
     setTimeout(() => {
       setChatMessages(prev => [...prev, { 
         role: 'assistant', 
-        text: `I've processed your request regarding "${msg}". Your schedule is optimized and key actions have been queued.` 
+        text: `I've processed your request regarding "${msg}". Your schedule is synchronized with your active database.` 
       }]);
     }, 600);
   };
@@ -78,21 +104,21 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
             <span>Ask AI</span>
           </button>
 
-          <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-purple-300 text-purple-700 dark:text-purple-300 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <button onClick={onOpenAI} className="px-4 py-2 bg-white dark:bg-slate-800 border border-purple-300 text-purple-700 dark:text-purple-300 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
             <Zap className="w-4 h-4 text-purple-600" />
             <span>Create with AI</span>
           </button>
         </div>
       </div>
 
-      {/* Top 5 KPI Cards Row */}
+      {/* Top 5 KPI Cards Row (Real Database Values) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
         <div className="card-base flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-slate-500">Tasks Automated</span>
-            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">128</div>
+            <span className="text-[11px] font-semibold text-slate-500">Tasks Completed</span>
+            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{completedTasks.length}</div>
             <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5 mt-0.5">
-              <ArrowUpRight className="w-3 h-3" /> 24% vs last month
+              <ArrowUpRight className="w-3 h-3" /> {plannerTasks.length} Total Tasks
             </span>
           </div>
           <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
@@ -103,9 +129,9 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
         <div className="card-base flex items-center justify-between">
           <div>
             <span className="text-[11px] font-semibold text-slate-500">Time Saved</span>
-            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">18.4 hrs</div>
+            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{timeSavedHrs} hrs</div>
             <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5 mt-0.5">
-              <ArrowUpRight className="w-3 h-3" /> 18% vs last month
+              <ArrowUpRight className="w-3 h-3" /> Based on Completed Tasks
             </span>
           </div>
           <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
@@ -115,10 +141,10 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
 
         <div className="card-base flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-slate-500">Decisions Supported</span>
-            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">57</div>
+            <span className="text-[11px] font-semibold text-slate-500">Client Pipeline</span>
+            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{clients.length}</div>
             <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5 mt-0.5">
-              <ArrowUpRight className="w-3 h-3" /> 31% vs last month
+              <ArrowUpRight className="w-3 h-3" /> {highPriorityClients.length} High Priority
             </span>
           </div>
           <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
@@ -128,10 +154,10 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
 
         <div className="card-base flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-slate-500">Smart Suggestions</span>
-            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">243</div>
+            <span className="text-[11px] font-semibold text-slate-500">Tracked Items</span>
+            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{totalWorkspaceItems}</div>
             <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5 mt-0.5">
-              <ArrowUpRight className="w-3 h-3" /> 22% vs last month
+              <ArrowUpRight className="w-3 h-3" /> Live Database Records
             </span>
           </div>
           <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
@@ -141,10 +167,10 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
 
         <div className="card-base flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-slate-500">AI Accuracy Rate</span>
-            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">92%</div>
+            <span className="text-[11px] font-semibold text-slate-500">Completion Rate</span>
+            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{accuracyRate}%</div>
             <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5 mt-0.5">
-              <ArrowUpRight className="w-3 h-3" /> 8% vs last month
+              <ArrowUpRight className="w-3 h-3" /> Real Execution Score
             </span>
           </div>
           <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center shrink-0">
@@ -158,7 +184,7 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
         <div className="lg:col-span-8 card-base bg-gradient-to-br from-purple-50/60 to-indigo-50/60 dark:from-purple-950/20 border-purple-100 dark:border-purple-900/40 p-6 space-y-4">
           <div className="flex items-center gap-2">
             <span className="text-xl">👋</span>
-            <h2 className="text-lg font-black text-slate-900 dark:text-white">Hello Ashwini! How can I assist you today?</h2>
+            <h2 className="text-lg font-black text-slate-900 dark:text-white">Hello {userName}! How can I assist you today?</h2>
           </div>
 
           <div className="relative">
@@ -189,7 +215,7 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
               <button 
                 key={idx}
                 onClick={() => handleChipClick(chip)}
-                className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 text-[11px] transition-colors"
+                className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 text-[11px] transition-colors cursor-pointer"
               >
                 {chip}
               </button>
@@ -208,7 +234,7 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
               I'm active and learning from your work to provide better insights and support.
             </p>
             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 mt-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" /> Online
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" /> Online & Synced
             </span>
           </div>
         </div>
@@ -223,17 +249,23 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
             <button className="text-[10px] font-bold text-purple-600 hover:underline">View All</button>
           </div>
           <div className="space-y-2 text-xs">
-            <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 text-[11px]">
-              <span className="font-bold text-slate-800 dark:text-slate-200 block">Sales conversion rate has improved by 18% this month.</span>
-              <span className="text-emerald-700 font-bold block mt-0.5">Sales Insight</span>
+            <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50 text-[11px]">
+              <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                {completedTasks.length} of {plannerTasks.length} daily tasks have been completed successfully.
+              </span>
+              <span className="text-emerald-700 dark:text-emerald-400 font-bold block mt-0.5">Execution Insight</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 text-[11px]">
-              <span className="font-bold text-slate-800 dark:text-slate-200 block">Your marketing spend is 8.7% lower than last month, but ROI increased.</span>
-              <span className="text-purple-700 font-bold block mt-0.5">Marketing Insight</span>
+            <div className="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-900/50 text-[11px]">
+              <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                {clients.length} active clients in pipeline with {highPriorityClients.length} marked high priority.
+              </span>
+              <span className="text-purple-700 dark:text-purple-400 font-bold block mt-0.5">Sales Pipeline Insight</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 text-[11px]">
-              <span className="font-bold text-slate-800 dark:text-slate-200 block">The design team's productivity increased by 21%.</span>
-              <span className="text-blue-700 font-bold block mt-0.5">Team Insight</span>
+            <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50 text-[11px]">
+              <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                {meetings.length} scheduled meetings currently listed on your calendar.
+              </span>
+              <span className="text-blue-700 dark:text-blue-400 font-bold block mt-0.5">Meeting Insight</span>
             </div>
           </div>
         </div>
@@ -246,17 +278,17 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
           </div>
           <div className="space-y-2 text-xs">
             {[
-              { text: 'Send follow-up email to 8 pending clients', desc: 'High priority leads need response.' },
-              { text: 'Review 5 overdue tasks', desc: 'Tasks blocking project progress.' },
-              { text: 'Prepare weekly sales report', desc: 'Auto-generate key metrics.' },
-              { text: 'Optimize Google Ads budget', desc: 'Shift budget to top performers.' },
+              { text: `Follow-up with ${highPriorityClients.length || clients.length} client leads`, desc: 'Priority follow-ups pending response.' },
+              { text: `Complete ${pendingTasks.length} pending planner tasks`, desc: 'Outstanding daily planner items.' },
+              { text: `Review ${upcomingMeetings.length} upcoming meetings`, desc: 'Prepare agendas and action items.' },
+              { text: `Export executive report summary`, desc: 'Compile workspace analytics.' },
             ].map((sa, idx) => (
-              <div key={idx} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div key={idx} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700/80 flex items-center justify-between">
                 <div>
                   <span className="font-bold text-slate-800 dark:text-slate-200 block text-[11px]">{sa.text}</span>
                   <span className="text-[9px] text-slate-400">{sa.desc}</span>
                 </div>
-                <button className="px-2 py-1 bg-purple-50 text-purple-700 font-bold text-[10px] rounded-lg hover:bg-purple-100">
+                <button onClick={onOpenAI} className="px-2 py-1 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-[10px] rounded-lg hover:bg-purple-100 cursor-pointer">
                   Apply
                 </button>
               </div>
@@ -268,27 +300,31 @@ export default function AIExecutiveAssistantView({ onOpenAI }) {
         <div className="lg:col-span-4 card-base space-y-3">
           <div className="flex justify-between items-center">
             <h3 className="font-extrabold text-slate-900 dark:text-white text-xs">Today's AI Summary</h3>
-            <span className="text-[10px] font-bold text-slate-400">21 May 2025</span>
+            <span className="text-[10px] font-bold text-slate-400">{currentDateStr}</span>
           </div>
           <div className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
             <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <span>5 Meetings</span>
-              <span className="font-bold text-slate-900 dark:text-white text-[11px]">Next: 11:00 AM - Project Review</span>
+              <span>{meetings.length} Meetings</span>
+              <span className="font-bold text-slate-900 dark:text-white text-[11px]">
+                {nextMeeting ? `Next: ${nextMeeting.time || ''} - ${nextMeeting.title}` : 'No upcoming meetings'}
+              </span>
             </div>
             <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <span>12 Tasks</span>
-              <span className="font-bold text-emerald-600 text-[11px]">6 Completed / 6 Pending</span>
+              <span>{plannerTasks.length} Tasks</span>
+              <span className="font-bold text-emerald-600 text-[11px]">{completedTasks.length} Completed / {pendingTasks.length} Pending</span>
             </div>
             <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <span>3 Follow-ups</span>
-              <span className="font-bold text-amber-600 text-[11px]">2 High Priority</span>
+              <span>{clients.length} Follow-ups</span>
+              <span className="font-bold text-amber-600 text-[11px]">{highPriorityClients.length} High Priority</span>
             </div>
             <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
               <span>Pipeline Value</span>
-              <span className="font-bold text-blue-600 text-[11px]">₹ 1,02,50,000</span>
+              <span className="font-bold text-blue-600 text-[11px]">
+                {totalPipelineVal > 0 ? `₹ ${totalPipelineVal.toLocaleString('en-IN')}` : '₹ 0'}
+              </span>
             </div>
           </div>
-          <button className="w-full text-center text-xs font-bold text-purple-600 hover:underline pt-1">
+          <button onClick={onOpenAI} className="w-full text-center text-xs font-bold text-purple-600 hover:underline pt-1 cursor-pointer">
             View Full Summary
           </button>
         </div>

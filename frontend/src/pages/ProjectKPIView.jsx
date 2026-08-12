@@ -38,6 +38,7 @@ import {
   Pie, 
   Cell 
 } from 'recharts';
+import DataTable from '../components/common/DataTable';
 
 export default function ProjectKPIView({ plannerTasks = [], clients = [], onOpenAI }) {
   const [projectSearchQuery, setProjectSearchQuery] = useState('');
@@ -361,34 +362,30 @@ export default function ProjectKPIView({ plannerTasks = [], clients = [], onOpen
             <button className="text-[11px] font-extrabold text-blue-600 hover:underline">View All</button>
           </div>
 
-          {/* Desktop Table View (lg:block) */}
-          <div className="hidden lg:block overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase font-extrabold text-[10px]">
-                <tr>
-                  <th className="p-2.5">Project</th>
-                  <th className="p-2.5">Manager</th>
-                  <th className="p-2.5">Status</th>
-                  <th className="p-2.5">Progress</th>
-                  <th className="p-2.5">Health</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                {ongoingItems.slice(0, 6).map((p, i) => (
-                  <tr key={p.id || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="p-2.5 font-bold text-slate-900 dark:text-white">{p.company || p.title}</td>
-                    <td className="p-2.5 text-slate-600 dark:text-slate-300">{p.owner || p.contactPerson || 'Ashwini K.'}</td>
-                    <td className="p-2.5">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300">
-                        {p.status || 'Planning'}
-                      </span>
-                    </td>
-                    <td className="p-2.5 font-bold">{p.probability ? `${p.probability}%` : '30%'}</td>
-                    <td className="p-2.5 font-bold text-emerald-600">Healthy</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Desktop Table View (lg:block - DataTable Component with Pagination & Search) */}
+          <div className="hidden lg:block">
+            <DataTable
+              title="Top Projects Overview"
+              columns={[
+                { key: 'company', header: 'Project', sortable: true, render: (p) => <span className="font-bold text-slate-900 dark:text-white">{p.company || p.title}</span> },
+                { key: 'owner', header: 'Manager', sortable: true, render: (p) => <span className="text-slate-600 dark:text-slate-300">{p.owner || p.contactPerson || 'Ashwini K.'}</span> },
+                {
+                  key: 'status',
+                  header: 'Status',
+                  sortable: true,
+                  render: (p) => (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300">
+                      {p.status || 'Planning'}
+                    </span>
+                  )
+                },
+                { key: 'probability', header: 'Progress', sortable: true, render: (p) => <span className="font-bold">{p.probability ? `${p.probability}%` : '30%'}</span> },
+                { key: 'health', header: 'Health', render: () => <span className="font-bold text-emerald-600">Healthy</span> }
+              ]}
+              data={ongoingItems}
+              defaultPageSize={5}
+              searchable={false}
+            />
           </div>
 
           {/* Mobile Projects Card List (lg:hidden - Matches Screenshot) */}

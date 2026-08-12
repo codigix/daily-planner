@@ -43,9 +43,9 @@ export default function Header({
   const activeUser = authUser ? {
     name: authUser.fullName || authUser.email,
     role: authUser.role || 'Executive',
-    avatar: authUser.avatarUrl || defaultUser?.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
+    avatar: authUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(authUser.fullName || 'User')}&background=0D8ABC&color=fff`,
     email: authUser.email
-  } : defaultUser;
+  } : null;
 
   // Dropdown & Modal States
   const [showNotifications, setShowNotifications] = useState(false);
@@ -236,7 +236,7 @@ export default function Header({
 
           {/* Notifications Hub Dropdown Toggle */}
           <div className="relative">
-            <button
+            <button 
               onClick={() => {
                 setShowNotifications(!showNotifications);
                 setShowProfileMenu(false);
@@ -246,9 +246,11 @@ export default function Header({
               title="Notifications"
             >
               <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm">
-                {unreadCount > 0 ? unreadCount : 6}
-              </span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm">
+                  {unreadCount}
+                </span>
+              )}
             </button>
 
             {/* Notifications Dropdown Overlay */}
@@ -306,24 +308,34 @@ export default function Header({
             )}
           </div>
 
-          {/* User Profile Avatar with Dropdown Toggle */}
+          {/* User Profile Avatar / Log In Button */}
           <div className="relative">
-            <div 
-              onClick={() => {
-                setShowProfileMenu(!showProfileMenu);
-                setShowNotifications(false);
-                setShowMobileSearch(false);
-              }}
-              className="relative cursor-pointer shrink-0"
-              title="Profile & Account Menu"
-            >
-              <img
-                src={activeUser.avatar}
-                alt={activeUser.name}
-                className="w-9 h-9 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700 shadow-sm"
-              />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" />
-            </div>
+            {activeUser ? (
+              <div 
+                onClick={() => {
+                  setShowProfileMenu(!showProfileMenu);
+                  setShowNotifications(false);
+                  setShowMobileSearch(false);
+                }}
+                className="relative cursor-pointer shrink-0 flex items-center gap-2"
+                title="Profile & Account Menu"
+              >
+                <img
+                  src={activeUser.avatar}
+                  alt={activeUser.name}
+                  className="w-9 h-9 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700 shadow-sm"
+                />
+                <span className="text-xs font-bold hidden sm:block text-slate-800 dark:text-slate-200">{activeUser.name}</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => onOpenAuthModal && onOpenAuthModal('login')}
+                className="px-4 py-2 bg-[#E60023] hover:bg-[#CC001F] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-2 transition-all active:scale-95 shrink-0"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Log In</span>
+              </button>
+            )}
 
             {/* Profile Dropdown Overlay Menu */}
             {showProfileMenu && (

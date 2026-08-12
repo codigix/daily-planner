@@ -7,6 +7,7 @@ import {
   Briefcase, Send, Target, Eye
 } from 'lucide-react';
 import { createClientAPI, updateClientAPI, deleteClientAPI } from '../services/api';
+import DataTable from '../components/common/DataTable';
 
 const PRIORITIES = ['High', 'Medium', 'Low'];
 const STATUSES = ['Pending', 'Due Today', 'Overdue', 'Completed', 'Closed Won', 'Not Started'];
@@ -463,7 +464,7 @@ export default function ClientFollowupsView({ onOpenAI }) {
             <Users className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="w-full">
-            <div className="text-base sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">{totalClients || 3}</div>
+            <div className="text-base sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">{totalClients}</div>
             <div className="text-[9px] sm:text-xs font-bold text-slate-400 mt-0.5 truncate">Total Deals</div>
           </div>
         </div>
@@ -474,7 +475,7 @@ export default function ClientFollowupsView({ onOpenAI }) {
             <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="w-full">
-            <div className="text-xs sm:text-2xl font-black text-slate-900 dark:text-white leading-tight truncate">₹{totalRevenue ? (totalRevenue >= 100000 ? `${(totalRevenue / 100000).toFixed(2)}L` : totalRevenue) : '5.20L'}</div>
+            <div className="text-xs sm:text-2xl font-black text-slate-900 dark:text-white leading-tight truncate">₹{totalRevenue ? (totalRevenue >= 100000 ? `${(totalRevenue / 100000).toFixed(2)}L` : totalRevenue.toLocaleString('en-IN')) : '0'}</div>
             <div className="text-[9px] sm:text-xs font-bold text-slate-400 mt-0.5 truncate">Active Pipeline</div>
           </div>
         </div>
@@ -502,69 +503,78 @@ export default function ClientFollowupsView({ onOpenAI }) {
         </div>
       </div>
 
-      {/* ── Search & Filter Controls Bar (Hidden on Mobile, Visible on Desktop — Mobile uses Floating Filter Button) ── */}
-      <div className="hidden sm:flex items-center gap-2 justify-between">
-        <div className="hidden sm:flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 rounded-2xl shadow-sm">
-          {[
-            { id: 'All', label: 'All', icon: null },
-            { id: 'Pending', label: 'Pending', icon: Clock },
-            { id: 'Completed', label: 'Completed', icon: CheckCircle2 },
-            { id: 'Calendar', label: 'Schedule', icon: Calendar },
-            { id: 'Filter', label: 'Filter', icon: Sliders }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 px-1 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeTab === tab.id
-                ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 shadow-sm'
-                : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+      {/* ── Desktop Controls Toolbar (Clean Alignment & Professional Layout) ── */}
+      <div className="hidden sm:flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        
+        {/* Left Side: Filter Tabs & Starred Toggle */}
+        <div className="flex items-center gap-2">
+          {/* Status Tabs */}
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+            {[
+              { id: 'All', label: 'All' },
+              { id: 'Pending', label: 'Pending', icon: Clock },
+              { id: 'Completed', label: 'Completed', icon: CheckCircle2 },
+              { id: 'Due Today', label: 'Due Today', icon: Calendar }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setStatusFilter('All Status'); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
-            >
-              {tab.icon && <tab.icon className="w-4 h-4 shrink-0" />}
-              <span className={tab.id === 'All' ? 'inline' : 'hidden sm:inline'}>{tab.label}</span>
-            </button>
-          ))}
-        </div>
-        {/* Filter Button Icon */}
-        <button
-          onClick={() => setStatusFilter(statusFilter === 'All Status' ? 'Pending' : 'All Status')}
-          className="w-10 h-10 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all shrink-0 cursor-pointer shadow-sm"
-          title="Filter Deals"
-        >
-          <Filter className="w-4 h-4 text-slate-500" />
-        </button>
+              >
+                {tab.icon && <tab.icon className="w-3.5 h-3.5 shrink-0" />}
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
 
-        {/* Starred Button Icon */}
-        <button
-          onClick={() => setActiveTab(activeTab === 'Starred' ? 'All' : 'Starred')}
-          className={`w-10 h-10 rounded-2xl border flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-sm ${activeTab === 'Starred'
-            ? 'border-amber-300 bg-amber-50 text-amber-500 dark:bg-amber-950/40'
-            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300'
+          {/* Starred Deals Toggle Button */}
+          <button
+            onClick={() => setActiveTab(activeTab === 'Starred' ? 'All' : 'Starred')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border flex items-center gap-1.5 transition-all cursor-pointer ${
+              activeTab === 'Starred'
+                ? 'border-amber-300 bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
             }`}
-          title="Starred Deals"
-        >
-          <Star className={`w-4 h-4 ${activeTab === 'Starred' ? 'fill-amber-400 text-amber-400' : 'text-slate-400'}`} />
-        </button>
+          >
+            <Star className={`w-3.5 h-3.5 ${activeTab === 'Starred' ? 'fill-amber-400 text-amber-400' : 'text-slate-400'}`} />
+            <span>Starred</span>
+          </button>
+        </div>
 
-        {/* User Owner Filter Button Icon */}
-        <button
-          onClick={() => setOwnerFilter(ownerFilter === 'All Owners' ? 'Ashwini K.' : 'All Owners')}
-          className="w-10 h-10 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all shrink-0 cursor-pointer shadow-sm"
-          title="Owner Filter"
-        >
-          <User className="w-4 h-4 text-slate-500" />
-        </button>
+        {/* Right Side: Priority Filter & Search Input */}
+        <div className="flex items-center gap-2">
+          {/* Priority Dropdown */}
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="px-3 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+          >
+            <option value="All Priority">All Priorities</option>
+            <option value="High">High Priority</option>
+            <option value="Medium">Medium Priority</option>
+            <option value="Low">Low Priority</option>
+          </select>
 
-        {/* Search Bar Input */}
-        <div className="relative  min-w-0">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
-            className="w-full pl-9 pr-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-slate-800 dark:text-white shadow-sm"
-          />
+          {/* Search Box */}
+          <div className="relative w-56 lg:w-64">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search deals, company..."
+              className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none text-slate-800 dark:text-slate-200 font-medium"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -577,92 +587,81 @@ export default function ClientFollowupsView({ onOpenAI }) {
         {/* ── Left Column: Deals List + Timeline + CRM Analytics ── */}
         <div className="lg:col-span-8 space-y-4">
 
-          {/* Desktop Table View (lg:block - Preserves Desktop View 100%) */}
-          <div className="hidden lg:block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-            {filteredClients.length === 0 ? (
-              <div className="p-12 text-center space-y-3">
-                <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto">
-                  <Users className="w-7 h-7 text-slate-400" />
-                </div>
-                <p className="text-sm font-bold text-slate-600 dark:text-slate-300">No deals or follow-ups found</p>
-                <button onClick={() => { setEditClient(null); setShowModal(true); }}
-                  className="mx-auto mt-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl flex items-center gap-1.5">
-                  <Plus className="w-3.5 h-3.5" /> Add New Follow-up
+          {/* Desktop Table View (lg:block - DataTable Component with Pagination & Skeleton Loader) */}
+          <div className="hidden lg:block">
+            <DataTable
+              title="Deals & Client Follow-ups"
+              columns={[
+                {
+                  key: 'company',
+                  header: 'Company / Client',
+                  sortable: true,
+                  render: (client) => (
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-black flex items-center justify-center text-[10px] shrink-0">
+                        {client.company ? client.company[0].toUpperCase() : 'C'}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
+                          {client.company}
+                          <button onClick={(e) => toggleStar(client.id, e)} className="shrink-0 focus:outline-none">
+                            <Star className={`w-3.5 h-3.5 ${client.starred ? 'text-amber-400 fill-amber-400' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400'}`} />
+                          </button>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-normal truncate block">{client.tagline}</span>
+                      </div>
+                    </div>
+                  )
+                },
+                { key: 'lastContact', header: 'Last Interaction', sortable: true, render: (c) => <span className="font-bold text-slate-800 dark:text-slate-200">{c.lastContact || 'None'}</span> },
+                { key: 'nextFollowup', header: 'Next Action', sortable: true, render: (c) => <span className="font-bold text-slate-900 dark:text-white">{c.nextFollowup || 'Not Set'}</span> },
+                {
+                  key: 'priority',
+                  header: 'Priority',
+                  sortable: true,
+                  render: (c) => (
+                    <span className={`px-2 py-0.5 rounded-md border text-[10px] font-bold ${getPriorityStyle(c.priority)}`}>
+                      {c.priority}
+                    </span>
+                  )
+                },
+                {
+                  key: 'status',
+                  header: 'Status',
+                  sortable: true,
+                  render: (c) => (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusStyle(c.status)}`}>
+                      {c.status}
+                    </span>
+                  )
+                },
+                { key: 'probability', header: 'Closing Prob', sortable: true, render: (c) => <span className="font-bold text-slate-600 dark:text-slate-300">{c.probability || 0}%</span> },
+                { key: 'expectedValue', header: 'Deal Value', sortable: true, render: (c) => <span className="font-bold text-slate-900 dark:text-white">{c.expectedValue || '₹0'}</span> },
+                {
+                  key: 'actions',
+                  header: 'Actions',
+                  align: 'right',
+                  render: (c) => (
+                    <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
+                      <button onClick={() => { setEditClient(c); setShowModal(true); }} className="p-1 text-slate-400 hover:text-blue-600" title="Edit Deal"><Edit className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => setConfirmDeleteId(c.id)} className="p-1 text-slate-400 hover:text-rose-600" title="Delete Deal"><Trash2 className="w-3.5 h-3.5" /></button>
+                    </div>
+                  )
+                }
+              ]}
+              data={filteredClients}
+              defaultPageSize={5}
+              searchable={false}
+              onRowClick={(client) => setSelectedClientId(client.id)}
+              actionButton={
+                <button
+                  onClick={() => { setEditClient(null); setShowModal(true); }}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Follow-up
                 </button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 uppercase font-extrabold text-[10px] tracking-wider">
-                    <tr>
-                      <th className="p-3.5">Company / Client</th>
-                      <th className="p-3.5">Last Interaction</th>
-                      <th className="p-3.5">Next Action</th>
-                      <th className="p-3.5">Priority</th>
-                      <th className="p-3.5">Status</th>
-                      <th className="p-3.5">Closing Prob</th>
-                      <th className="p-3.5">Deal Value</th>
-                      <th className="p-3.5 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                    {filteredClients.map(client => {
-                      const isSelected = client.id === selectedClientId;
-                      return (
-                        <tr key={client.id} onClick={() => setSelectedClientId(client.id)}
-                          className={`cursor-pointer transition-colors ${isSelected ? 'bg-blue-50/70 dark:bg-blue-950/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                            }`}>
-                          <td className="p-3.5">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-black flex items-center justify-center text-[10px] shrink-0">
-                                {client.company ? client.company[0].toUpperCase() : 'C'}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
-                                  {client.company}
-                                  <button onClick={(e) => toggleStar(client.id, e)} className="shrink-0 focus:outline-none">
-                                    <Star className={`w-3.5 h-3.5 ${client.starred ? 'text-amber-400 fill-amber-400' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400'}`} />
-                                  </button>
-                                </div>
-                                <span className="text-[10px] text-slate-400 font-normal truncate block">{client.tagline}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-3.5 whitespace-nowrap font-bold text-slate-800 dark:text-slate-200">
-                            {client.lastContact || 'None'}
-                          </td>
-                          <td className="p-3.5 whitespace-nowrap font-bold text-slate-900 dark:text-white">
-                            {client.nextFollowup || 'Not Set'}
-                          </td>
-                          <td className="p-3.5">
-                            <span className={`px-2 py-0.5 rounded-md border text-[10px] font-bold ${getPriorityStyle(client.priority)}`}>
-                              {client.priority}
-                            </span>
-                          </td>
-                          <td className="p-3.5">
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusStyle(client.status)}`}>
-                              {client.status}
-                            </span>
-                          </td>
-                          <td className="p-3.5 font-bold text-slate-600 dark:text-slate-300">
-                            {client.probability || 0}%
-                          </td>
-                          <td className="p-3.5 font-bold text-slate-900 dark:text-white">
-                            {client.expectedValue || '₹0'}
-                          </td>
-                          <td className="p-3.5 text-right">
-                            <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
-                              <button onClick={() => { setEditClient(client); setShowModal(true); }} className="p-1 text-slate-400 hover:text-blue-600"><Edit className="w-3.5 h-3.5" /></button>
-                              <button onClick={() => setConfirmDeleteId(client.id)} className="p-1 text-slate-400 hover:text-rose-600"><Trash2 className="w-3.5 h-3.5" /></button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+              }
+            />
           </div>
 
           {/* Mobile Deals Cards View (lg:hidden - Matches Screenshot Deal Cards) */}

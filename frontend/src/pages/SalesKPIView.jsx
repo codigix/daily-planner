@@ -41,6 +41,7 @@ import {
   Bar 
 } from 'recharts';
 import { updateClientAPI } from '../services/api';
+import DataTable from '../components/common/DataTable';
 
 export default function SalesKPIView({ clients = [], setClients, plannerTasks = [], onOpenAI }) {
   const [selectedPeriod, setSelectedPeriod] = useState('This Month');
@@ -206,8 +207,8 @@ export default function SalesKPIView({ clients = [], setClients, plannerTasks = 
           </button>
         </div>
 
-        {/* Timeframe Period Filter Pills Bar (Compact Labels on Mobile) */}
-        <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-1 rounded-2xl shadow-sm text-xs font-bold overflow-x-auto no-scrollbar">
+        {/* Timeframe Period Filter Pills Bar (Compact, Modern Segmented Tabs Bar) */}
+        <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full sm:w-fit text-xs font-bold shadow-xs">
           {[
             { id: 'This Month', full: 'This Month', short: 'Month' },
             { id: 'This Quarter', full: 'This Quarter', short: 'Quarter' },
@@ -217,9 +218,9 @@ export default function SalesKPIView({ clients = [], setClients, plannerTasks = 
             <button
               key={item.id}
               onClick={() => setSelectedPeriod(item.id)}
-              className={`flex-1 py-1.5 px-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap text-center text-xs ${
+              className={`flex-1 sm:flex-initial py-1.5 px-3 rounded-lg transition-all cursor-pointer whitespace-nowrap text-center text-xs ${
                 selectedPeriod === item.id
-                  ? 'bg-blue-600 text-white shadow-sm font-black'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-black'
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
@@ -240,7 +241,7 @@ export default function SalesKPIView({ clients = [], setClients, plannerTasks = 
           <div>
             <span className="text-[9px] sm:text-[11px] font-semibold text-slate-400 block truncate">Total Revenue</span>
             <div className="text-xs sm:text-xl font-black text-slate-900 dark:text-white mt-0.5 truncate">
-              {totalRevenue > 0 ? `₹${totalRevenue.toLocaleString('en-IN')}` : '₹5,20,000'}
+              ₹{totalRevenue.toLocaleString('en-IN')}
             </div>
             <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 block mt-0.5 truncate">Live Pipeline Sum</span>
           </div>
@@ -253,7 +254,7 @@ export default function SalesKPIView({ clients = [], setClients, plannerTasks = 
           </div>
           <div>
             <span className="text-[9px] sm:text-[11px] font-semibold text-slate-400 block truncate">Active Deals</span>
-            <div className="text-sm sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">{totalOps || 3}</div>
+            <div className="text-sm sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">{totalOps}</div>
             <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 block mt-0.5 truncate">Tracked Opportunities</span>
           </div>
         </div>
@@ -396,60 +397,64 @@ export default function SalesKPIView({ clients = [], setClients, plannerTasks = 
               </div>
             </div>
 
-            {/* Desktop Table View (lg:block - Rich Interactive Table for Desktop) */}
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase font-extrabold text-[10px] tracking-wider border-b border-slate-100 dark:border-slate-800">
-                  <tr>
-                    <th className="p-3">Opportunity Name</th>
-                    <th className="p-3">Client / Company</th>
-                    <th className="p-3">Stage</th>
-                    <th className="p-3">Owner</th>
-                    <th className="p-3">Value</th>
-                    <th className="p-3">Close Date</th>
-                    <th className="p-3">Probability</th>
-                    <th className="p-3">Next Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                  {topOpportunities.map((op, i) => (
-                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                      <td className="p-3 font-bold text-slate-900 dark:text-white">{op.name}</td>
-                      <td className="p-3 text-slate-600 dark:text-slate-300">{op.company}</td>
-                      <td className="p-3">
-                        <select
-                          value={op.stage}
-                          onChange={e => op.id && handleUpdateStage(op.id, e.target.value)}
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold border-none cursor-pointer focus:outline-none ${op.stageColor}`}
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Qualified">Qualified</option>
-                          <option value="Negotiation">Negotiation</option>
-                          <option value="Closed Won">Closed Won</option>
-                          <option value="Overdue">Overdue</option>
-                        </select>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-1.5">
-                          <img src={op.ownerAvatar} alt={op.owner} className="w-4 h-4 rounded-full object-cover" />
-                          <span>{op.owner}</span>
+            {/* Desktop Table View (lg:block - DataTable Component with Pagination & Search) */}
+            <div className="hidden lg:block">
+              <DataTable
+                title="Top Opportunities & Deals"
+                columns={[
+                  { key: 'name', header: 'Opportunity Name', sortable: true, render: (op) => <span className="font-bold text-slate-900 dark:text-white">{op.name}</span> },
+                  { key: 'company', header: 'Client / Company', sortable: true, render: (op) => <span className="text-slate-600 dark:text-slate-300">{op.company}</span> },
+                  {
+                    key: 'stage',
+                    header: 'Stage',
+                    sortable: true,
+                    render: (op) => (
+                      <select
+                        value={op.stage}
+                        onChange={e => op.id && handleUpdateStage(op.id, e.target.value)}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border-none cursor-pointer focus:outline-none ${op.stageColor}`}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Qualified">Qualified</option>
+                        <option value="Negotiation">Negotiation</option>
+                        <option value="Closed Won">Closed Won</option>
+                        <option value="Overdue">Overdue</option>
+                      </select>
+                    )
+                  },
+                  {
+                    key: 'owner',
+                    header: 'Owner',
+                    sortable: true,
+                    render: (op) => (
+                      <div className="flex items-center gap-1.5">
+                        <img src={op.ownerAvatar} alt={op.owner} className="w-4 h-4 rounded-full object-cover" />
+                        <span>{op.owner}</span>
+                      </div>
+                    )
+                  },
+                  { key: 'val', header: 'Value', sortable: true, render: (op) => <span className="font-bold text-slate-900 dark:text-white">{op.val}</span> },
+                  { key: 'close', header: 'Close Date', sortable: true, render: (op) => <span className="text-slate-500">{op.close}</span> },
+                  {
+                    key: 'prob',
+                    header: 'Probability',
+                    sortable: true,
+                    render: (op) => (
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-[10px]">{op.prob}%</span>
+                        <div className="w-12 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                          <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${op.prob}%` }} />
                         </div>
-                      </td>
-                      <td className="p-3 font-bold text-slate-900 dark:text-white">{op.val}</td>
-                      <td className="p-3 text-slate-500">{op.close}</td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-[10px]">{op.prob}%</span>
-                          <div className="w-12 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${op.prob}%` }} />
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-3 text-slate-600 font-semibold">{op.action}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    )
+                  },
+                  { key: 'action', header: 'Next Action', render: (op) => <span className="text-slate-600 font-semibold">{op.action}</span> }
+                ]}
+                data={topOpportunities}
+                defaultPageSize={5}
+                searchable={true}
+                searchPlaceholder="Search opportunities..."
+              />
             </div>
 
             {/* Mobile Opportunities Card List (lg:hidden - Matches Screenshot) */}

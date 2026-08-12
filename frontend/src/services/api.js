@@ -8,18 +8,25 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API
 const BACKEND_FALLBACK = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 
 async function fetchAPI(endpoint, options = {}) {
+  const token = localStorage.getItem('codigix_auth_token') || '';
+  const defaultHeaders = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+  const combinedHeaders = { ...defaultHeaders, ...(options.headers || {}) };
+
   try {
     const res = await fetch(`${API_BASE}${endpoint}`, {
-      headers: { 'Content-Type': 'application/json' },
       ...options,
+      headers: combinedHeaders
     });
     if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
     return await res.json();
   } catch (err) {
     try {
       const fallbackRes = await fetch(`${BACKEND_FALLBACK}/api${endpoint}`, {
-        headers: { 'Content-Type': 'application/json' },
         ...options,
+        headers: combinedHeaders
       });
       if (fallbackRes.ok) return await fallbackRes.json();
     } catch (fallbackErr) {
@@ -199,6 +206,19 @@ export async function getMarketingDashboardAPI() {
 // 11. Reports API
 export async function getReportsAPI() {
   return await fetchAPI('/reports');
+}
+
+export async function createReportAPI(reportData) {
+  return await fetchAPI('/reports', {
+    method: 'POST',
+    body: JSON.stringify(reportData)
+  });
+}
+
+export async function deleteReportAPI(id) {
+  return await fetchAPI(`/reports/${id}`, {
+    method: 'DELETE'
+  });
 }
 
 // 12. AI API

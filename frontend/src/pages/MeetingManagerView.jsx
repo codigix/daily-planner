@@ -6,6 +6,7 @@ import {
   Link2, Mic, FileText, Bell, MoreVertical, Save, Layers, Filter
 } from 'lucide-react';
 import { createMeetingAPI, updateMeetingAPI, deleteMeetingAPI } from '../services/api';
+import DataTable from '../components/common/DataTable';
 
 const MEETING_TYPES = ['Client', 'Internal', 'Project', 'Board', 'Sales', 'HR', 'Strategy'];
 const MEETING_STATUSES = ['Upcoming', 'Confirmed', 'In Progress', 'Completed', 'Cancelled', 'Pending'];
@@ -541,94 +542,81 @@ ${actionText}`;
       <div className="grid grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-6">
 
         {/* Left Card: Meetings List Panel (Col 1 on Mobile, 8 Cols on Desktop) */}
-        <div className="lg:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col justify-between p-4 sm:p-6 min-h-[320px]">
-          {filteredMeetings.length === 0 ? (
-            <div className="my-auto text-center space-y-3">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-50 dark:bg-blue-950/50 rounded-2xl flex items-center justify-center mx-auto text-blue-600">
-                <Video className="w-6 h-6 sm:w-8 sm:h-8" />
-              </div>
-              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">No meetings found</h3>
-              <p className="text-xs text-slate-400 px-2 max-w-xs mx-auto">
-                {meetings.length === 0 ? 'Click "Schedule Meeting" to add your first meeting.' : 'Try adjusting your filters.'}
-              </p>
-              <button
-                onClick={() => { setEditMeeting(null); setShowForm(true); }}
-                className="mx-auto px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" /> Schedule Meeting
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-slate-500 uppercase font-extrabold text-[10px] tracking-wider">
-                  <tr>
-                    <th className="p-3">Date & Time</th>
-                    <th className="p-3">Meeting Details</th>
-                    <th className="p-3 hidden sm:table-cell">Attendees</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                  {filteredMeetings.map(meeting => {
-                    const isSelected = meeting.id === selectedMeetingId;
-                    const isConflict = hasTimeConflict(meeting, meetings);
-                    const joinLink = getVideoCallUrl(meeting);
-                    return (
-                      <tr key={meeting.id} onClick={() => setSelectedMeetingId(meeting.id)}
-                        className={`cursor-pointer transition-colors ${isSelected ? 'bg-blue-50/70 dark:bg-blue-950/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                          }`}>
-                        <td className="p-3 whitespace-nowrap">
-                          {meeting.date && (
-                            <div className="text-[10px] font-bold text-slate-400 mb-0.5">
-                              {new Date(meeting.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                            </div>
-                          )}
-                          <div className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1">
-                            <span>{meeting.time}</span>
-                            {isConflict && (
-                              <span className="text-[9px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded border border-amber-300 shrink-0">
-                                ⚠️
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-3 max-w-[140px] sm:max-w-[200px]">
-                          <p className="font-extrabold text-slate-900 dark:text-white truncate">{meeting.title}</p>
-                          {meeting.client && <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 block truncate">{meeting.client}</span>}
-                        </td>
-                        <td className="p-3 hidden sm:table-cell">
-                          <div className="flex -space-x-1.5">
-                            {(meeting.members || []).slice(0, 3).map((m, i) => (
-                              <AvatarBubble key={i} name={m} index={i} />
-                            ))}
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${statusStyles[meeting.status] || 'bg-slate-100 text-slate-600'}`}>
-                            {meeting.status}
-                          </span>
-                        </td>
-                        <td className="p-3 text-right">
-                          <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
-                            <button onClick={() => { setEditMeeting(meeting); setShowForm(true); }}
-                              className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="Edit">
-                              <Edit className="w-3.5 h-3.5" />
-                            </button>
-                            <button onClick={() => setConfirmDeleteId(meeting.id)}
-                              className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+        <div className="lg:col-span-8">
+          <DataTable
+            title="Scheduled Meetings Table"
+            columns={[
+              {
+                key: 'date',
+                header: 'Date & Time',
+                sortable: true,
+                render: (m) => (
+                  <div>
+                    {m.date && (
+                      <div className="text-[10px] font-bold text-slate-400 mb-0.5">
+                        {new Date(m.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                      </div>
+                    )}
+                    <div className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1">
+                      <span>{m.time}</span>
+                      {hasTimeConflict(m, meetings) && (
+                        <span className="text-[9px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded border border-amber-300 shrink-0">
+                          ⚠️
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              },
+              {
+                key: 'title',
+                header: 'Meeting Details',
+                sortable: true,
+                render: (m) => (
+                  <div className="max-w-[140px] sm:max-w-[200px]">
+                    <p className="font-extrabold text-slate-900 dark:text-white truncate">{m.title}</p>
+                    {m.client && <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 block truncate">{m.client}</span>}
+                  </div>
+                )
+              },
+              {
+                key: 'members',
+                header: 'Attendees',
+                render: (m) => (
+                  <div className="flex -space-x-1.5">
+                    {(m.members || []).slice(0, 3).map((mem, i) => (
+                      <AvatarBubble key={i} name={mem} index={i} />
+                    ))}
+                  </div>
+                )
+              },
+              {
+                key: 'status',
+                header: 'Status',
+                sortable: true,
+                render: (m) => (
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${statusStyles[m.status] || 'bg-slate-100 text-slate-600'}`}>
+                    {m.status}
+                  </span>
+                )
+              },
+              {
+                key: 'actions',
+                header: 'Actions',
+                align: 'right',
+                render: (m) => (
+                  <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => { setEditMeeting(m); setShowForm(true); }} className="p-1 rounded-lg text-slate-400 hover:text-blue-600" title="Edit"><Edit className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setConfirmDeleteId(m.id)} className="p-1 rounded-lg text-slate-400 hover:text-rose-600" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
+                )
+              }
+            ]}
+            data={filteredMeetings}
+            defaultPageSize={5}
+            searchable={false}
+            onRowClick={(m) => setSelectedMeetingId(m.id)}
+          />
         </div>
 
         {/* Right Card: Selected Meeting Detail Panel (Col 2 on Mobile, 4 Cols on Desktop - Matches Screenshot) */}

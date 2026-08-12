@@ -45,6 +45,7 @@ import {
   createPurchaseAPI,
   deletePurchaseAPI
 } from '../services/api';
+import DataTable from '../components/common/DataTable';
 
 export default function FinanceDashboardView({ clients = [], plannerTasks = [], onOpenAI, onNavigate }) {
   // Navigation & Filter States
@@ -300,33 +301,34 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
 
   const finalQuotationAmount = subtotalCostPrice + calcProfitAmount;
 
-  // Telemetry Aggregates
-  const summary = dashboardData?.summary || {
-    totalRevenue: 1290000,
-    totalPurchases: 446858,
-    netProfit: 843142,
-    profitMargin: '65.4%',
-    salesCount: salesList.length,
-    purchaseCount: purchasesList.length
+  // Telemetry Aggregates (Strictly fetched from database)
+  const totalSalesFromDB = salesList.reduce((acc, s) => acc + parseFloat(s.amount || 0), 0);
+  const totalPurchasesFromDB = purchasesList.reduce((acc, p) => acc + parseFloat(p.amount || 0), 0);
+  const netProfitFromDB = totalSalesFromDB - totalPurchasesFromDB;
+  const profitMarginFromDB = totalSalesFromDB > 0 ? `${((netProfitFromDB / totalSalesFromDB) * 100).toFixed(1)}%` : '0.0%';
+
+  const summary = {
+    totalRevenue: dashboardData?.summary?.totalRevenue ?? totalSalesFromDB,
+    totalPurchases: dashboardData?.summary?.totalPurchases ?? totalPurchasesFromDB,
+    netProfit: dashboardData?.summary?.netProfit ?? netProfitFromDB,
+    profitMargin: dashboardData?.summary?.profitMargin ?? profitMarginFromDB,
+    salesCount: dashboardData?.summary?.salesCount ?? salesList.length,
+    purchaseCount: dashboardData?.summary?.purchaseCount ?? purchasesList.length
   };
 
-  const trendChartData = dashboardData?.monthlyTrend && dashboardData.monthlyTrend.length > 0
+  const trendChartData = (dashboardData?.monthlyTrend && dashboardData.monthlyTrend.length > 0)
     ? dashboardData.monthlyTrend.map(t => ({
       label: t.label,
       Revenue: parseFloat(t.revenue || 0) / 100000
     }))
-    : [
-      { label: 'May 2026', Revenue: 4.5 },
-      { label: 'Jun 2026', Revenue: 6.2 },
-      { label: 'Jul 2026', Revenue: 8.9 },
-      { label: 'Aug 2026', Revenue: 12.9 }
-    ];
+    : [];
 
-  const expenseCategoryData = dashboardData?.expenseCategories && dashboardData.expenseCategories.length > 0
+  const expenseCategoryData = (dashboardData?.expenseCategories && dashboardData.expenseCategories.length > 0)
     ? dashboardData.expenseCategories.map((c, i) => {
       const colors = ['#2563eb', '#38bdf8', '#ec4899', '#8b5cf6', '#f59e0b', '#10b981', '#64748b'];
       const val = parseFloat(c.total || 0);
-      const pct = summary.totalPurchases > 0 ? `${((val / summary.totalPurchases) * 100).toFixed(0)}%` : '0%';
+      const totalPurchasesVal = summary.totalPurchases || 1;
+      const pct = `${((val / totalPurchasesVal) * 100).toFixed(0)}%`;
       return {
         name: c.name,
         pct,
@@ -334,31 +336,12 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
         color: colors[i % colors.length]
       };
     })
-    : [
-      { name: 'Salaries & Payroll', pct: '64%', val: '₹ 2,85,000', color: '#2563eb' },
-      { name: 'Office Operations', pct: '19%', val: '₹ 85,000', color: '#38bdf8' },
-      { name: 'Marketing & Ads', pct: '10%', val: '₹ 45,600', color: '#ec4899' },
-      { name: 'Cloud & Hosting', pct: '3%', val: '₹ 12,450', color: '#8b5cf6' },
-      { name: 'Software Licenses', pct: '4%', val: '₹ 18,500', color: '#f59e0b' }
-    ];
+    : [];
 
-  // Combine Project Deals with Direct Sales Invoices
-  const projectSales = (clients || []).map((c, idx) => ({
-    id: `proj_${c.id || idx}`,
-    invoice_no: `PROJ-${c.id || (idx + 101)}`,
-    client_name: c.name || c.company || 'Enterprise Client',
-    category: c.industry || c.category || 'Client Project Contract',
-    amount: parseInt((c.expectedValue || '250000').replace(/[^0-9]/g, '')) || 250000,
-    sale_date: c.createdDate || c.date || new Date().toISOString().split('T')[0],
-    status: 'PAID',
-    payment_method: 'Bank Transfer',
-    isProject: true
-  }));
+  const allCombinedSales = salesList;
 
-  const allCombinedSales = [...salesList, ...projectSales];
-
-  // Filtered Tables
-  const filteredSales = allCombinedSales.filter(s =>
+  // Filtered Tables (Database Records Only)
+  const filteredSales = salesList.filter(s =>
     s.client_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.invoice_no?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.category?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -638,86 +621,77 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
       {/* ---------------------------------------------------- */}
       {activeTab === 'sales' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded border border-slate-200 dark:border-slate-800">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search Client or Invoice No..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-              />
-            </div>
-
-            <button
-              onClick={() => setShowSaleModal(true)}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white  text-xs rounded border-slate-300  transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Record New Sale</span>
-            </button>
-          </div>
-
-          <div className="card-base overflow-hidden p-0 border border-slate-200 dark:border-slate-800">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500   border-b border-slate-200 dark:border-slate-750">
-                  <tr>
-                    <th className="p-3.5">Invoice No</th>
-                    <th className="p-3.5">Client Name</th>
-                    <th className="p-3.5">Category</th>
-                    <th className="p-3.5">Sale Date</th>
-                    <th className="p-3.5">Amount (₹)</th>
-                    <th className="p-3.5">Status</th>
-                    <th className="p-3.5">Payment Method</th>
-                    <th className="p-3.5 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredSales.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                      <td className="p-3.5 font-mono  text-blue-600 dark:text-blue-400 flex items-center gap-2">
-                        <span>{item.invoice_no}</span>
-                        {item.isProject && (
-                          <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[9px]  ">
-                            📁 Project
-                          </span>
-                        )}
-                      </td>
-                      <td className="p-3.5  text-slate-900 dark:text-white">{item.client_name}</td>
-                      <td className="p-3.5 text-slate-600 dark:text-slate-400">{item.category}</td>
-                      <td className="p-3.5 text-slate-500">{new Date(item.sale_date).toLocaleDateString('en-IN')}</td>
-                      <td className="p-3.5  text-emerald-600 dark:text-emerald-400 text-sm">
-                        ₹ {parseFloat(item.amount).toLocaleString('en-IN')}
-                      </td>
-                      <td className="p-3.5">
-                        <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs  ">
-                          {item.status || 'PAID'}
-                        </span>
-                      </td>
-                      <td className="p-3.5 text-slate-600 dark:text-slate-400">{item.payment_method}</td>
-                      <td className="p-3.5 text-right">
-                        <button
-                          onClick={() => handleDeleteSale(item.id)}
-                          className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredSales.length === 0 && (
-                    <tr>
-                      <td colSpan={8} className="p-6 text-center text-slate-400 ">
-                        No sales invoices found matching your query.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DataTable
+            title="Sales Invoices Ledger"
+            columns={[
+              {
+                key: 'invoice_no',
+                header: 'Invoice No',
+                sortable: true,
+                render: (item) => (
+                  <span className="font-mono text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                    <span>{item.invoice_no}</span>
+                    {item.isProject && (
+                      <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[9px] font-bold">
+                        📁 Project
+                      </span>
+                    )}
+                  </span>
+                )
+              },
+              { key: 'client_name', header: 'Client Name', sortable: true, render: (item) => <span className="font-bold text-slate-900 dark:text-white">{item.client_name}</span> },
+              { key: 'category', header: 'Category', sortable: true, render: (item) => <span className="text-slate-600 dark:text-slate-400">{item.category}</span> },
+              { key: 'sale_date', header: 'Sale Date', sortable: true, render: (item) => <span className="text-slate-500">{new Date(item.sale_date).toLocaleDateString('en-IN')}</span> },
+              {
+                key: 'amount',
+                header: 'Amount (₹)',
+                sortable: true,
+                render: (item) => (
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                    ₹ {parseFloat(item.amount).toLocaleString('en-IN')}
+                  </span>
+                )
+              },
+              {
+                key: 'status',
+                header: 'Status',
+                sortable: true,
+                render: (item) => (
+                  <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs font-extrabold">
+                    {item.status || 'PAID'}
+                  </span>
+                )
+              },
+              { key: 'payment_method', header: 'Payment Method', sortable: true, render: (item) => <span className="text-slate-600 dark:text-slate-400">{item.payment_method}</span> },
+              {
+                key: 'actions',
+                header: 'Actions',
+                align: 'right',
+                render: (item) => (
+                  <button
+                    onClick={() => handleDeleteSale(item.id)}
+                    className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                    title="Delete Sale"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )
+              }
+            ]}
+            data={filteredSales}
+            loading={loading}
+            defaultPageSize={5}
+            searchable={false}
+            actionButton={
+              <button
+                onClick={() => setShowSaleModal(true)}
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Record New Sale</span>
+              </button>
+            }
+          />
         </div>
       )}
 
@@ -726,93 +700,79 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
       {/* ---------------------------------------------------- */}
       {activeTab === 'purchases' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded border border-slate-200 dark:border-slate-800">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search Vendor or Purchase No..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none"
-              />
-            </div>
-
-            <button
-              onClick={() => setShowPurchaseModal(true)}
-              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white  text-xs rounded border-slate-300  transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Record New Purchase</span>
-            </button>
-          </div>
-
-          <div className="card-base overflow-hidden p-0 border border-slate-200 dark:border-slate-800">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500   border-b border-slate-200 dark:border-slate-750">
-                  <tr>
-                    <th className="p-3.5">Purchase No</th>
-                    <th className="p-3.5">Vendor / Payee</th>
-                    <th className="p-3.5">Category</th>
-                    <th className="p-3.5">Purchase Date</th>
-                    <th className="p-3.5">Amount (₹)</th>
-                    <th className="p-3.5">Status</th>
-                    <th className="p-3.5">Payment Method</th>
-                    <th className="p-3.5 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredPurchases.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                      <td className="p-3.5 font-mono  text-rose-600 dark:text-rose-400">{item.purchase_no}</td>
-                      <td className="p-3.5  text-slate-900 dark:text-white">{item.vendor_name}</td>
-                      <td className="p-3.5 text-slate-600 dark:text-slate-400">{item.category}</td>
-                      <td className="p-3.5 text-slate-500">{new Date(item.purchase_date).toLocaleDateString('en-IN')}</td>
-                      <td className="p-3.5  text-rose-600 dark:text-rose-400 text-sm">
-                        ₹ {parseFloat(item.amount).toLocaleString('en-IN')}
-                      </td>
-                      <td className="p-3.5">
-                        <span className="px-2.5 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-lg text-xs  ">
-                          {item.status || 'PAID'}
-                        </span>
-                      </td>
-                      <td className="p-3.5 text-slate-600 dark:text-slate-400">{item.payment_method}</td>
-                      <td className="p-3.5 text-right flex items-center justify-end gap-2">
-                        {item.bill_file_url ? (
-                          <a
-                            href={item.bill_file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-2 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400  text-xs rounded-lg flex items-center gap-1 border border-blue-500/20"
-                            title={item.bill_file_name || 'View Invoice'}
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                            <span>View Bill</span>
-                          </a>
-                        ) : (
-                          <span className="text-xs text-slate-400 font-medium italic">No File</span>
-                        )}
-                        <button
-                          onClick={() => handleDeletePurchase(item.id)}
-                          className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredPurchases.length === 0 && (
-                    <tr>
-                      <td colSpan={8} className="p-6 text-center text-slate-400 ">
-                        No purchase bills found matching your query.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DataTable
+            title="Vendor Expenses & Purchase Bills"
+            columns={[
+              { key: 'purchase_no', header: 'Purchase No', sortable: true, render: (item) => <span className="font-mono text-rose-600 dark:text-rose-400 font-bold">{item.purchase_no}</span> },
+              { key: 'vendor_name', header: 'Vendor / Payee', sortable: true, render: (item) => <span className="font-bold text-slate-900 dark:text-white">{item.vendor_name}</span> },
+              { key: 'category', header: 'Category', sortable: true, render: (item) => <span className="text-slate-600 dark:text-slate-400">{item.category}</span> },
+              { key: 'purchase_date', header: 'Purchase Date', sortable: true, render: (item) => <span className="text-slate-500">{new Date(item.purchase_date).toLocaleDateString('en-IN')}</span> },
+              {
+                key: 'amount',
+                header: 'Amount (₹)',
+                sortable: true,
+                render: (item) => (
+                  <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">
+                    ₹ {parseFloat(item.amount).toLocaleString('en-IN')}
+                  </span>
+                )
+              },
+              {
+                key: 'status',
+                header: 'Status',
+                sortable: true,
+                render: (item) => (
+                  <span className="px-2.5 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-extrabold">
+                    {item.status || 'PAID'}
+                  </span>
+                )
+              },
+              { key: 'payment_method', header: 'Payment Method', sortable: true, render: (item) => <span className="text-slate-600 dark:text-slate-400">{item.payment_method}</span> },
+              {
+                key: 'actions',
+                header: 'Actions',
+                align: 'right',
+                render: (item) => (
+                  <div className="flex items-center justify-end gap-2">
+                    {item.bill_file_url ? (
+                      <a
+                        href={item.bill_file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs rounded-lg flex items-center gap-1 border border-blue-500/20"
+                        title={item.bill_file_name || 'View Invoice'}
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>View Bill</span>
+                      </a>
+                    ) : (
+                      <span className="text-xs text-slate-400 font-medium italic">No File</span>
+                    )}
+                    <button
+                      onClick={() => handleDeletePurchase(item.id)}
+                      className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                      title="Delete Purchase"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )
+              }
+            ]}
+            data={filteredPurchases}
+            loading={loading}
+            defaultPageSize={5}
+            searchable={false}
+            actionButton={
+              <button
+                onClick={() => setShowPurchaseModal(true)}
+                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Record New Purchase</span>
+              </button>
+            }
+          />
         </div>
       )}
 
