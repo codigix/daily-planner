@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" fill="none">
+  <rect width="192" height="192" rx="40" fill="url(#bg_grad)"/>
+  <defs>
+    <linearGradient id="bg_grad" x1="0" y1="0" x2="192" y2="192" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="icon_grad" x1="40" y1="40" x2="152" y2="152" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3B82F6"/>
+      <stop offset="0.5" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  <!-- Stylized C / Executive Emblem -->
+  <rect x="44" y="44" width="104" height="104" rx="24" stroke="url(#icon_grad)" stroke-width="8" fill="none" opacity="0.3"/>
+  <path d="M70 60 H122 M70 96 H110 M70 132 H122" stroke="url(#icon_grad)" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="132" cy="96" r="10" fill="#38BDF8"/>
+</svg>

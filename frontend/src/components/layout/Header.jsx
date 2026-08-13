@@ -18,7 +18,8 @@ import {
   Menu,
   LogOut, 
   LogIn, 
-  UserPlus
+  UserPlus,
+  Download
 } from 'lucide-react';
 import { fetchNotificationsAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -33,6 +34,8 @@ export default function Header({
   onOpenModal,
   onOpenAuthModal,
   onNavigate,
+  onOpenPWAInstall,
+  isPWAInstalled,
   mobileOpen,
   setMobileOpen,
   plannerTasks = [],
@@ -234,6 +237,16 @@ export default function Header({
             <span>AI Assistant</span>
           </button>
 
+          {/* PWA Download App Button */}
+          <button
+            onClick={() => onOpenPWAInstall && onOpenPWAInstall()}
+            className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+            title="Download App as PWA"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            <span className="hidden md:inline">{isPWAInstalled ? 'App Installed' : 'Download App'}</span>
+          </button>
+
           {/* Notifications Hub Dropdown Toggle */}
           <div className="relative">
             <button 
@@ -380,6 +393,17 @@ export default function Header({
                   >
                     <HelpCircle className="w-4 h-4 text-amber-500" />
                     <span>Executive Guide & Shortcuts</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      if (onOpenPWAInstall) onOpenPWAInstall();
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors"
+                  >
+                    <Download className="w-4 h-4 text-blue-500" />
+                    <span>Download Desktop/Mobile App</span>
                   </button>
                 </div>
 

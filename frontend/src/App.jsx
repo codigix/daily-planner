@@ -19,6 +19,8 @@ import ProfileView from './pages/ProfileView';
 import NotificationsView from './pages/NotificationsView';
 import GenericModuleView from './pages/GenericModuleView';
 import ModalContainer from './components/modals/ModalContainer';
+import PWAInstallModal from './components/modals/PWAInstallModal';
+import { usePWAInstall } from './hooks/usePWAInstall';
 
 import { 
   navItems 
@@ -67,6 +69,9 @@ function AppContent() {
   const [isDark, setIsDark] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPWAInstallModal, setShowPWAInstallModal] = useState(false);
+
+  const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
 
   const setActiveTab = (tab) => {
     const norm = normalizeTab(tab);
@@ -227,6 +232,8 @@ function AppContent() {
         onOpenModal={(type) => setActiveModal(type)}
         onOpenAuthModal={() => setShowAuthModal(true)}
         onNavigate={(tab) => setActiveTab(tab)}
+        onOpenPWAInstall={() => setShowPWAInstallModal(true)}
+        isPWAInstalled={isInstalled}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
         plannerTasks={displayPlannerTasks}
@@ -400,6 +407,15 @@ function AppContent() {
       <AuthModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+      />
+
+      {/* PWA Download / Installation Modal */}
+      <PWAInstallModal
+        isOpen={showPWAInstallModal}
+        onClose={() => setShowPWAInstallModal(false)}
+        isInstallable={isInstallable}
+        isInstalled={isInstalled}
+        onInstall={promptInstall}
       />
 
       {/* Floating Mobile Bottom Navigation Bar */}

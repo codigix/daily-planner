@@ -1,0 +1,62 @@
+{
+  "name": "CODIGIX EXECUTIVE OS - AI-Powered Daily Plan Tracker",
+  "short_name": "CODIGIX OS",
+  "description": "AI-Powered Daily Plan Tracker & Executive Management Suite",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "scope": "/",
+  "categories": ["productivity", "business", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Daily Planner",
+      "short_name": "Planner",
+      "description": "Open Daily Planner",
+      "url": "/#planner",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Meeting Manager",
+      "short_name": "Meetings",
+      "description": "View & schedule meetings",
+      "url": "/#meetings",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Client Followups",
+      "short_name": "Clients",
+      "description": "View client followups",
+      "url": "/#followups",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    }
+  ]
+}

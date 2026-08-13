@@ -277,6 +277,8 @@ async function initializeTables() {
       notes TEXT,
       starred BOOLEAN DEFAULT FALSE
     );
+  `);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS generated_reports (
       id INT AUTO_INCREMENT PRIMARY KEY,
