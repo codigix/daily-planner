@@ -35,11 +35,11 @@ router.get('/', async (req, res) => {
 
     if (userId) {
       [rawTasks] = await pool.query(
-        'SELECT * FROM planner_tasks WHERE user_id = ? OR user_id IS NULL ORDER BY id DESC',
+        'SELECT * FROM planner_tasks WHERE user_id = ? ORDER BY id DESC',
         [userId]
       );
       [scheduleTimeline] = await pool.query(
-        'SELECT * FROM schedule_timeline WHERE user_id = ? OR user_id IS NULL ORDER BY id ASC',
+        'SELECT * FROM schedule_timeline WHERE user_id = ? ORDER BY id ASC',
         [userId]
       );
     } else {
@@ -152,7 +152,7 @@ router.put('/tasks/:id', async (req, res) => {
             recurring = COALESCE(?, recurring),
             domain_id = COALESCE(?, domain_id),
             completed_dates = COALESCE(?, completed_dates)
-          WHERE id = ? AND (user_id = ? OR user_id IS NULL)`,
+          WHERE id = ? AND user_id = ?`,
           [status, notes, checkpointsStr, priority, time, category, title, date, targetDay, recurring, domain_id, completedDatesStr, id, userId]
         );
       } else {
@@ -201,7 +201,7 @@ router.post('/batch', async (req, res) => {
         let existing = [];
         if (userId) {
           [existing] = await pool.query(
-            'SELECT id FROM planner_tasks WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(COALESCE(date,""))) = ? AND LOWER(TRIM(COALESCE(time,""))) = ? AND (user_id = ? OR user_id IS NULL) LIMIT 1',
+            'SELECT id FROM planner_tasks WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(COALESCE(date,""))) = ? AND LOWER(TRIM(COALESCE(time,""))) = ? AND user_id = ? LIMIT 1',
             [normalizeStr(t.title), normalizeStr(t.date), normalizeStr(t.time), userId]
           ).catch(() => [[]]);
         } else {
@@ -256,7 +256,7 @@ router.delete('/tasks/:id', async (req, res) => {
     const userId = getAuthUserId(req);
     if (pool) {
       if (userId) {
-        await pool.query('DELETE FROM planner_tasks WHERE id = ? AND (user_id = ? OR user_id IS NULL)', [id, userId]);
+        await pool.query('DELETE FROM planner_tasks WHERE id = ? AND user_id = ?', [id, userId]);
       } else {
         await pool.query('DELETE FROM planner_tasks WHERE id = ?', [id]);
       }
@@ -297,7 +297,7 @@ router.delete('/schedule/:id', async (req, res) => {
     const userId = getAuthUserId(req);
     if (pool) {
       if (userId) {
-        await pool.query('DELETE FROM schedule_timeline WHERE id = ? AND (user_id = ? OR user_id IS NULL)', [id, userId]);
+        await pool.query('DELETE FROM schedule_timeline WHERE id = ? AND user_id = ?', [id, userId]);
       } else {
         await pool.query('DELETE FROM schedule_timeline WHERE id = ?', [id]);
       }

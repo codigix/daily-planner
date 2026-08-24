@@ -223,6 +223,18 @@ async function initializeTables() {
     const [timelineCols] = await pool.query('SHOW COLUMNS FROM schedule_timeline');
     const timelineColNames = timelineCols.map(c => c.Field);
     if (!timelineColNames.includes('date'))      await pool.query('ALTER TABLE schedule_timeline ADD COLUMN date VARCHAR(100)');
+
+    const [meetingsCols] = await pool.query('SHOW COLUMNS FROM meetings');
+    const meetingsColNames = meetingsCols.map(c => c.Field);
+    if (!meetingsColNames.includes('user_id'))   await pool.query('ALTER TABLE meetings ADD COLUMN user_id VARCHAR(255)');
+
+    const [clientsCols] = await pool.query('SHOW COLUMNS FROM client_followups');
+    const clientsColNames = clientsCols.map(c => c.Field);
+    if (!clientsColNames.includes('user_id'))   await pool.query('ALTER TABLE client_followups ADD COLUMN user_id VARCHAR(255)');
+
+    const [reportsCols] = await pool.query('SHOW COLUMNS FROM generated_reports');
+    const reportsColNames = reportsCols.map(c => c.Field);
+    if (!reportsColNames.includes('user_id'))   await pool.query('ALTER TABLE generated_reports ADD COLUMN user_id VARCHAR(255)');
   } catch (err) {
     console.warn('Schema migration warning:', err.message);
   }

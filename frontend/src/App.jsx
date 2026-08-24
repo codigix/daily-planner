@@ -70,7 +70,6 @@ function AppContent() {
   const [activeModal, setActiveModal] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPWAInstallModal, setShowPWAInstallModal] = useState(false);
-
   const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
 
   const setActiveTab = (tab) => {
@@ -206,6 +205,17 @@ function AppContent() {
     });
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#f4f6fa] dark:bg-slate-950 flex items-center justify-center font-sans">
+        <div className="text-center space-y-4">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Verifying OS Credentials...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen bg-[#f4f6fa] dark:bg-slate-950 transition-colors duration-300 font-sans ${isDark ? 'dark text-slate-100' : 'text-slate-800'}`}>
       {/* Common Sidebar */}
@@ -241,155 +251,184 @@ function AppContent() {
         clients={displayClients}
       />
 
-      {/* Main Content Area — All Pages Accessible & Display 0/Empty State when Unauthenticated */}
+      {/* Main Content Area — Require Login to Access All Sidebar Views */}
       <main className={`p-3 sm:p-6 transition-all duration-300 ml-0 ${collapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <div className="max-w-7xl mx-auto">
-          {activeTab === 'dashboard' && (
-            <DashboardView
-              user={user}
-              plannerTasks={displayPlannerTasks}
-              domains={displayDomains}
-              meetings={displayMeetings}
-              clients={displayClients}
-              onNavigate={(tab) => setActiveTab(tab)}
-              onOpenAI={() => setActiveModal('ai')}
-            />
-          )}
+          {!user ? (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 text-center">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl p-8 max-w-md w-full space-y-6 relative overflow-hidden animate-in fade-in zoom-in-95">
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
+                
+                <div className="mx-auto w-16 h-16 bg-blue-50 dark:bg-blue-950/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+                  <Lock className="w-8 h-8" />
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Authentication Required</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                    To access the Executive OS dashboard, track planner tasks, schedule meetings, and manage company resources, please sign in.
+                  </p>
+                </div>
+                
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="w-full py-3 bg-[#E60023] hover:bg-[#CC001F] text-white font-extrabold text-xs rounded-xl shadow-lg shadow-red-500/25 flex items-center justify-center gap-2.5 transition-all cursor-pointer active:scale-95"
+                >
+                  <LogIn className="w-4.5 h-4.5" />
+                  <span>Sign In to Executive OS</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'dashboard' && (
+                <DashboardView
+                  user={user}
+                  plannerTasks={displayPlannerTasks}
+                  domains={displayDomains}
+                  meetings={displayMeetings}
+                  clients={displayClients}
+                  onNavigate={(tab) => setActiveTab(tab)}
+                  onOpenAI={() => setActiveModal('ai')}
+                />
+              )}
 
-          {activeTab === 'planner' && (
-            <DailyPlannerView
-              plannerTasks={displayPlannerTasks}
-              setPlannerTasks={setPlannerTasks}
-              scheduleTimeline={displayScheduleTimeline}
-              setScheduleTimeline={setScheduleTimeline}
-              onOpenAI={() => setActiveModal('ai')}
-              onAddTask={() => setActiveModal('task')}
-              isLoading={plannerLoading}
-            />
-          )}
+              {activeTab === 'planner' && (
+                <DailyPlannerView
+                  plannerTasks={displayPlannerTasks}
+                  setPlannerTasks={setPlannerTasks}
+                  scheduleTimeline={displayScheduleTimeline}
+                  setScheduleTimeline={setScheduleTimeline}
+                  onOpenAI={() => setActiveModal('ai')}
+                  onAddTask={() => setActiveModal('task')}
+                  isLoading={plannerLoading}
+                />
+              )}
 
-          {activeTab === 'logger' && (
-            <DailyTaskLoggerView
-              domains={displayDomains}
-              setDomains={setDomains}
-              plannerTasks={displayPlannerTasks}
-              setPlannerTasks={setPlannerTasks}
-              meetings={displayMeetings}
-              clients={displayClients}
-              onNavigate={(tab) => setActiveTab(tab)}
-            />
-          )}
+              {activeTab === 'logger' && (
+                <DailyTaskLoggerView
+                  domains={displayDomains}
+                  setDomains={setDomains}
+                  plannerTasks={displayPlannerTasks}
+                  setPlannerTasks={setPlannerTasks}
+                  meetings={displayMeetings}
+                  clients={displayClients}
+                  onNavigate={(tab) => setActiveTab(tab)}
+                />
+              )}
 
-          {activeTab === 'meetings' && (
-            <MeetingManagerView
-              meetings={displayMeetings}
-              setMeetings={setMeetings}
-              onScheduleMeeting={() => setActiveModal('meeting')}
-              onOpenAI={() => setActiveModal('ai')}
-            />
-          )}
+              {activeTab === 'meetings' && (
+                <MeetingManagerView
+                  meetings={displayMeetings}
+                  setMeetings={setMeetings}
+                  onScheduleMeeting={() => setActiveModal('meeting')}
+                  onOpenAI={() => setActiveModal('ai')}
+                />
+              )}
 
-          {activeTab === 'followups' && (
-            <ClientFollowupsView
-              clients={displayClients}
-              setClients={setClients}
-              onAddFollowup={() => setActiveModal('client')}
-              onOpenAI={() => setActiveModal('ai')}
-            />
-          )}
+              {activeTab === 'followups' && (
+                <ClientFollowupsView
+                  clients={displayClients}
+                  setClients={setClients}
+                  onAddFollowup={() => setActiveModal('client')}
+                  onOpenAI={() => setActiveModal('ai')}
+                />
+              )}
 
-          {activeTab === 'sales' && (
-            <SalesKPIView 
-              clients={displayClients}
-              setClients={setClients}
-              plannerTasks={displayPlannerTasks}
-              onOpenAI={() => setActiveModal('ai')} 
-            />
-          )}
+              {activeTab === 'sales' && (
+                <SalesKPIView 
+                  clients={displayClients}
+                  setClients={setClients}
+                  plannerTasks={displayPlannerTasks}
+                  onOpenAI={() => setActiveModal('ai')} 
+                />
+              )}
 
-          {activeTab === 'projects' && (
-            <ProjectKPIView 
-              plannerTasks={displayPlannerTasks}
-              clients={displayClients}
-              onOpenAI={() => setActiveModal('ai')} 
-            />
-          )}
+              {activeTab === 'projects' && (
+                <ProjectKPIView 
+                  plannerTasks={displayPlannerTasks}
+                  clients={displayClients}
+                  onOpenAI={() => setActiveModal('ai')} 
+                />
+              )}
 
-          {activeTab === 'team' && (
-            <TeamPerformanceView 
-              domains={displayDomains}
-              plannerTasks={displayPlannerTasks}
-              onOpenAI={() => setActiveModal('ai')} 
-            />
-          )}
+              {activeTab === 'team' && (
+                <TeamPerformanceView 
+                  domains={displayDomains}
+                  plannerTasks={displayPlannerTasks}
+                  onOpenAI={() => setActiveModal('ai')} 
+                />
+              )}
 
-          {activeTab === 'finance' && (
-            <FinanceDashboardView 
-              clients={displayClients}
-              plannerTasks={displayPlannerTasks}
-              onNavigate={(tab) => setActiveTab(tab)}
-              onOpenAI={() => setActiveModal('ai')} 
-            />
-          )}
+              {activeTab === 'finance' && (
+                <FinanceDashboardView 
+                  clients={displayClients}
+                  plannerTasks={displayPlannerTasks}
+                  onNavigate={(tab) => setActiveTab(tab)}
+                  onOpenAI={() => setActiveModal('ai')} 
+                />
+              )}
 
-          {activeTab === 'create-quotation' && (
-            <CreateQuotationView 
-              onNavigate={(tab) => setActiveTab(tab)}
-            />
-          )}
+              {activeTab === 'create-quotation' && (
+                <CreateQuotationView 
+                  onNavigate={(tab) => setActiveTab(tab)}
+                />
+              )}
 
-          {activeTab === 'marketing' && (
-            <MarketingDashboardView 
-              clients={displayClients}
-              onOpenAI={() => setActiveModal('ai')} 
-            />
-          )}
+              {activeTab === 'marketing' && (
+                <MarketingDashboardView 
+                  clients={displayClients}
+                  onOpenAI={() => setActiveModal('ai')} 
+                />
+              )}
 
-          {activeTab === 'ai-assistant' && (
-            <AIExecutiveAssistantView
-              user={user}
-              plannerTasks={displayPlannerTasks}
-              meetings={displayMeetings}
-              clients={displayClients}
-              domains={displayDomains}
-              onOpenAI={() => setActiveModal('ai')}
-            />
-          )}
+              {activeTab === 'ai-assistant' && (
+                <AIExecutiveAssistantView
+                  user={user}
+                  plannerTasks={displayPlannerTasks}
+                  meetings={displayMeetings}
+                  clients={displayClients}
+                  domains={displayDomains}
+                  onOpenAI={() => setActiveModal('ai')}
+                />
+              )}
 
-          {activeTab === 'reports' && (
-            <ReportsView 
-              plannerTasks={displayPlannerTasks}
-              meetings={displayMeetings}
-              clients={displayClients}
-              onOpenAI={() => setActiveModal('ai')} 
-            />
-          )}
+              {activeTab === 'reports' && (
+                <ReportsView 
+                  plannerTasks={displayPlannerTasks}
+                  meetings={displayMeetings}
+                  clients={displayClients}
+                  onOpenAI={() => setActiveModal('ai')} 
+                />
+              )}
 
-          {activeTab === 'profile' && (
-            <ProfileView 
-              user={user}
-              plannerTasks={displayPlannerTasks}
-              meetings={displayMeetings}
-              clients={displayClients}
-              domains={displayDomains}
-              onNavigate={(tab) => setActiveTab(tab)}
-              onOpenAI={() => setActiveModal('ai')} 
-            />
-          )}
+              {activeTab === 'profile' && (
+                <ProfileView 
+                  user={user}
+                  plannerTasks={displayPlannerTasks}
+                  meetings={displayMeetings}
+                  clients={displayClients}
+                  domains={displayDomains}
+                  onNavigate={(tab) => setActiveTab(tab)}
+                  onOpenAI={() => setActiveModal('ai')} 
+                />
+              )}
 
-          {activeTab === 'notifications' && (
-            <NotificationsView 
-              plannerTasks={displayPlannerTasks}
-              onNavigate={(tab) => setActiveTab(tab)}
-              onOpenAI={() => setActiveModal('ai')} 
-            />
-          )}
+              {activeTab === 'notifications' && (
+                <NotificationsView 
+                  plannerTasks={displayPlannerTasks}
+                  onNavigate={(tab) => setActiveTab(tab)}
+                  onOpenAI={() => setActiveModal('ai')} 
+                />
+              )}
 
-          {!['dashboard', 'planner', 'logger', 'meetings', 'followups', 'sales', 'projects', 'team', 'finance', 'create-quotation', 'marketing', 'ai-assistant', 'reports', 'profile', 'notifications'].includes(activeTab) && (
-            <GenericModuleView
-              moduleId={activeTab}
-              onOpenAI={() => setActiveModal('ai')}
-            />
+              {!['dashboard', 'planner', 'logger', 'meetings', 'followups', 'sales', 'projects', 'team', 'finance', 'create-quotation', 'marketing', 'ai-assistant', 'reports', 'profile', 'notifications'].includes(activeTab) && (
+                <GenericModuleView
+                  moduleId={activeTab}
+                  onOpenAI={() => setActiveModal('ai')}
+                />
+              )}
+            </>
           )}
         </div>
       </main>

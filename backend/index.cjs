@@ -99,8 +99,9 @@ app.get('/api/health', async (req, res) => {
 });
 
 function startServer(portToTry) {
-  const server = app.listen(portToTry, () => {
-    console.log(`🚀 CODIGIX Executive OS Express Server running on http://localhost:${portToTry}`);
+  const numericPort = Number(portToTry);
+  const server = app.listen(numericPort, () => {
+    console.log(`🚀 CODIGIX Executive OS Express Server running on http://localhost:${numericPort}`);
     try {
       const MetaSchedulerService = require('./services/meta/metaScheduler.service.cjs');
       MetaSchedulerService.initScheduler();
@@ -111,8 +112,8 @@ function startServer(portToTry) {
 
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-      console.warn(`⚠️ Port ${portToTry} in use, trying port ${portToTry + 1}...`);
-      startServer(portToTry + 1);
+      console.warn(`⚠️ Port ${numericPort} in use, trying port ${numericPort + 1}...`);
+      startServer(numericPort + 1);
     } else {
       console.error('Server error:', err);
     }

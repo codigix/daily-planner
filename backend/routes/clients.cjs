@@ -1,7 +1,26 @@
 const express = require('express');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 const { getPool } = require('../db_mysql.cjs');
 const https = require('https');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'codigix_executive_os_secret_key_2026';
+
+function getAuthUserId(req) {
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      return decoded.id || decoded.userId || decoded.sub || null;
+    } catch (e) {
+      return null;
+    }
+  }
+  if (req.headers['x-user-id']) return req.headers['x-user-id'];
+  if (req.query && req.query.user_id) return req.query.user_id;
+  return null;
+}
 
 // Helper function to fetch CRM projects directly bypassing SSL cert issues
 function fetchCrmProjects() {
@@ -83,7 +102,13 @@ router.get('/', async (req, res) => {
     const pool = await getPool();
     if (!pool) return res.json({ clients: [] });
 
-    const [rows] = await pool.query('SELECT * FROM client_followups ORDER BY id DESC');
+    const userId = getAuthUserId(req);
+    let rows = [];
+    if (userId) {
+      [rows] = await pool.query('SELECT * FROM client_followups WHERE user_id = ? ORDER BY id DESC', [userId]);
+    } else {
+      [rows] = await pool.query('SELECT * FROM client_followups WHERE user_id IS NULL ORDER BY id DESC');
+    }
     const clients = rows.map(r => ({
       id: r.id,
       company: r.company,
@@ -141,18 +166,25 @@ router.post('/', async (req, res) => {
       starred: Boolean(b.starred)
     };
 
+    const userId = getAuthUserId(req);
     if (pool) {
+      try {
+        const [cols] = await pool.query('SHOW COLUMNS FROM client_followups');
+        const colNames = cols.map(c => c.Field);
+        if (!colNames.includes('user_id')) await pool.query("ALTER TABLE client_followups ADD COLUMN user_id VARCHAR(255)");
+      } catch (e) {}
+
       await pool.query(
         `INSERT INTO client_followups 
-          (id, company, tagline, last_contact, last_contact_type, next_followup, next_followup_type, priority, status, owner, owner_avatar, probability, expected_value, contact_person, email, phone, industry, source, notes, starred) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          (id, company, tagline, last_contact, last_contact_type, next_followup, next_followup_type, priority, status, owner, owner_avatar, probability, expected_value, contact_person, email, phone, industry, source, notes, starred, user_id) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           newClient.id, newClient.company, newClient.tagline, newClient.lastContact,
           newClient.lastContactType, newClient.nextFollowup, newClient.nextFollowupType,
           newClient.priority, newClient.status, newClient.owner, newClient.ownerAvatar,
           newClient.probability, newClient.expectedValue, newClient.contactPerson,
           newClient.email, newClient.phone, newClient.industry, newClient.source,
-          newClient.notes, newClient.starred
+          newClient.notes, newClient.starred, userId
         ]
       );
     }
@@ -169,38 +201,77 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const b = req.body;
 
+    const userId = getAuthUserId(req);
     if (pool) {
-      await pool.query(
-        `UPDATE client_followups SET
-          company = COALESCE(?, company),
-          tagline = COALESCE(?, tagline),
-          last_contact = COALESCE(?, last_contact),
-          last_contact_type = COALESCE(?, last_contact_type),
-          next_followup = COALESCE(?, next_followup),
-          next_followup_type = COALESCE(?, next_followup_type),
-          priority = COALESCE(?, priority),
-          status = COALESCE(?, status),
-          owner = COALESCE(?, owner),
-          owner_avatar = COALESCE(?, owner_avatar),
-          probability = COALESCE(?, probability),
-          expected_value = COALESCE(?, expected_value),
-          contact_person = COALESCE(?, contact_person),
-          email = COALESCE(?, email),
-          phone = COALESCE(?, phone),
-          industry = COALESCE(?, industry),
-          source = COALESCE(?, source),
-          notes = COALESCE(?, notes),
-          starred = COALESCE(?, starred)
-        WHERE id = ?`,
-        [
-          b.company, b.tagline, b.lastContact, b.lastContactType,
-          b.nextFollowup, b.nextFollowupType, b.priority, b.status,
-          b.owner, b.ownerAvatar, b.probability, b.expectedValue,
-          b.contactPerson, b.email, b.phone, b.industry, b.source,
-          b.notes, b.starred !== undefined ? (b.starred ? 1 : 0) : null,
-          id
-        ]
-      );
+      try {
+        await pool.query("ALTER TABLE client_followups ADD COLUMN user_id VARCHAR(255)");
+      } catch (e) {}
+
+      if (userId) {
+        await pool.query(
+          `UPDATE client_followups SET
+            company = COALESCE(?, company),
+            tagline = COALESCE(?, tagline),
+            last_contact = COALESCE(?, last_contact),
+            last_contact_type = COALESCE(?, last_contact_type),
+            next_followup = COALESCE(?, next_followup),
+            next_followup_type = COALESCE(?, next_followup_type),
+            priority = COALESCE(?, priority),
+            status = COALESCE(?, status),
+            owner = COALESCE(?, owner),
+            owner_avatar = COALESCE(?, owner_avatar),
+            probability = COALESCE(?, probability),
+            expected_value = COALESCE(?, expected_value),
+            contact_person = COALESCE(?, contact_person),
+            email = COALESCE(?, email),
+            phone = COALESCE(?, phone),
+            industry = COALESCE(?, industry),
+            source = COALESCE(?, source),
+            notes = COALESCE(?, notes),
+            starred = COALESCE(?, starred)
+          WHERE id = ? AND user_id = ?`,
+          [
+            b.company, b.tagline, b.lastContact, b.lastContactType,
+            b.nextFollowup, b.nextFollowupType, b.priority, b.status,
+            b.owner, b.ownerAvatar, b.probability, b.expectedValue,
+            b.contactPerson, b.email, b.phone, b.industry, b.source,
+            b.notes, b.starred !== undefined ? (b.starred ? 1 : 0) : null,
+            id, userId
+          ]
+        );
+      } else {
+        await pool.query(
+          `UPDATE client_followups SET
+            company = COALESCE(?, company),
+            tagline = COALESCE(?, tagline),
+            last_contact = COALESCE(?, last_contact),
+            last_contact_type = COALESCE(?, last_contact_type),
+            next_followup = COALESCE(?, next_followup),
+            next_followup_type = COALESCE(?, next_followup_type),
+            priority = COALESCE(?, priority),
+            status = COALESCE(?, status),
+            owner = COALESCE(?, owner),
+            owner_avatar = COALESCE(?, owner_avatar),
+            probability = COALESCE(?, probability),
+            expected_value = COALESCE(?, expected_value),
+            contact_person = COALESCE(?, contact_person),
+            email = COALESCE(?, email),
+            phone = COALESCE(?, phone),
+            industry = COALESCE(?, industry),
+            source = COALESCE(?, source),
+            notes = COALESCE(?, notes),
+            starred = COALESCE(?, starred)
+          WHERE id = ?`,
+          [
+            b.company, b.tagline, b.lastContact, b.lastContactType,
+            b.nextFollowup, b.nextFollowupType, b.priority, b.status,
+            b.owner, b.ownerAvatar, b.probability, b.expectedValue,
+            b.contactPerson, b.email, b.phone, b.industry, b.source,
+            b.notes, b.starred !== undefined ? (b.starred ? 1 : 0) : null,
+            id
+          ]
+        );
+      }
     }
     res.json({ message: 'Client follow-up updated successfully' });
   } catch (err) {
@@ -214,8 +285,13 @@ router.delete('/:id', async (req, res) => {
     const pool = await getPool();
     const { id } = req.params;
 
+    const userId = getAuthUserId(req);
     if (pool) {
-      await pool.query('DELETE FROM client_followups WHERE id = ?', [id]);
+      if (userId) {
+        await pool.query('DELETE FROM client_followups WHERE id = ? AND user_id = ?', [id, userId]);
+      } else {
+        await pool.query('DELETE FROM client_followups WHERE id = ?', [id]);
+      }
     }
     res.json({ message: 'Client follow-up deleted successfully' });
   } catch (err) {
