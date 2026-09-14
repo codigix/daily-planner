@@ -507,7 +507,7 @@ export default function CreateQuotationView({ onNavigate }) {
   };
 
   const addDeliverable = () => {
-    setQuotationData(prev => ({ ...prev, deliverables: [...prev.deliverables, ''] }));
+    setQuotationData(prev => ({ ...prev, deliverables: [...prev.deliverables, { title: '', description: '' }] }));
   };
 
   const removeDeliverable = (index) => {
@@ -1138,13 +1138,53 @@ export default function CreateQuotationView({ onNavigate }) {
                 </button>
                 
                 {activeSection === 'summary' && (
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
                     <div>
                       <label className="text-[11px] font-semibold text-slate-500 uppercase">Executive Summary Text</label>
                       <textarea 
                         rows="4" value={quotationData.execSummary} onChange={(e) => handleInputChange('execSummary', e.target.value)}
                         className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs leading-relaxed"
                       />
+                    </div>
+                    
+                    <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Solution Cards</label>
+                        <button onClick={addSolutionCard} className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded text-[10px] font-bold flex items-center gap-1">
+                          <Plus className="w-3 h-3" /> Add Solution
+                        </button>
+                      </div>
+                      
+                      {quotationData.solutionCards?.map((card, index) => (
+                        <div key={index} className="p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl space-y-2 relative">
+                          <button onClick={() => removeSolutionCard(index)} className="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          
+                          <div className="grid grid-cols-2 gap-2 pr-6">
+                            <input 
+                              type="text" value={card.badge} onChange={(e) => handleSolutionCardChange(index, 'badge', e.target.value)}
+                              placeholder="Badge (e.g. SOLUTION 01)" className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
+                            />
+                            <input 
+                              type="text" value={card.icon} onChange={(e) => handleSolutionCardChange(index, 'icon', e.target.value)}
+                              placeholder="Icon (e.g. 📱)" className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                            />
+                          </div>
+                          <input 
+                            type="text" value={card.title} onChange={(e) => handleSolutionCardChange(index, 'title', e.target.value)}
+                            placeholder="Solution Title" className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
+                          />
+                          <textarea 
+                            rows="2" value={card.description} onChange={(e) => handleSolutionCardChange(index, 'description', e.target.value)}
+                            placeholder="Solution Description..." className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                          />
+                          <input 
+                            type="text" value={card.footer} onChange={(e) => handleSolutionCardChange(index, 'footer', e.target.value)}
+                            placeholder="Footer Text (e.g. • Android & iOS Apps)" className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-500"
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -1164,20 +1204,46 @@ export default function CreateQuotationView({ onNavigate }) {
                 
                 {activeSection === 'deliverables' && (
                   <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2">
-                    {quotationData.deliverables.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <input 
-                          type="text" value={item} onChange={(e) => handleDeliverableChange(index, e.target.value)}
-                          placeholder={`Deliverable item ${index + 1}`} className="flex-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-                        />
-                        <button onClick={() => removeDeliverable(index)} className="text-red-500 hover:text-red-700 p-1">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                    <button onClick={addDeliverable} className="w-full py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
-                      + Add Deliverable
-                    </button>
+                    {quotationData.deliverables.map((item, index) => {
+                      const isHeading = typeof item === 'string' ? item.startsWith('## ') : item.title?.startsWith('## ');
+                      const title = typeof item === 'string' ? item : (item.title || '');
+                      const description = typeof item === 'string' ? '' : (item.description || '');
+
+                      return (
+                        <div key={index} className="flex gap-2">
+                          {isHeading ? (
+                            <div className="flex-1">
+                              <input 
+                                type="text" value={title.replace('## ', '')} onChange={(e) => handleDeliverableChange(index, { title: '## ' + e.target.value, description: '' })}
+                                placeholder={`Section Heading`} className="w-full px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-400"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex-1 space-y-1.5 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+                              <input 
+                                type="text" value={title} onChange={(e) => handleDeliverableChange(index, { title: e.target.value, description })}
+                                placeholder={`Deliverable Title`} className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold"
+                              />
+                              <textarea 
+                                rows="2" value={description} onChange={(e) => handleDeliverableChange(index, { title, description: e.target.value })}
+                                placeholder={`Summary of deliverables...`} className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[10px]"
+                              />
+                            </div>
+                          )}
+                          <button onClick={() => removeDeliverable(index)} className="text-red-500 hover:text-red-700 p-1 self-start mt-1">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )
+                    })}
+                    <div className="flex gap-2 pt-2">
+                      <button onClick={addDeliverable} className="flex-1 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
+                        + Add Item
+                      </button>
+                      <button onClick={() => setQuotationData(prev => ({ ...prev, deliverables: [...prev.deliverables, { title: '## New Heading', description: '' }] }))} className="flex-1 py-2 border border-dashed border-blue-300 dark:border-blue-700 rounded-lg text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50">
+                        + Add Heading
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1236,19 +1302,121 @@ export default function CreateQuotationView({ onNavigate }) {
                 
                 {activeSection === 'budget' && (
                   <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Total Project Cost</label>
-                        <input 
-                          type="text" value={quotationData.totalCost} onChange={(e) => handleInputChange('totalCost', e.target.value)}
-                          placeholder="e.g. 7,80,000" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
-                        />
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Investment Blocks</label>
+                        <button onClick={() => {
+                          const current = quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '7,80,000', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }];
+                          handleInputChange('pricingOptions', [...current, { title: 'NEW INVESTMENT PHASE', cost: '', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]);
+                        }} className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
+                          + Add Block
+                        </button>
                       </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-500 uppercase">GST Percentage</label>
+                      {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '7,80,000', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, index) => (
+                        <div key={index} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2 relative group">
+                           {((quotationData.pricingOptions?.length || 1) > 1) && (
+                             <button onClick={() => {
+                               const updated = [...(quotationData.pricingOptions || [])];
+                               updated.splice(index, 1);
+                               handleInputChange('pricingOptions', updated);
+                             }} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 border border-red-200 shadow-sm hover:bg-red-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                               <Trash2 className="w-3 h-3" />
+                             </button>
+                           )}
+                           
+                           <input 
+                              type="text" value={priceObj.title} onChange={(e) => {
+                                const updated = [...(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '', gst: quotationData.gstPercent || '', suffix: 'Applicable GST' }])];
+                                updated[index].title = e.target.value;
+                                handleInputChange('pricingOptions', updated);
+                              }}
+                              placeholder="Title (e.g. TOTAL PROJECT INVESTMENT)" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-bold uppercase tracking-wider text-slate-700"
+                           />
+                           <div className="grid grid-cols-12 gap-2">
+                             <div className="col-span-5">
+                               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Cost (₹)</label>
+                               <input 
+                                  type="text" value={priceObj.cost} onChange={(e) => {
+                                    const updated = [...(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '', gst: quotationData.gstPercent || '', suffix: 'Applicable GST' }])];
+                                    updated[index].cost = e.target.value;
+                                    handleInputChange('pricingOptions', updated);
+                                  }}
+                                  placeholder="7,80,000" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-bold"
+                               />
+                             </div>
+                             <div className="col-span-3">
+                               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">GST %</label>
+                               <input 
+                                  type="text" value={priceObj.gst} onChange={(e) => {
+                                    const updated = [...(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '', gst: quotationData.gstPercent || '', suffix: 'Applicable GST' }])];
+                                    updated[index].gst = e.target.value;
+                                    handleInputChange('pricingOptions', updated);
+                                  }}
+                                  placeholder="18" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px]"
+                               />
+                             </div>
+                             <div className="col-span-4">
+                               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Suffix</label>
+                               <input 
+                                  type="text" value={priceObj.suffix} onChange={(e) => {
+                                    const updated = [...(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '', gst: quotationData.gstPercent || '', suffix: 'Applicable GST' }])];
+                                    updated[index].suffix = e.target.value;
+                                    handleInputChange('pricingOptions', updated);
+                                  }}
+                                  placeholder="Applicable GST" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px]"
+                               />
+                             </div>
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <label className="text-[11px] font-semibold text-slate-500 uppercase block mb-1">Particulars & Terms</label>
+                      {quotationData.particulars.map((item, index) => (
+                        <div key={index} className="flex gap-2 items-start bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
+                          <div className="flex-1 space-y-1.5">
+                            <input 
+                              type="text" value={item.name} onChange={(e) => handleParticularChange(index, 'name', e.target.value)}
+                              placeholder="Particular (e.g. AMC)" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold"
+                            />
+                            <textarea 
+                              rows="2" value={item.value} onChange={(e) => handleParticularChange(index, 'value', e.target.value)}
+                              placeholder="Details / Terms..." className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px]"
+                            />
+                          </div>
+                          <button onClick={() => removeParticular(index)} className="text-red-400 hover:text-red-600 p-1 mt-0.5">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <button onClick={addParticular} className="w-full mt-2 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
+                        + Add Particular
+                      </button>
+                    </div>
+
+                    <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <label className="text-[11px] font-semibold text-slate-500 uppercase block">Bank Details</label>
+                      <input 
+                        type="text" value={quotationData.bankAccountName} onChange={(e) => handleInputChange('bankAccountName', e.target.value)}
+                        placeholder="Account Name" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
                         <input 
-                          type="text" value={quotationData.gstPercent} onChange={(e) => handleInputChange('gstPercent', e.target.value)}
-                          placeholder="e.g. 18" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
+                          type="text" value={quotationData.bankAccountNo} onChange={(e) => handleInputChange('bankAccountNo', e.target.value)}
+                          placeholder="Account No" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
+                        />
+                        <input 
+                          type="text" value={quotationData.bankIFSC} onChange={(e) => handleInputChange('bankIFSC', e.target.value)}
+                          placeholder="IFSC Code" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
+                        />
+                        <input 
+                          type="text" value={quotationData.bankBranch} onChange={(e) => handleInputChange('bankBranch', e.target.value)}
+                          placeholder="Branch Name" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
+                        />
+                        <input 
+                          type="text" value={quotationData.bankGST} onChange={(e) => handleInputChange('bankGST', e.target.value)}
+                          placeholder="GST Number" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
                         />
                       </div>
                     </div>
@@ -1806,179 +1974,242 @@ export default function CreateQuotationView({ onNavigate }) {
            </div>
 
 
-           {/* ================= PAGE 3: EXECUTIVE SUMMARY (LAYOUT ADAPTIVE) ================= */}
-           <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
-              
-              {/* Header section (Logo & Date) */}
-              <div className="p-8 pb-4 flex justify-between items-start shrink-0 border-b border-[#F1F5F9]">
-                <div>
-                  <img src={quotationData.logoUrl || '/codigix-logo.svg'} alt="Codigix Logo" className="h-9 object-contain" />
-                </div>
-                <div className="text-right text-xs text-[#475569] font-medium flex items-center gap-4">
-                  <span>Date: <span className="font-bold text-[#0F172A]">{quotationData.date || '11 Aug 2026'}</span></span>
-                  <RedBarcodePattern color={currentTheme.barcodeColor} />
-                </div>
-              </div>
+           {/* ================= PAGE 3: EXECUTIVE SUMMARY (LAYOUT ADAPTIVE, MULTI-PAGE) ================= */}
+           {(() => {
+             const cards = quotationData.solutionCards && quotationData.solutionCards.length > 0 
+               ? quotationData.solutionCards 
+               : [
+                   { badge: 'SOLUTION 01', title: 'Trainer Mobile App', description: 'Client onboarding, assessments, personalized diet & workout plans.', footer: '• Android & iOS Apps', icon: '📱' },
+                   { badge: 'SOLUTION 02', title: 'Client Mobile App', description: 'Customized daily tasks, workout & water logs, appointment booking.', footer: '• Android & iOS Apps', icon: '📱' },
+                   { badge: 'SOLUTION 03', title: 'Super Admin Panel', description: 'Central platform control, multi-tenant subscription tiers & analytics.', footer: '• Web Dashboard', icon: '💻' }
+                 ];
+             
+             // First page has title and intro, so it fits max 2 cards comfortably.
+             // Subsequent pages don't have title/intro, so they can fit 3 cards.
+             const chunks = [];
+             if (cards.length > 0) {
+               chunks.push(cards.slice(0, 2));
+               for (let i = 2; i < cards.length; i += 3) {
+                 chunks.push(cards.slice(i, i + 3));
+               }
+             } else {
+               chunks.push([]);
+             }
 
-              {/* Body Content */}
-              <div className="p-8 flex-1 flex flex-col justify-between space-y-5">
-                 
-                 {/* Title Section */}
-                 <div className="space-y-1">
-                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${currentTheme.pillAccentBg}`}>
-                      <Layers className="w-3.5 h-3.5" style={{ color: currentTheme.accentColor }} />
-                      <span>Project Overview</span>
+             return chunks.map((chunk, pageIndex) => (
+               <div key={`page3-chunk-${pageIndex}`} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+                  
+                  {/* Header section (Logo & Date) */}
+                  <div className="p-8 pb-4 flex justify-between items-start shrink-0 border-b border-[#F1F5F9]">
+                    <div>
+                      <img src={quotationData.logoUrl || '/codigix-logo.svg'} alt="Codigix Logo" className="h-9 object-contain" />
                     </div>
-                    <h2 className="text-3xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
-                      Executive Summary
-                    </h2>
-                    <p className="text-xs font-semibold text-[#64748B]">
-                      {quotationData.subtitle ? `${quotationData.subtitle} Scope` : 'Scalable Enterprise App Platform'}
-                    </p>
-                 </div>
-
-                 {/* Platform Overview Intro Card */}
-                 <div className="bg-[#F8FAFC] p-4 rounded-r-xl space-y-1.5 shadow-sm" style={{ borderLeft: `4px solid ${currentTheme.primaryColor}` }}>
-                    <p className="text-xs text-[#334155] leading-relaxed font-normal whitespace-pre-wrap">
-                      {quotationData.execSummary || 'FitRack is engineered as a unified, multi-tenant digital ecosystem connecting Fitness Coaches, Dietitians, Clients, and Platform Administrators under one seamless architecture.'}
-                    </p>
-                 </div>
-
-                 {/* LAYOUT ADAPTIVE SOLUTION CARDS FOR PAGE 3 */}
-                 {currentTheme.layoutStyle === 'modern_sidebar' ? (
-                   /* EXECUTIVE EMERALD: Stacked Horizontal Solution Rows */
-                   <div className="space-y-3 flex-1 flex flex-col justify-center">
-                      {(quotationData.solutionCards && quotationData.solutionCards.length > 0 
-                        ? quotationData.solutionCards 
-                        : [
-                            { badge: 'SOLUTION 01', title: 'Trainer Mobile App', description: 'Client onboarding, assessments, personalized diet & workout plans.', footer: '• Android & iOS Apps', icon: '📱' },
-                            { badge: 'SOLUTION 02', title: 'Client Mobile App', description: 'Customized daily tasks, workout & water logs, appointment booking.', footer: '• Android & iOS Apps', icon: '📱' },
-                            { badge: 'SOLUTION 03', title: 'Super Admin Panel', description: 'Central platform control, multi-tenant subscription tiers & analytics.', footer: '• Web Dashboard', icon: '💻' }
-                          ]
-                      ).map((card, idx) => (
-                        <div key={idx} className="p-3.5 bg-slate-50 border border-[#A7F3D0] rounded-xl flex items-center justify-between gap-4 shadow-sm">
-                           <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-[#047857] text-white flex items-center justify-center text-lg font-bold shrink-0">
-                                {card.icon || '📱'}
-                              </div>
-                              <div>
-                                 <span className="text-[9px] font-black text-[#047857] uppercase tracking-wider">{card.badge || `SOLUTION 0${idx + 1}`}</span>
-                                 <h3 className="text-xs font-black text-[#0F172A]">{card.title || 'Solution Title'}</h3>
-                                 <p className="text-[10px] text-[#475569] leading-snug">{card.description}</p>
-                              </div>
-                           </div>
-                           <span className="px-2.5 py-1 rounded bg-[#10B981]/15 text-[#047857] text-[10px] font-bold shrink-0">{card.footer}</span>
-                        </div>
-                      ))}
-                   </div>
-                 ) : currentTheme.layoutStyle === 'cyber_bento' ? (
-                   /* CYBER VIOLET: Bento Grid (1 Feature Card + 2 Stacked Cards) */
-                   <div className="grid grid-cols-12 gap-3 flex-1">
-                      <div className="col-span-5 bg-[#1E1B4B] text-white p-4 rounded-2xl flex flex-col justify-between shadow border border-[#7C3AED]/30">
-                         <div className="space-y-2">
-                            <span className="px-2 py-0.5 rounded text-[9px] font-black bg-[#7C3AED] uppercase">FEATURE SOLUTION</span>
-                            <h3 className="text-base font-black text-white">{quotationData.solutionCards?.[0]?.title || 'Trainer App'}</h3>
-                            <p className="text-[11px] text-[#DDD6FE] leading-relaxed">{quotationData.solutionCards?.[0]?.description || 'Complete onboarding, assessments & workouts.'}</p>
-                         </div>
-                         <div className="text-[10px] font-bold text-[#7C3AED]">{quotationData.solutionCards?.[0]?.footer || '• Core Platform'}</div>
-                      </div>
-
-                      <div className="col-span-7 space-y-3 flex flex-col justify-between">
-                         {(quotationData.solutionCards || []).slice(1, 3).map((card, idx) => (
-                           <div key={idx} className="p-3.5 bg-white border-2 border-[#DDD6FE] rounded-xl flex-1 flex flex-col justify-between shadow-sm">
-                              <div>
-                                 <span className="text-[9px] font-black text-[#7C3AED] uppercase">{card.badge || `SOLUTION 0${idx + 2}`}</span>
-                                 <h4 className="text-xs font-black text-[#1E1B4B]">{card.title}</h4>
-                                 <p className="text-[10px] text-slate-600">{card.description}</p>
-                              </div>
-                              <span className="text-[9px] font-bold text-[#6D28D9] pt-1">{card.footer}</span>
-                           </div>
-                         ))}
-                       </div>
+                    <div className="text-right text-xs text-[#475569] font-medium flex items-center gap-4">
+                      <span>Date: <span className="font-bold text-[#0F172A]">{quotationData.date || '11 Aug 2026'}</span></span>
+                      <RedBarcodePattern color={currentTheme.barcodeColor} />
                     </div>
-                  ) : (
-                    /* EXECUTIVE STACKED HORIZONTAL SOLUTION CARDS */
-                    <div className="space-y-3.5 flex-1 flex flex-col justify-center">
-                       {(quotationData.solutionCards && quotationData.solutionCards.length > 0 
-                         ? quotationData.solutionCards 
-                         : [
-                             { badge: 'SOLUTION 01', title: 'Trainer Mobile App', description: 'Client onboarding, assessments, personalized diet & workout plans.', footer: '• Android & iOS Apps', icon: '📱' },
-                             { badge: 'SOLUTION 02', title: 'Client Mobile App', description: 'Customized daily tasks, workout & water logs, appointment booking.', footer: '• Android & iOS Apps', icon: '📱' },
-                             { badge: 'SOLUTION 03', title: 'Super Admin Panel', description: 'Central platform control, multi-tenant subscription tiers & analytics.', footer: '• Web Dashboard', icon: '💻' }
-                           ]
-                       ).map((card, idx) => (
-                         <div key={idx} className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between gap-4 shadow-xs transition-all hover:border-slate-300">
-                            <div className="flex items-center gap-3.5">
-                               <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center shrink-0 shadow-xs leading-none" style={{ backgroundColor: idx === 1 ? currentTheme.accentColor : currentTheme.primaryColor }}>
-                                 {idx === 0 ? <Smartphone className="w-5 h-5 text-white" /> : idx === 1 ? <Smartphone className="w-5 h-5 text-white" /> : <Laptop className="w-5 h-5 text-white" />}
-                               </div>
-                               <div className="space-y-0.5">
-                                  <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: currentTheme.accentColor }}>{card.badge || `SOLUTION 0${idx + 1}`}</span>
-                                  <h3 className="text-sm font-black text-[#0F172A] leading-tight">{card.title || 'Solution Title'}</h3>
-                                  <p className="text-xs text-[#475569] leading-snug font-medium">{card.description || 'Solution details and module description.'}</p>
-                               </div>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="p-8 flex-1 flex flex-col space-y-5">
+                     
+                     {/* Title & Intro Section (Only on the first chunk page) */}
+                     {pageIndex === 0 && (
+                       <>
+                         <div className="space-y-1">
+                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${currentTheme.pillAccentBg}`}>
+                              <Layers className="w-3.5 h-3.5" style={{ color: currentTheme.accentColor }} />
+                              <span>Project Overview</span>
                             </div>
-                            <span className="px-3 py-1 rounded-full text-xs font-bold shrink-0 border" style={{ color: currentTheme.primaryColor, backgroundColor: `${currentTheme.primaryColor}10`, borderColor: `${currentTheme.primaryColor}30` }}>
-                              {card.footer || '• Module Details'}
-                            </span>
+                            <h2 className="text-3xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
+                              Executive Summary
+                            </h2>
+                            <p className="text-xs font-semibold text-[#64748B]">
+                              {quotationData.subtitle ? `${quotationData.subtitle} Scope` : 'Scalable Enterprise App Platform'}
+                            </p>
                          </div>
-                       ))}
-                    </div>
-                  )}
 
-                 {/* Bottom Barcode Accent */}
-                 <div className="flex justify-between items-center pt-2">
-                   <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
-                   <span className="text-[10px] font-bold text-[#64748B]">
-                     {quotationData.ecosystemTagline || 'CONNECTED 3-TIER ECOSYSTEM'}
-                   </span>
-                   <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
-                 </div>
+                         <div className="bg-[#F8FAFC] p-4 rounded-r-xl space-y-1.5 shadow-sm shrink-0" style={{ borderLeft: `4px solid ${currentTheme.primaryColor}` }}>
+                            <p className="text-xs text-[#334155] leading-relaxed font-normal whitespace-pre-wrap">
+                              {quotationData.execSummary || 'FitRack is engineered as a unified, multi-tenant digital ecosystem connecting Fitness Coaches, Dietitians, Clients, and Platform Administrators under one seamless architecture.'}
+                            </p>
+                         </div>
+                       </>
+                     )}
 
-              </div>
+                     {/* LAYOUT ADAPTIVE SOLUTION CARDS FOR THIS CHUNK */}
+                     {currentTheme.layoutStyle === 'modern_sidebar' ? (
+                       /* EXECUTIVE EMERALD: Stacked Horizontal Solution Rows */
+                       <div className="space-y-3 flex-1 flex flex-col justify-start pt-2">
+                          {chunk.map((card, idx) => (
+                            <div key={idx} className="p-3.5 bg-slate-50 border border-[#A7F3D0] rounded-xl flex items-center justify-between gap-4 shadow-sm">
+                               <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-xl bg-[#047857] text-white flex items-center justify-center text-lg font-bold shrink-0">
+                                    {card.icon || '📱'}
+                                  </div>
+                                  <div>
+                                     <span className="text-[9px] font-black text-[#047857] uppercase tracking-wider">{card.badge || `SOLUTION`}</span>
+                                     <h3 className="text-xs font-black text-[#0F172A]">{card.title || 'Solution Title'}</h3>
+                                     <p className="text-[10px] text-[#475569] leading-snug">{card.description}</p>
+                                  </div>
+                               </div>
+                               <span className="px-2.5 py-1 rounded bg-[#10B981]/15 text-[#047857] text-[10px] font-bold shrink-0">{card.footer}</span>
+                            </div>
+                          ))}
+                       </div>
+                     ) : currentTheme.layoutStyle === 'cyber_bento' ? (
+                       /* CYBER VIOLET: Bento Grid (1 Feature Card + 2 Stacked Cards) */
+                       <div className="grid grid-cols-12 gap-3 flex-1 items-start pt-2">
+                          {chunk[0] && (
+                            <div className="col-span-5 bg-[#1E1B4B] text-white p-4 rounded-2xl flex flex-col shadow border border-[#7C3AED]/30 h-full">
+                               <div className="space-y-2 flex-1">
+                                  <span className="px-2 py-0.5 rounded text-[9px] font-black bg-[#7C3AED] uppercase">FEATURE SOLUTION</span>
+                                  <h3 className="text-base font-black text-white">{chunk[0].title || 'Trainer App'}</h3>
+                                  <p className="text-[11px] text-[#DDD6FE] leading-relaxed">{chunk[0].description || 'Complete onboarding, assessments & workouts.'}</p>
+                               </div>
+                               <div className="text-[10px] font-bold text-[#7C3AED] mt-4">{chunk[0].footer || '• Core Platform'}</div>
+                            </div>
+                          )}
 
-              {/* Theme Footer Bar */}
-              <div className="h-7 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
-           </div>
-
-
-           {/* ================= PAGE 4: SCOPE OF WORK (LAYOUT ADAPTIVE) ================= */}
-           <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
-              <div className="p-8 space-y-6 flex-1">
-                 <div>
-                   <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Scope of Work</h2>
-                   <h3 className="text-lg font-bold mt-0.5 inline-block pb-0.5" style={{ color: currentTheme.primaryColor, borderBottom: `2px solid ${currentTheme.primaryColor}` }}>Key Deliverables</h3>
-                 </div>
-
-                 {/* LAYOUT ADAPTIVE DELIVERABLES GRID FOR PAGE 4 */}
-                 {currentTheme.layoutStyle === 'cyber_bento' ? (
-                   /* BENTO TILE BOXES FOR DELIVERABLES */
-                   <div className="grid grid-cols-2 gap-4 pt-2">
-                      {(quotationData.deliverables.filter(Boolean).length > 0 ? quotationData.deliverables.filter(Boolean) : ['UI/UX Design', 'Mobile App Development', 'Super Admin Web Panel', 'Backend REST APIs']).map((item, idx) => (
-                        <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-[#DDD6FE] flex items-center gap-3.5 shadow-xs">
-                           <NumberBadge num={idx + 1} color="#7C3AED" size={24} />
-                           <span className="text-xs font-bold text-[#1E1B4B]">{item}</span>
+                          <div className="col-span-7 space-y-3 flex flex-col justify-start">
+                             {chunk.slice(1, 3).map((card, idx) => (
+                               <div key={idx} className="p-3.5 bg-white border-2 border-[#DDD6FE] rounded-xl flex flex-col shadow-sm">
+                                  <div>
+                                     <span className="text-[9px] font-black text-[#7C3AED] uppercase">{card.badge || `SOLUTION`}</span>
+                                     <h4 className="text-xs font-black text-[#1E1B4B]">{card.title}</h4>
+                                     <p className="text-[10px] text-slate-600">{card.description}</p>
+                                  </div>
+                                  <span className="text-[9px] font-bold text-[#6D28D9] pt-1">{card.footer}</span>
+                               </div>
+                             ))}
+                           </div>
                         </div>
-                      ))}
-                   </div>
-                 ) : (
-                    /* COMPACT 2-COLUMN DELIVERABLES LIST */
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 pt-2">
-                       {(quotationData.deliverables.filter(Boolean).length > 0 ? quotationData.deliverables.filter(Boolean) : ['UI/UX Design', 'Mobile App Development', 'Super Admin Web Panel', 'Backend REST APIs']).map((item, idx) => (
-                         <div key={idx} className="flex items-center gap-3">
-                            <NumberBadge num={idx + 1} color={currentTheme.primaryColor} size={24} />
-                            <span className="text-xs font-bold text-[#0F172A] leading-snug">
-                              {item}
-                            </span>
-                         </div>
-                       ))}
-                    </div>
-                 )}
-              </div>
+                      ) : (
+                        /* EXECUTIVE STACKED HORIZONTAL SOLUTION CARDS */
+                        <div className="space-y-3.5 flex-1 flex flex-col justify-start pt-2">
+                           {chunk.map((card, idx) => (
+                             <div key={idx} className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between gap-4 shadow-xs transition-all hover:border-slate-300">
+                                <div className="flex items-center gap-3.5">
+                                   <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center shrink-0 shadow-xs leading-none" style={{ backgroundColor: idx % 2 !== 0 ? currentTheme.accentColor : currentTheme.primaryColor }}>
+                                     {card.icon === '💻' ? <Laptop className="w-5 h-5 text-white" /> : <Smartphone className="w-5 h-5 text-white" />}
+                                   </div>
+                                   <div className="space-y-0.5">
+                                      <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: currentTheme.accentColor }}>{card.badge || `SOLUTION`}</span>
+                                      <h3 className="text-sm font-black text-[#0F172A] leading-tight">{card.title || 'Solution Title'}</h3>
+                                      <p className="text-xs text-[#475569] leading-snug font-medium">{card.description || 'Solution details and module description.'}</p>
+                                   </div>
+                                </div>
+                                <span className="px-3 py-1 rounded-full text-xs font-bold shrink-0 border" style={{ color: currentTheme.primaryColor, backgroundColor: `${currentTheme.primaryColor}10`, borderColor: `${currentTheme.primaryColor}30` }}>
+                                  {card.footer || '• Module Details'}
+                                </span>
+                             </div>
+                           ))}
+                        </div>
+                      )}
 
-              {/* Theme Footer Bar */}
-              <div className="h-8 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
-           </div>
+                     {/* Bottom Barcode Accent - Pinned to bottom using mt-auto */}
+                     <div className="flex justify-between items-center pt-2 mt-auto shrink-0 border-t border-slate-100">
+                       <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
+                       <span className="text-[10px] font-bold text-[#64748B]">
+                         {quotationData.ecosystemTagline || 'CONNECTED 3-TIER ECOSYSTEM'}
+                       </span>
+                       <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
+                     </div>
+
+                  </div>
+
+                  {/* Theme Footer Bar */}
+                  <div className="h-7 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
+               </div>
+             ));
+           })()}
+
+
+           {/* ================= PAGE 4+: SCOPE OF WORK (LAYOUT ADAPTIVE & DYNAMIC PAGINATION) ================= */}
+           {(() => {
+             const rawItems = quotationData.deliverables.filter(Boolean).length > 0 ? quotationData.deliverables.filter(Boolean) : ['UI/UX Design', 'Mobile App Development', 'Super Admin Web Panel', 'Backend REST APIs'];
+             
+             const MAX_ITEMS_PER_PAGE = 12; 
+             const chunks = [];
+             let currentChunk = [];
+             let currentCount = 0;
+             let deliverableCount = 0;
+
+             for (let i = 0; i < rawItems.length; i++) {
+               const item = rawItems[i];
+               const isHeading = typeof item === 'string' ? item.startsWith('## ') : item.title?.startsWith('## ');
+               
+               // Headings take 2 weight because they are col-span-2. Regular items take 1.
+               const itemWeight = isHeading ? 2 : 1;
+
+               // Break to new page if weight exceeds max OR if adding a heading near the very bottom
+               if (currentCount + itemWeight > MAX_ITEMS_PER_PAGE || (currentCount >= MAX_ITEMS_PER_PAGE - 2 && isHeading)) {
+                 chunks.push(currentChunk);
+                 currentChunk = [];
+                 currentCount = 0;
+               }
+               
+               currentChunk.push(item);
+               currentCount += itemWeight;
+             }
+             if (currentChunk.length > 0) chunks.push(currentChunk);
+
+             return chunks.map((chunk, chunkIdx) => (
+               <div key={`sow-page-${chunkIdx}`} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+                  <div className="p-8 space-y-6 flex-1">
+                     <div>
+                       <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>{chunkIdx === 0 ? 'Scope of Work' : 'Scope of Work (Continued)'}</h2>
+                       <h3 className="text-lg font-bold mt-0.5 inline-block pb-0.5" style={{ color: currentTheme.primaryColor, borderBottom: `2px solid ${currentTheme.primaryColor}` }}>Key Deliverables</h3>
+                     </div>
+
+                     <div className={currentTheme.layoutStyle === 'cyber_bento' ? "grid grid-cols-2 gap-4 pt-2 content-start" : "grid grid-cols-2 gap-x-8 gap-y-4 pt-2 content-start"}>
+                       {chunk.map((item, idx) => {
+                         const isHeading = typeof item === 'string' ? item.startsWith('## ') : item.title?.startsWith('## ');
+                         const title = typeof item === 'string' ? item : (item.title || '');
+                         const description = typeof item === 'string' ? '' : (item.description || '');
+                         const text = isHeading ? title.replace('## ', '') : title;
+
+                         if (!isHeading) deliverableCount++;
+                         
+                         if (isHeading) {
+                           return (
+                             <div key={idx} className="col-span-2 pt-3 pb-1 mb-1 border-b" style={{ borderColor: `${currentTheme.primaryColor}30` }}>
+                               <h4 className="text-[13px] font-black uppercase tracking-wider" style={{ color: currentTheme.primaryColor }}>{text}</h4>
+                             </div>
+                           );
+                         }
+
+                         // Render normal item
+                         if (currentTheme.layoutStyle === 'cyber_bento') {
+                           return (
+                             <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-[#DDD6FE] flex gap-3.5 shadow-xs h-fit items-start">
+                                <div className="mt-0.5"><NumberBadge num={deliverableCount} color="#7C3AED" size={24} /></div>
+                                <div className="flex-1">
+                                  <span className="text-xs font-bold text-[#1E1B4B] block leading-snug">{text}</span>
+                                  {description && <span className="text-[10px] text-slate-500 block mt-1 leading-snug">{description}</span>}
+                                </div>
+                             </div>
+                           )
+                         } else {
+                           return (
+                             <div key={idx} className="flex gap-3 h-fit items-start">
+                                <div className="mt-0.5"><NumberBadge num={deliverableCount} color={currentTheme.primaryColor} size={24} /></div>
+                                <div className="flex-1">
+                                  <span className="text-xs font-bold text-[#0F172A] block leading-snug">{text}</span>
+                                  {description && <span className="text-[10px] text-slate-500 block mt-0.5 leading-snug">{description}</span>}
+                                </div>
+                             </div>
+                           )
+                         }
+                       })}
+                     </div>
+                  </div>
+
+                  {/* Theme Footer Bar */}
+                  <div className="h-8 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
+               </div>
+             ));
+           })()}
 
 
            {/* ================= PAGE 5: TEAM & INTEGRATIONS (LAYOUT ADAPTIVE) ================= */}
@@ -2075,15 +2306,21 @@ export default function CreateQuotationView({ onNavigate }) {
 
                  <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Budget & Timeline</h2>
 
-                 {/* HERO FULL-WIDTH INVESTMENT BANNER */}
-                 <div className="p-4 rounded-xl shadow-xs flex items-center justify-between text-white" style={{ backgroundColor: currentTheme.primaryColor }}>
-                    <div>
-                       <div className="text-[10px] uppercase font-extrabold tracking-widest opacity-80">TOTAL PROJECT INVESTMENT</div>
-                       <div className="text-2xl sm:text-3xl font-black">Cost: ₹{quotationData.totalCost || '7,80,000'}/-</div>
-                    </div>
-                    <div className="text-right text-xs font-black bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/20 shrink-0">
-                       +{quotationData.gstPercent || '18'}% Applicable GST
-                    </div>
+                 {/* DYNAMIC INVESTMENT BANNERS */}
+                 <div className="space-y-3">
+                   {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '7,80,000', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, idx) => (
+                     <div key={idx} className="p-4 rounded-xl shadow-xs flex items-center justify-between text-white" style={{ backgroundColor: currentTheme.primaryColor }}>
+                        <div>
+                           <div className="text-[10px] uppercase font-extrabold tracking-widest opacity-80">{priceObj.title || 'TOTAL PROJECT INVESTMENT'}</div>
+                           <div className="text-2xl sm:text-3xl font-black">Cost: ₹{priceObj.cost}/-</div>
+                        </div>
+                        {priceObj.gst && (
+                          <div className="text-right text-xs font-black bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/20 shrink-0">
+                             +{priceObj.gst}% {priceObj.suffix}
+                          </div>
+                        )}
+                     </div>
+                   ))}
                  </div>
 
                  {/* Particulars Table */}

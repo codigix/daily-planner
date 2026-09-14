@@ -28,6 +28,7 @@ dist-ssr
 *.sw?
 
 # Environment Files (Root & Subdirectories)
+# Environment Files (Root & Subdirectories)
 .env
 *.env
 .env.local
@@ -36,3 +37,4 @@ frontend/.env
 frontend/*.env
 backend/.env
 backend/*.env
+
