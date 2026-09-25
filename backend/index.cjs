@@ -25,6 +25,7 @@ const { checkDbConnection } = require('./db_mysql.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+// Reload trigger: diet module integration v1
 
 // Startup Environment Validation (Logs status without leaking secrets)
 function validateEnvironment() {

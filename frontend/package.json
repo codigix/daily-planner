@@ -10,10 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@progress/kendo-licensing": "^1.11.3",
+    "@progress/kendo-react-dialogs": "^16.1.0",
+    "@progress/kendo-react-editor": "^16.1.0",
+    "@progress/kendo-react-intl": "^16.1.0",
+    "@progress/kendo-theme-default": "^14.5.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.2",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
+    "jodit-react": "^5.5.8",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
     "react": "^19.0.0",

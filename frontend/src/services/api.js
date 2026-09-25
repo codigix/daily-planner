@@ -60,6 +60,13 @@ export async function batchSavePlannerTasksAPI(tasks, timeline) {
   });
 }
 
+export async function analyzeVoiceTaskAPI(transcript, currentDateStr, currentDayName) {
+  return await fetchAPI('/planner/voice-analyze', {
+    method: 'POST',
+    body: JSON.stringify({ transcript, currentDateStr, currentDayName })
+  });
+}
+
 export async function deletePlannerTaskAPI(id) {
   return await fetchAPI(`/planner/tasks/${id}`, {
     method: 'DELETE'
@@ -198,6 +205,20 @@ export async function deletePurchaseAPI(id) {
   });
 }
 
+export async function syncPurchasesSheetAPI(sheetUrl) {
+  return await fetchAPI('/finance/purchases/sync', {
+    method: 'POST',
+    body: JSON.stringify({ sheetUrl })
+  });
+}
+
+export async function syncSalesSheetAPI(sheetUrl) {
+  return await fetchAPI('/finance/sales/sync', {
+    method: 'POST',
+    body: JSON.stringify({ sheetUrl })
+  });
+}
+
 // 10. Marketing Dashboard API
 export async function getMarketingDashboardAPI() {
   return await fetchAPI('/marketing');
@@ -247,3 +268,33 @@ export async function updatePlannerTaskAPI(id, taskData) {
     body: JSON.stringify(taskData)
   });
 }
+
+// 14. Diet & Nutrition Module APIs
+export async function getDietPlanAPI() {
+  return await fetchAPI('/planner/diet/plan');
+}
+
+export async function getDietStatusAPI() {
+  return await fetchAPI('/planner/diet/status');
+}
+
+export async function updateDietStatusAPI(statusData) {
+  return await fetchAPI('/planner/diet/status', {
+    method: 'POST',
+    body: JSON.stringify(statusData)
+  });
+}
+
+export async function syncDietToPlannerAPI(items, targetDate, targetDay) {
+  return await fetchAPI('/planner/diet/sync-to-planner', {
+    method: 'POST',
+    body: JSON.stringify({ items, targetDate, targetDay })
+  });
+}
+
+export async function deduplicatePlannerTasksAPI() {
+  return await fetchAPI('/planner/deduplicate', {
+    method: 'POST'
+  });
+}
+

@@ -1,6 +1,9 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
+
 const router = express.Router();
 const { getPool } = require('../db_mysql.cjs');
+const { syncPurchasesFromSheet, syncSalesFromSheet } = require('../services/sheetsService.cjs');
 
 // Helper: Format SQL date condition based on period filter
 function getPeriodWhereClause(period = 'this_month', dateColumn = 'sale_date') {
@@ -38,6 +41,8 @@ function getPeriodWhereClause(period = 'this_month', dateColumn = 'sale_date') {
   return '1=1'; // All time
 }
 
+
+
 // 1. GET /api/finance/dashboard - Dynamic Dashboard & Period-filtered Revenue Telemetry
 router.get('/dashboard', async (req, res) => {
   try {
@@ -45,6 +50,11 @@ router.get('/dashboard', async (req, res) => {
     if (!pool) return res.status(500).json({ success: false, error: 'Database unavailable' });
 
     const period = req.query.period || 'this_month';
+    const userEmail = getEmailFromReq(req);
+    const isAuth = true; // Disabled per user request
+    const syncedSalesFilter = "";
+    const syncedPurchasesFilter = "";
+
     const salesCond = getPeriodWhereClause(period, 'sale_date');
     const purchaseCond = getPeriodWhereClause(period, 'purchase_date');
 
@@ -67,8 +77,8 @@ router.get('/dashboard', async (req, res) => {
     const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0.0';
 
     // Recent Sales & Recent Purchases
-    const [salesList] = await pool.query(`SELECT * FROM finance_sales WHERE company_id = 1 AND ${salesCond} ORDER BY sale_date DESC LIMIT 10`);
-    const [purchasesList] = await pool.query(`SELECT * FROM finance_purchases WHERE company_id = 1 AND ${purchaseCond} ORDER BY purchase_date DESC LIMIT 10`);
+    const [salesList] = await pool.query(`SELECT * FROM finance_sales WHERE company_id = 1 AND ${salesCond} ORDER BY id DESC LIMIT 10`);
+    const [purchasesList] = await pool.query(`SELECT * FROM finance_purchases WHERE company_id = 1 AND ${purchaseCond} ORDER BY id DESC LIMIT 10`);
 
     // Monthly Trend Chart Data
     const [trendData] = await pool.query(`
@@ -93,6 +103,7 @@ router.get('/dashboard', async (req, res) => {
     return res.json({
       success: true,
       period,
+      isGoogleAuthorized: isAuth,
       summary: {
         totalRevenue,
         grossRevenue,
@@ -120,8 +131,14 @@ router.get('/sales', async (req, res) => {
     const pool = await getPool();
     if (!pool) return res.status(500).json({ success: false });
 
-    const [rows] = await pool.query('SELECT * FROM finance_sales WHERE company_id = 1 ORDER BY sale_date DESC');
-    return res.json({ success: true, sales: rows });
+    const userEmail = getEmailFromReq(req);
+    const isAuth = true;
+    const syncedSalesFilter = "";
+
+    const period = req.query.period || 'this_month';
+      const salesCond = getPeriodWhereClause(period, 'sale_date');
+      const [rows] = await pool.query(`SELECT * FROM finance_sales WHERE company_id = 1 AND ${salesCond} ORDER BY id DESC`);
+    return res.json({ success: true, isGoogleAuthorized: true, sales: rows });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -171,8 +188,14 @@ router.get('/purchases', async (req, res) => {
     const pool = await getPool();
     if (!pool) return res.status(500).json({ success: false });
 
-    const [rows] = await pool.query('SELECT * FROM finance_purchases WHERE company_id = 1 ORDER BY purchase_date DESC');
-    return res.json({ success: true, purchases: rows });
+    const userEmail = getEmailFromReq(req);
+    const isAuth = true;
+    const syncedPurchasesFilter = "";
+
+    const period = req.query.period || 'this_month';
+      const purchaseCond = getPeriodWhereClause(period, 'purchase_date');
+      const [rows] = await pool.query(`SELECT * FROM finance_purchases WHERE company_id = 1 AND ${purchaseCond} ORDER BY id DESC`);
+    return res.json({ success: true, isGoogleAuthorized: true, purchases: rows });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -213,6 +236,57 @@ router.delete('/purchases/:id', async (req, res) => {
     return res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
+
+async function isUserAuthorized(userEmail) {
+  if (!userEmail) return false;
+  const { getPool } = require('../db_mysql.cjs');
+  const pool = await getPool();
+  const [accounts] = await pool.query('SELECT email FROM google_accounts ORDER BY updated_at DESC LIMIT 1');
+  const googleEmail = accounts.length > 0 ? accounts[0].email : null;
+  return googleEmail && googleEmail === userEmail;
+}
+
+function getEmailFromReq(req) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return null;
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'codigix_daily_planner_super_secret_jwt_key_2026');
+    return decoded.email;
+  } catch (err) {
+    return null;
+  }
+}
+
+// POST /api/finance/sales/sync - Sync Sales from Google Sheets
+router.post('/sales/sync', async (req, res) => {
+  try {
+    const userEmail = getEmailFromReq(req);
+    const { sheetUrl } = req.body;
+    if (!sheetUrl) return res.json({ success: false, message: 'Google Sheet URL is required.' });
+    const result = await syncSalesFromSheet(userEmail, sheetUrl);
+    return res.json(result);
+  } catch (err) {
+    console.error('[FinanceRoute] Google Sheets Sync Error:', err.message);
+    res.json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/finance/purchases/sync - Sync Purchases from Google Sheets
+router.post('/purchases/sync', async (req, res) => {
+  try {
+    const userEmail = getEmailFromReq(req);
+    const { sheetUrl } = req.body;
+    if (!sheetUrl) return res.json({ success: false, message: 'Google Sheet URL is required.' });
+    const result = await syncPurchasesFromSheet(userEmail, sheetUrl);
+    return res.json(result);
+  } catch (err) {
+    console.error('[FinanceRoute] Google Sheets Sync Error:', err.message);
+    res.json({ success: false, error: err.message });
   }
 });
 

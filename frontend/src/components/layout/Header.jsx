@@ -268,7 +268,7 @@ export default function Header({
 
             {/* Notifications Dropdown Overlay */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-3.5 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-3.5 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2 mb-2">
                   <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Notifications</h4>
                   <div className="flex items-center gap-2">
@@ -336,6 +336,10 @@ export default function Header({
                 <img
                   src={activeUser.avatar}
                   alt={activeUser.name}
+                  onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUser.name)}&background=0D8ABC&color=fff`;
+                  }}
                   className="w-9 h-9 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700 shadow-sm"
                 />
                 <span className="text-xs font-bold hidden sm:block text-slate-800 dark:text-slate-200">{activeUser.name}</span>
@@ -343,7 +347,7 @@ export default function Header({
             ) : (
               <button
                 onClick={() => onOpenAuthModal && onOpenAuthModal('login')}
-                className="px-4 py-2 bg-[#E60023] hover:bg-[#CC001F] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-2 transition-all active:scale-95 shrink-0"
+                className="px-3 sm:px-4 py-2 bg-[#E60023] hover:bg-[#CC001F] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 sm:gap-2 transition-all active:scale-95 shrink-0"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Log In</span>
@@ -352,7 +356,7 @@ export default function Header({
 
             {/* Profile Dropdown Overlay Menu */}
             {showProfileMenu && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-3 z-50 animate-in fade-in slide-in-from-top-2 space-y-2">
+              <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-3 z-50 animate-in fade-in slide-in-from-top-2 space-y-2">
                 <div className="p-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl space-y-0.5">
                   <span className="font-black text-xs text-slate-900 dark:text-white block truncate">{activeUser.name}</span>
                   <span className="text-[10px] font-bold text-blue-600 block">{activeUser.role} Account</span>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
   Zap,
@@ -17,6 +17,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   CheckCircle2,
+  Check,
   Flag,
   Lightbulb,
   ArrowRight,
@@ -29,7 +30,12 @@ import {
   Trash2,
   CalendarClock,
   SkipForward,
-  Search
+  Search,
+  Utensils,
+  Apple,
+  HeartPulse,
+  Mic,
+  Flame
 } from 'lucide-react';
 import {
   sendAIChatAPI,
@@ -37,8 +43,18 @@ import {
   deletePlannerTaskAPI,
   clearPlannerTasksAPI,
   deleteScheduleItemAPI,
-  updatePlannerTaskAPI
+  updatePlannerTaskAPI,
+  syncDietToPlannerAPI,
+  deduplicatePlannerTasksAPI,
+  analyzeVoiceTaskAPI,
+  createPlannerTaskAPI
 } from '../services/api';
+import WeeklyDietManager from '../components/diet/WeeklyDietManager';
+import NextDayIngredientsModal from '../components/diet/NextDayIngredientsModal';
+import VoiceAssistantModal from '../components/voice/VoiceAssistantModal';
+import { WEEKLY_DIET_PLAN } from '../data/weeklyDietData';
+import { sendSystemNotification, requestNotificationPermission, playNotificationChime, triggerPhoneVibration } from '../utils/notificationService';
+import { deduplicateTasks, deduplicateTimeline, mergeAndUpdateTasks, normalizeTaskTitle } from '../utils/plannerDeduplication';
 
 export default function DailyPlannerView({
   plannerTasks = [],
@@ -49,6 +65,12 @@ export default function DailyPlannerView({
   onAddTask,
   isLoading = false
 }) {
+  const [activeMainTab, setActiveMainTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      if (window.location.hash === '#diet' || window.location.search.includes('tab=diet') || window.location.search.includes('openDietMealId')) return 'diet';
+    }
+    return 'tasks';
+  });
   const [activeScheduleTab, setActiveScheduleTab] = useState('Timeline');
   const [groupBy, setGroupBy] = useState('Time'); // Default to Time-wise chronological sorting
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -58,8 +80,180 @@ export default function DailyPlannerView({
   const [taskNotes, setTaskNotes] = useState('');
   const [taskCheckpoints, setTaskCheckpoints] = useState([]);
 
+  // Next-Day Ingredients & Prep Modal State
+  const [showIngredientsModal, setShowIngredientsModal] = useState(false);
+  const [ingredientsTargetDay, setIngredientsTargetDay] = useState(null);
+  const [ingredientsTargetMealId, setIngredientsTargetMealId] = useState(null);
+
+  // AI Voice Assistant State
+  const [showVoiceAssistantModal, setShowVoiceAssistantModal] = useState(false);
+
   // Postpone popover state
   const [postponeTaskId, setPostponeTaskId] = useState(null);
+
+  // ── DEEP LINK & NOTIFICATION TAP LISTENER TO OPEN DETAILED TASK POPUP ──
+  useEffect(() => {
+    // 1. Check URL parameters (?openTaskId=... or ?openDietMealId=... or ?openNextDayPrep=1)
+    const params = new URLSearchParams(window.location.search);
+    const openTaskId = params.get('openTaskId');
+    const openDietMealId = params.get('openDietMealId');
+    const openNextDayPrep = params.get('openNextDayPrep') || params.get('openIngredients');
+
+    if (openNextDayPrep) {
+      setShowIngredientsModal(true);
+    } else if (openTaskId) {
+      setActiveMainTab('tasks');
+      const targetTask = plannerTasks.find(t => String(t.id) === String(openTaskId));
+      if (targetTask) {
+        setSelectedTaskModal(targetTask);
+        setTaskNotes(targetTask.notes || '');
+        setTaskCheckpoints(targetTask.checkpoints || []);
+      }
+    } else if (openDietMealId) {
+      setActiveMainTab('diet');
+    }
+
+    // 2. Listen to postMessage from Service Worker when user taps notification on mobile
+    const handleSWMessage = (event) => {
+      if (event.data && event.data.type === 'NOTIFICATION_TASK_CLICKED') {
+        const { taskId, mealId, type, openNextDayPrep } = event.data;
+        if (type === 'nextDayPrep' || openNextDayPrep) {
+          setShowIngredientsModal(true);
+        } else if (taskId) {
+          setActiveMainTab('tasks');
+          const targetTask = plannerTasks.find(t => String(t.id) === String(taskId));
+          if (targetTask) {
+            setSelectedTaskModal(targetTask);
+            setTaskNotes(targetTask.notes || '');
+            setTaskCheckpoints(targetTask.checkpoints || []);
+          }
+        } else if (mealId) {
+          setActiveMainTab('diet');
+        }
+      }
+    };
+
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleSWMessage);
+    }
+    return () => {
+      if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('message', handleSWMessage);
+      }
+    };
+  }, [plannerTasks]);
+
+  // ── REAL-TIME MOBILE REMINDERS FOR EACH AND EVERY TASK ──
+  // - 5 Minutes Before Task starts
+  // - Exactly at start time
+  // - Every 5 Minutes interval while task is NOT DONE (pending)
+  // - 8:00 PM Evening Next-Day Ingredients Prep reminder
+  useEffect(() => {
+    const firedReminders = new Set();
+
+    const checkTaskReminders = () => {
+      const now = new Date();
+      const currentHours = now.getHours();
+      const currentMins = now.getMinutes();
+      const currentTotalMins = currentHours * 60 + currentMins;
+      const todayDateStr = now.toDateString();
+
+      // Check tasks scheduled for today that are NOT YET COMPLETED
+      const activePendingTasks = plannerTasks.filter(t => {
+        const isDone = isTaskCompletedForDate(t, todayDateStr);
+        if (isDone) return false;
+        if (!t.date) return true;
+        try {
+          return new Date(t.date).toDateString() === todayDateStr;
+        } catch (e) {
+          return true;
+        }
+      });
+
+      activePendingTasks.forEach(task => {
+        if (!task.time) return;
+        const timePart = task.time.split('–')[0].split('-')[0].trim();
+        const match = timePart.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+        if (!match) return;
+
+        let hours = parseInt(match[1], 10);
+        const mins = parseInt(match[2], 10);
+        const meridiem = match[3] ? match[3].toUpperCase() : null;
+
+        if (meridiem === 'PM' && hours < 12) hours += 12;
+        if (meridiem === 'AM' && hours === 12) hours = 0;
+
+        const taskStartMins = hours * 60 + mins;
+        const diff = taskStartMins - currentTotalMins; // >0 is before start; <0 is overdue
+
+        // Extract notes preview or ingredients snippet (internal reference)
+        const notesPreview = task.notes ? `\n📝 ${task.notes.slice(0, 80)}${task.notes.length > 80 ? '...' : ''}` : '';
+
+        // 1. LEAD REMINDER: Exactly 5 minutes before start (diff between 5 and 3 mins)
+        // Strictly displays task heading only and time only
+        const keyLead5m = `${task.id}_lead5m`;
+        if (diff <= 5 && diff >= 3 && !firedReminders.has(keyLead5m)) {
+          firedReminders.add(keyLead5m);
+          sendSystemNotification(task.title, {
+            body: task.time,
+            taskId: task.id,
+            tag: `task-lead-${task.id}`
+          });
+        }
+
+        // 2. EXACT START TIME REMINDER (diff between 0 and -2 mins)
+        // Strictly displays task heading only and time only
+        const keyExact = `${task.id}_exact`;
+        if (diff <= 0 && diff >= -2 && !firedReminders.has(keyExact)) {
+          firedReminders.add(keyExact);
+          sendSystemNotification(task.title, {
+            body: task.time,
+            taskId: task.id,
+            tag: `task-exact-${task.id}`
+          });
+        }
+
+        // 3. RECURRING 5-MINUTE REMINDER WHILE TASK IS NOT DONE (diff < -2)
+        // Reminds user every 5 minutes until marked complete - strictly task heading only and time only
+        if (diff < -2 && diff >= -180) {
+          const overdueMinutes = Math.abs(diff);
+          const intervalBucket = Math.floor(overdueMinutes / 5) * 5;
+          if (intervalBucket >= 5) {
+            const keyOverdue = `${task.id}_overdue_${intervalBucket}`;
+            if (!firedReminders.has(keyOverdue)) {
+              firedReminders.add(keyOverdue);
+              sendSystemNotification(task.title, {
+                body: task.time,
+                taskId: task.id,
+                tag: `task-overdue-${task.id}-${intervalBucket}`
+              });
+            }
+          }
+        }
+      });
+
+      // 4. EVENING 8:00 PM NEXT-DAY INGREDIENTS PREP REMINDER (20:00 to 20:15)
+      if (currentHours === 20 && currentMins >= 0 && currentMins <= 15) {
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        const tomorrowName = tomorrow.toLocaleDateString('en-US', { weekday: 'long' });
+        const keyPrep = `evening_prep_${todayDateStr}`;
+
+        if (!firedReminders.has(keyPrep)) {
+          firedReminders.add(keyPrep);
+          sendSystemNotification(`Tomorrow's Ingredients Prep (${tomorrowName})`, {
+            body: '8:00 PM',
+            openNextDayPrep: '1',
+            tag: `prep-${todayDateStr}`
+          });
+        }
+      }
+    };
+
+    checkTaskReminders();
+    const interval = setInterval(checkTaskReminders, 15000); // Check every 15 seconds
+    return () => clearInterval(interval);
+  }, [plannerTasks]);
 
   // Real-time Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,9 +291,261 @@ export default function DailyPlannerView({
     }));
   };
 
-  // Inline Fast Quick-Add Task State
+  // Inline Fast Quick-Add Task State & Voice Assistance
   const [quickTaskTitle, setQuickTaskTitle] = useState('');
   const [quickTaskPriority, setQuickTaskPriority] = useState('High');
+  const [isQuickListening, setIsQuickListening] = useState(false);
+  const [isQuickAnalyzing, setIsQuickAnalyzing] = useState(false);
+  const [quickVoiceTranscript, setQuickVoiceTranscript] = useState('');
+  const [quickVoiceResult, setQuickVoiceResult] = useState(null);
+  const [quickVoiceError, setQuickVoiceError] = useState(null);
+  const [isHoldingVoice, setIsHoldingVoice] = useState(false);
+
+  const quickRecRef = useRef(null);
+  const quickTranscriptRef = useRef('');
+  const quickSilenceTimerRef = useRef(null);
+  const holdTimerRef = useRef(null);
+  const isHoldModeRef = useRef(false);
+  const holdStartTimeRef = useRef(0);
+
+  const stopQuickVoice = () => {
+    if (quickSilenceTimerRef.current) {
+      clearTimeout(quickSilenceTimerRef.current);
+      quickSilenceTimerRef.current = null;
+    }
+    if (quickRecRef.current) {
+      try {
+        quickRecRef.current.stop();
+      } catch (e) {}
+      quickRecRef.current = null;
+    }
+    setIsQuickListening(false);
+  };
+
+  const analyzeAndCreateQuickTask = async (spokenText) => {
+    const speech = (spokenText || quickTranscriptRef.current).trim();
+    if (!speech || speech.length < 2) {
+      setIsQuickAnalyzing(false);
+      return;
+    }
+
+    stopQuickVoice();
+    setIsQuickAnalyzing(true);
+    setQuickVoiceError(null);
+    triggerPhoneVibration([40]);
+
+    try {
+      const res = await analyzeVoiceTaskAPI(
+        speech,
+        currentDate.toDateString(),
+        currentDate.toLocaleDateString('en-US', { weekday: 'long' })
+      );
+
+      let taskData = null;
+      if (res && res.success && res.task) {
+        taskData = res.task;
+      } else {
+        // High-speed fallback local autocorrection
+        let cleanTitle = speech
+          .replace(/^(\s*can you|\s*please|\s*remind me to|\s*schedule a|\s*create a task for|\s*i want to|\s*i need to|\s*add a task to)\s*/i, '')
+          .replace(/\b(tomorrow|today|day after tomorrow)\b/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (cleanTitle.length < 2) cleanTitle = speech.trim();
+        cleanTitle = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
+
+        let priority = 'Medium';
+        if (/\b(urgent|asap|critical|important|top priority|high priority|emergency|must)\b/i.test(speech)) {
+          priority = 'High';
+        } else if (/\b(later|whenever|low priority|minor|optional)\b/i.test(speech)) {
+          priority = 'Low';
+        }
+
+        taskData = {
+          title: cleanTitle,
+          category: 'Executive',
+          priority: priority,
+          time: '09:00 AM – 10:00 AM',
+          notes: `Created via Voice Assistant: "${speech}"`,
+          checkpoints: [
+            `Execute: ${cleanTitle}`,
+            'Review results & complete'
+          ]
+        };
+      }
+
+      // Automatically construct and create the best task
+      const newTask = {
+        id: 'voice_' + Date.now(),
+        title: taskData.title || speech,
+        category: taskData.category || 'Executive',
+        priority: taskData.priority || 'High',
+        status: 'Pending',
+        time: taskData.time || '09:00 AM – 10:00 AM',
+        date: taskData.date || currentDate.toDateString(),
+        targetDay: taskData.targetDay || currentDate.toLocaleDateString('en-US', { weekday: 'long' }),
+        recurring: 'None',
+        notes: taskData.notes || `Voice input: "${speech}"`,
+        checkpoints: (taskData.checkpoints || []).map((cp, idx) =>
+          typeof cp === 'string' ? { id: 'cp_' + idx, text: cp, done: false } : cp
+        )
+      };
+
+      setPlannerTasks(prev => [newTask, ...prev]);
+      setQuickTaskTitle('');
+      setQuickVoiceTranscript('');
+      setQuickVoiceResult(newTask);
+      triggerPhoneVibration([60, 40, 60]);
+
+      // Save automatically to database
+      createPlannerTaskAPI(newTask).catch(err => console.warn('Voice task DB save error:', err));
+
+      // Auto dismiss success badge after 5s
+      setTimeout(() => {
+        setQuickVoiceResult(prev => (prev && prev.id === newTask.id ? null : prev));
+      }, 5000);
+
+    } catch (err) {
+      console.warn('Quick voice analysis error:', err);
+      setQuickVoiceError('Voice analysis failed. Please retry or type task.');
+    } finally {
+      setIsQuickAnalyzing(false);
+    }
+  };
+
+  const startQuickVoice = () => {
+    const SpeechRecognition = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please use Chrome or Safari.");
+      return;
+    }
+
+    try {
+      if (quickRecRef.current) quickRecRef.current.abort();
+
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.lang = 'en-US';
+
+      rec.onstart = () => {
+        setIsQuickListening(true);
+        setQuickVoiceTranscript('');
+        quickTranscriptRef.current = '';
+        setQuickVoiceError(null);
+        setQuickVoiceResult(null);
+        triggerPhoneVibration([40]);
+      };
+
+      rec.onresult = (event) => {
+        let currentText = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          currentText += event.results[i][0].transcript;
+        }
+        setQuickVoiceTranscript(currentText);
+        quickTranscriptRef.current = currentText;
+
+        // Auto-detect 1.3s pause in speech to autocorrect & create best task
+        if (quickSilenceTimerRef.current) clearTimeout(quickSilenceTimerRef.current);
+        if (currentText.trim().length > 3) {
+          quickSilenceTimerRef.current = setTimeout(() => {
+            stopQuickVoice();
+            analyzeAndCreateQuickTask(currentText);
+          }, 1300);
+        }
+      };
+
+      rec.onerror = (event) => {
+        console.warn('Quick voice recognition error:', event.error);
+        setIsQuickListening(false);
+        if (event.error === 'not-allowed') {
+          setQuickVoiceError('Microphone permission blocked. Please allow mic in browser.');
+        } else if (event.error !== 'no-speech') {
+          setQuickVoiceError(`Voice error: ${event.error}`);
+        }
+      };
+
+      rec.onend = () => {
+        setIsQuickListening(false);
+        triggerPhoneVibration([30]);
+        // If ended with captured speech and analysis hasn't started yet
+        if (quickTranscriptRef.current && quickTranscriptRef.current.trim().length > 3 && !isQuickAnalyzing) {
+          analyzeAndCreateQuickTask(quickTranscriptRef.current);
+        }
+      };
+
+      quickRecRef.current = rec;
+      rec.start();
+    } catch (err) {
+      console.warn('Quick voice start error:', err);
+      setIsQuickListening(false);
+    }
+  };
+
+  // Push-to-Talk Hold Handlers (Hold to speak, release to analyze & create task)
+  const handleVoiceHoldStart = (e) => {
+    if (e.button && e.button !== 0) return; // Ignore non-left clicks
+    holdStartTimeRef.current = Date.now();
+    isHoldModeRef.current = false;
+    setQuickVoiceError(null);
+
+    if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+    holdTimerRef.current = setTimeout(() => {
+      isHoldModeRef.current = true;
+      setIsHoldingVoice(true);
+      startQuickVoice();
+      triggerPhoneVibration([50]);
+    }, 150);
+  };
+
+  const handleVoiceHoldEnd = (e) => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+
+    const duration = Date.now() - holdStartTimeRef.current;
+
+    if (isHoldModeRef.current || duration >= 220) {
+      if (e && e.cancelable) e.preventDefault();
+      isHoldModeRef.current = false;
+      setIsHoldingVoice(false);
+      triggerPhoneVibration([30]);
+
+      // Stop listening and immediately auto-create best task from spoken text
+      stopQuickVoice();
+
+      const text = (quickTranscriptRef.current || quickVoiceTranscript).trim();
+      if (text.length > 1) {
+        analyzeAndCreateQuickTask(text);
+      } else {
+        setQuickVoiceError('Please hold while speaking, then release.');
+        setTimeout(() => setQuickVoiceError(null), 3000);
+      }
+    }
+  };
+
+  const handleVoiceCancel = () => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    isHoldModeRef.current = false;
+    setIsHoldingVoice(false);
+    stopQuickVoice();
+  };
+
+  const handleQuickVoiceToggle = (e) => {
+    if (e) e.preventDefault();
+    if (isQuickListening) {
+      stopQuickVoice();
+      if (quickTranscriptRef.current && quickTranscriptRef.current.trim().length > 2) {
+        analyzeAndCreateQuickTask(quickTranscriptRef.current);
+      }
+    } else {
+      startQuickVoice();
+    }
+  };
 
   const handleInlineQuickAdd = async (e) => {
     e.preventDefault();
@@ -426,6 +872,112 @@ export default function DailyPlannerView({
     deleteScheduleItemAPI(id).catch(err => console.warn("Schedule delete API:", err));
   };
 
+  // ── AI VOICE ASSISTANT TASK CREATION HANDLER ──
+  const handleCreateTaskFromVoice = (voiceTask) => {
+    if (!voiceTask || !voiceTask.title) return;
+
+    const targetDateObj = voiceTask.date ? new Date(voiceTask.date) : currentDate;
+    const targetDateStr = !isNaN(targetDateObj.getTime()) ? targetDateObj.toDateString() : currentDate.toDateString();
+    const targetDayName = voiceTask.targetDay || getDayLabel(targetDateObj);
+
+    const taskId = 'voice_' + Date.now();
+    const checkpoints = (voiceTask.checkpoints || []).map((cp, idx) => ({
+      id: `cp_voice_${Date.now()}_${idx}`,
+      text: typeof cp === 'string' ? cp : (cp.text || ''),
+      done: false
+    }));
+
+    const newTask = {
+      id: taskId,
+      title: voiceTask.title,
+      time: voiceTask.time || '10:00 AM – 11:00 AM',
+      date: targetDateStr,
+      targetDay: targetDayName,
+      priority: voiceTask.priority || 'Medium',
+      category: voiceTask.category || 'Executive Strategy',
+      status: 'Pending',
+      notes: voiceTask.notes || `Voice assistant task: "${voiceTask.title}"`,
+      checkpoints: checkpoints,
+      recurring: 'None'
+    };
+
+    const newTimelineItem = {
+      id: `tl_${taskId}`,
+      time: newTask.time,
+      duration: '45m',
+      title: newTask.title,
+      subtitle: newTask.category,
+      status: 'Pending',
+      date: targetDateStr
+    };
+
+    setPlannerTasks(prev => mergeAndUpdateTasks(prev, [newTask]));
+    setScheduleTimeline(prev => deduplicateTimeline([newTimelineItem, ...prev]));
+
+    // Auto navigate calendar to the target date
+    if (!isNaN(targetDateObj.getTime())) {
+      setCurrentDate(targetDateObj);
+      setDayFilter(getDayLabel(targetDateObj));
+    }
+
+    // Persist to MySQL database
+    batchSavePlannerTasksAPI([newTask], [newTimelineItem]).catch(err => {
+      console.warn("Voice task DB save error:", err);
+    });
+
+    triggerPhoneVibration([100, 50, 100]);
+    alert(`🎉 Voice Assistant Created Task!\n\n"${newTask.title}" scheduled for ${targetDayName} at ${newTask.time}.`);
+  };
+
+  // ── Auto-Deduplication: Automatically clean any duplicate tasks in view & DB ──
+  useEffect(() => {
+    if (plannerTasks && plannerTasks.length > 0) {
+      const cleaned = deduplicateTasks(plannerTasks);
+      if (cleaned.length < plannerTasks.length) {
+        setPlannerTasks(cleaned);
+        deduplicatePlannerTasksAPI().catch(() => {});
+      }
+    }
+  }, [plannerTasks.length]);
+
+  // Remove all duplicate tasks from state & MySQL database and keep tasks synchronized
+  const [isDeduplicating, setIsDeduplicating] = useState(false);
+
+  const handleCleanDuplicates = async () => {
+    setIsDeduplicating(true);
+    try {
+      const initialTaskCount = plannerTasks.length;
+      const initialTimelineCount = scheduleTimeline.length;
+
+      const cleanedTasks = deduplicateTasks(plannerTasks);
+      const cleanedTimeline = deduplicateTimeline(scheduleTimeline);
+
+      const removedLocalTasks = initialTaskCount - cleanedTasks.length;
+      const removedLocalTimeline = initialTimelineCount - cleanedTimeline.length;
+
+      setPlannerTasks(cleanedTasks);
+      setScheduleTimeline(cleanedTimeline);
+
+      // Call backend to prune duplicates from MySQL
+      const res = await deduplicatePlannerTasksAPI();
+      const dbTasksRemoved = res?.removedTasksCount || 0;
+      const totalTasksRemoved = Math.max(removedLocalTasks, dbTasksRemoved);
+
+      if (totalTasksRemoved > 0) {
+        alert(`🧹 Cleaned up ${totalTasksRemoved} duplicate task${totalTasksRemoved > 1 ? 's' : ''}! Planner is now synchronized.`);
+      } else {
+        alert('✨ No duplicate tasks found! Your planner is 100% clean and synchronized.');
+      }
+    } catch (err) {
+      console.warn("Deduplication API error:", err);
+      setPlannerTasks(prev => deduplicateTasks(prev));
+      setScheduleTimeline(prev => deduplicateTimeline(prev));
+      alert("Duplicate tasks cleaned from current view.");
+    } finally {
+      setIsDeduplicating(false);
+    }
+  };
+
   // Clear all planner tasks from state & MySQL database
   const handleClearAllPlannerTasks = async () => {
     if (!window.confirm("Are you sure you want to clear all tasks from the Daily Planner & Database?")) return;
@@ -608,7 +1160,7 @@ export default function DailyPlannerView({
   const activeWeekdayLong = currentDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
   const activeWeekdayShort = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
 
-  const activeDayTasks = dayFilter === 'All Days'
+  const rawActiveDayTasks = dayFilter === 'All Days'
     ? plannerTasks
     : plannerTasks.filter(t => {
       if (!t.date) return true;
@@ -626,6 +1178,9 @@ export default function DailyPlannerView({
         return true;
       }
     });
+
+  // Ensure activeDayTasks is strictly deduplicated
+  const activeDayTasks = deduplicateTasks(rawActiveDayTasks);
 
   const parseTimeStrToMinutes = (timeStr) => {
     if (!timeStr) return Number.MAX_SAFE_INTEGER;
@@ -647,8 +1202,9 @@ export default function DailyPlannerView({
       const matchNotes = t.notes && t.notes.toLowerCase().includes(q);
       if (!matchTitle && !matchCategory && !matchNotes) return false;
     }
-    if (statusFilter === 'Pending') return t.status === 'Pending';
-    if (statusFilter === 'Completed') return t.status === 'Completed';
+    const isDone = isTaskCompletedForDate(t, activeDateStr);
+    if (statusFilter === 'Pending') return !isDone;
+    if (statusFilter === 'Completed') return isDone;
     if (statusFilter === 'High') return t.priority === 'High';
 
     if (timeFilter !== 'All') {
@@ -661,7 +1217,7 @@ export default function DailyPlannerView({
     return true;
   }).sort((a, b) => parseTimeStrToMinutes(a.time) - parseTimeStrToMinutes(b.time));
 
-  const activeDaySchedule = dayFilter === 'All Days'
+  const rawActiveDaySchedule = dayFilter === 'All Days'
     ? scheduleTimeline
     : scheduleTimeline.filter(s => {
       if (!s.date) return true;
@@ -672,13 +1228,17 @@ export default function DailyPlannerView({
       }
     });
 
+  // Ensure activeDaySchedule is strictly deduplicated
+  const activeDaySchedule = deduplicateTimeline(rawActiveDaySchedule);
+
   // Dynamic KPI metrics for active selected day
   const totalTasks = activeDayTasks.length;
   const highPriority = filteredTasks.filter(t => t.priority === 'High');
   const mediumPriority = filteredTasks.filter(t => t.priority === 'Medium');
   const lowPriority = filteredTasks.filter(t => t.priority === 'Low');
-  const completedCount = activeDayTasks.filter(t => t.status === 'Completed').length;
-  const pendingCount = activeDayTasks.filter(t => t.status === 'Pending').length;
+  const completedCount = activeDayTasks.filter(t => isTaskCompletedForDate(t, activeDateStr)).length;
+  const pendingCount = activeDayTasks.filter(t => !isTaskCompletedForDate(t, activeDateStr)).length;
+  const highPriorityCount = activeDayTasks.filter(t => t.priority === 'High').length;
   const completionRate = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
 
   const cleanDocumentText = (raw) => {
@@ -956,62 +1516,60 @@ Return ONLY a valid JSON array of objects with keys: "title", "category", "prior
       return;
     }
 
-    const docName = selectedFile ? selectedFile.name : "Document";
+    const cleanIdPart = s => (s || '').replace(/\[🥗\s*Diet\]/gi, '').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 30);
 
-    // Deduplicate: skip tasks already in plannerTasks with same title + date + time
-    const normalizeStr = s => (s || '').trim().toLowerCase();
-    const existingKeys = new Set(
-      plannerTasks.map(t => `${normalizeStr(t.title)}||${normalizeStr(t.date)}||${normalizeStr(t.time)}`)
-    );
+    const convertedTasks = selectedItems.map((item, i) => {
+      const normItemTitle = normalizeTaskTitle(item.title);
+      const normItemTime = (item.time || '').trim().toLowerCase();
+      const normItemDate = (item.date || '').trim().toLowerCase();
 
-    const filteredItems = selectedItems.filter(item => {
-      const key = `${normalizeStr(item.title)}||${normalizeStr(item.date)}||${normalizeStr(item.time)}`;
-      return !existingKeys.has(key);
+      const existingTask = plannerTasks.find(t => {
+        return normalizeTaskTitle(t.title) === normItemTitle &&
+               (t.time || '').trim().toLowerCase() === normItemTime &&
+               (t.date || '').trim().toLowerCase() === normItemDate;
+      });
+
+      return {
+        id: existingTask ? existingTask.id : `agenda_${cleanIdPart(item.title)}_${cleanIdPart(item.targetDay || 'day')}_${cleanIdPart(item.time || 'time')}`,
+        title: item.title,
+        category: item.category,
+        priority: item.priority,
+        status: existingTask ? existingTask.status : 'Pending',
+        completedDates: existingTask ? existingTask.completedDates : {},
+        time: item.time,
+        date: item.date,
+        targetDay: item.targetDay,
+        recurring: item.recurring,
+        notes: item.notes,
+        checkpoints: item.checkpoints || []
+      };
     });
 
-    const duplicateCount = selectedItems.length - filteredItems.length;
-    if (filteredItems.length === 0) {
-      alert(`All ${selectedItems.length} selected task${selectedItems.length > 1 ? 's' : ''} already exist in the planner. No new tasks added.`);
-      setExtractedPreviewTasks(null);
-      setSelectedFile(null);
-      return;
-    }
+    const convertedTimeline = selectedItems.map((item, i) => {
+      const existingTl = scheduleTimeline.find(tl => {
+        return normalizeTaskTitle(tl.title) === normalizeTaskTitle(item.title) &&
+               (tl.time || '').trim().toLowerCase() === (item.time || '').trim().toLowerCase() &&
+               (tl.date || '').trim().toLowerCase() === (item.date || '').trim().toLowerCase();
+      });
 
-    const newTasks = filteredItems.map((item, i) => ({
-      id: 'agenda_' + Date.now() + '_' + i,
-      title: item.title,
-      category: item.category,
-      priority: item.priority,
-      status: 'Pending',
-      time: item.time,
-      date: item.date,
-      targetDay: item.targetDay,
-      recurring: item.recurring,
-      notes: item.notes,
-      checkpoints: item.checkpoints || []
-    }));
+      return {
+        id: existingTl ? existingTl.id : `agenda_tl_${cleanIdPart(item.title)}_${cleanIdPart(item.date || 'date')}`,
+        time: item.time,
+        duration: '45m',
+        title: item.title,
+        subtitle: item.category,
+        status: existingTl ? existingTl.status : 'Pending',
+        date: item.date
+      };
+    });
 
-    const newTimeline = filteredItems.map((item, i) => ({
-      id: 'agenda_tl_' + Date.now() + '_' + i,
-      time: item.time,
-      duration: '45m',
-      title: item.title,
-      subtitle: item.category,
-      status: 'Pending',
-      date: item.date
-    }));
-
-    setPlannerTasks(prev => [...newTasks, ...prev]);
-    setScheduleTimeline(prev => [...newTimeline, ...prev]);
+    setPlannerTasks(prev => mergeAndUpdateTasks(prev, convertedTasks));
+    setScheduleTimeline(prev => deduplicateTimeline([...convertedTimeline, ...prev]));
 
     // Save directly to MySQL database via backend API
-    batchSavePlannerTasksAPI(newTasks, newTimeline).catch(err => {
+    batchSavePlannerTasksAPI(convertedTasks, convertedTimeline).catch(err => {
       console.warn("Backend batch save error:", err);
     });
-
-    if (duplicateCount > 0) {
-      console.info(`Skipped ${duplicateCount} duplicate task(s) already in planner.`);
-    }
 
     // Auto-navigate calendar to target date of confirmed tasks (e.g. Monday Aug 10)
     if (selectedItems.length > 0 && selectedItems[0].date) {
@@ -1076,28 +1634,53 @@ No office calls unless it's a true emergency.`);
 
   const renderTaskCard = (task) => {
     const isCompleted = isTaskCompletedForDate(task, activeDateStr);
+
+    const priorityConfig = {
+      High: {
+        badge: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200/70 dark:border-rose-800/60',
+        dot: 'bg-rose-500',
+        label: 'High'
+      },
+      Medium: {
+        badge: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/70 dark:border-amber-800/60',
+        dot: 'bg-amber-500',
+        label: 'Medium'
+      },
+      Low: {
+        badge: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/70 dark:border-emerald-800/60',
+        dot: 'bg-emerald-500',
+        label: 'Low'
+      }
+    };
+    const pStyle = priorityConfig[task.priority] || priorityConfig.Medium;
+
     return (
       <div
         key={task.id}
         onClick={() => openTaskModal(task)}
-        className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2 cursor-pointer hover:shadow-md hover:border-brand-500/80 ${task.priority === 'High' ? 'border-l-4 border-l-rose-500' :
-            task.priority === 'Medium' ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-emerald-500'
-          } ${isCompleted
-            ? 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200 text-slate-400 opacity-70'
-            : 'bg-white dark:bg-slate-800/90 border-slate-200/90 dark:border-slate-700/90'
-          }`}
+        className={`group p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-col gap-2.5 cursor-pointer relative ${
+          isCompleted
+            ? 'bg-slate-50/60 dark:bg-slate-900/30 border-slate-200/70 dark:border-slate-800/60 text-slate-400 opacity-65'
+            : 'bg-white dark:bg-slate-800/95 border-slate-200/80 dark:border-slate-700/80 shadow-xs hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 hover:-translate-y-0.5'
+        }`}
       >
         {/* Top Badge Bar */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] font-black text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-900/40 px-2 py-0.5 rounded-md border border-brand-200/50 dark:border-brand-800/50 flex items-center gap-1">
-              <Clock className="w-3 h-3 text-brand-600 shrink-0" />
-              {formatTimeRange(task.time)}
+            <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-lg border border-blue-200/60 dark:border-blue-800/60 flex items-center gap-1 shrink-0">
+              <Clock className="w-3 h-3 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span>{formatTimeRange(task.time)}</span>
             </span>
 
-            <span className="text-[10px] font-extrabold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-md">
+            <span className="text-[10px] font-extrabold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg">
               {task.category || 'Executive'}
             </span>
+
+            {((task.title && task.title.includes('[🥗 Diet]')) || ['Breakfast', 'Lunch', 'Dinner', 'Nutrition', 'Hydration', 'Health'].includes(task.category)) && (
+              <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                🥗 Diet
+              </span>
+            )}
 
             {/* Postponed badge — shown when task date is in the future */}
             {(() => {
@@ -1109,7 +1692,7 @@ No office calls unless it's a true emergency.`);
                 today.setHours(0, 0, 0, 0);
                 if (td > today) {
                   return (
-                    <span className="text-[10px] font-black text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/40 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800 flex items-center gap-1 shrink-0">
+                    <span className="text-[10px] font-black text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/40 px-2 py-0.5 rounded-lg border border-amber-200 dark:border-amber-800 flex items-center gap-1 shrink-0">
                       ⏭ {td.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </span>
                   );
@@ -1119,11 +1702,10 @@ No office calls unless it's a true emergency.`);
             })()}
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${task.priority === 'High' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300' :
-              task.priority === 'Medium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-              }`}>
-              {task.priority === 'High' ? 'High' : task.priority === 'Medium' ? 'Medium' : 'Low'}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-lg border flex items-center gap-1 ${pStyle.badge}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${pStyle.dot}`} />
+              <span>{task.priority || 'Medium'}</span>
             </span>
 
             {/* Postpone Button + Popover */}
@@ -1133,7 +1715,7 @@ No office calls unless it's a true emergency.`);
                   e.stopPropagation();
                   setPostponeTaskId(prev => prev === task.id ? null : task.id);
                 }}
-                className="p-1 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
+                className="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors cursor-pointer active:scale-90"
                 title="Postpone task"
               >
                 <SkipForward className="w-3.5 h-3.5" />
@@ -1142,7 +1724,7 @@ No office calls unless it's a true emergency.`);
               {/* Postpone Popover */}
               {postponeTaskId === task.id && (
                 <div
-                  className="absolute right-0 top-7 z-50 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-3 min-w-[190px] space-y-2"
+                  className="absolute right-0 top-8 z-50 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-3 min-w-[200px] space-y-2 animate-in fade-in zoom-in-95"
                   onClick={e => e.stopPropagation()}
                 >
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2 mb-1">
@@ -1150,7 +1732,7 @@ No office calls unless it's a true emergency.`);
                       <CalendarClock className="w-3.5 h-3.5 text-amber-500" />
                       <span className="text-[11px] font-extrabold text-slate-700 dark:text-slate-200">Postpone To</span>
                     </div>
-                    <button onClick={() => setPostponeTaskId(null)} className="text-slate-400 hover:text-slate-600">
+                    <button onClick={() => setPostponeTaskId(null)} className="text-slate-400 hover:text-slate-600 p-0.5">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1161,7 +1743,7 @@ No office calls unless it's a true emergency.`);
                     <button
                       key={opt.label}
                       onClick={() => postponeTask(task.id, opt.date)}
-                      className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-900/30 hover:text-amber-700 dark:hover:text-amber-400 transition-colors text-left"
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-900/30 hover:text-amber-700 dark:hover:text-amber-400 transition-colors text-left cursor-pointer"
                     >
                       <span>{opt.icon}</span>
                       <span>{opt.label}</span>
@@ -1172,14 +1754,14 @@ No office calls unless it's a true emergency.`);
                   ))}
                   {/* Custom date picker */}
                   <div className="border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
-                    <label className="block text-[10px] font-bold text-slate-400 mb-1.5">Pick a date</label>
+                    <label className="block text-[10px] font-bold text-slate-400 mb-1">Pick a date</label>
                     <input
                       type="date"
                       min={new Date().toISOString().split('T')[0]}
                       onChange={e => {
                         if (e.target.value) postponeTask(task.id, new Date(e.target.value + 'T00:00:00'));
                       }}
-                      className="w-full px-2 py-1.5 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-slate-700 dark:text-slate-200"
+                      className="w-full px-2 py-1 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-slate-700 dark:text-slate-200"
                     />
                   </div>
                 </div>
@@ -1191,7 +1773,7 @@ No office calls unless it's a true emergency.`);
                 e.stopPropagation();
                 deleteTask(task.id);
               }}
-              className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors"
+              className="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors cursor-pointer active:scale-90"
               title="Delete task"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -1199,28 +1781,67 @@ No office calls unless it's a true emergency.`);
           </div>
         </div>
 
-        {/* Main Task Title & Checkbox */}
-        <div className="flex items-start gap-2.5 pt-0.5">
-          <input
-            type="checkbox"
-            checked={isCompleted}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) => {
-              e.stopPropagation();
-              toggleTaskStatus(task.id, activeDateStr);
-            }}
-            className="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 cursor-pointer mt-0.5 shrink-0"
-          />
+        {/* Main Task Title & Interactive Circular Check Button */}
+        <div className="flex items-start gap-2.5 sm:gap-3 pt-0.5">
+          <div className="-m-1 p-1 shrink-0">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleTaskStatus(task.id, activeDateStr);
+              }}
+              className={`w-7 h-7 sm:w-5 sm:h-5 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-80 ${
+                isCompleted
+                  ? 'bg-emerald-500 text-white shadow-xs'
+                  : 'border-2 border-slate-300 dark:border-slate-600 hover:border-blue-500 bg-white dark:bg-slate-800'
+              }`}
+              title={isCompleted ? "Mark incomplete" : "Mark complete"}
+              aria-label="Toggle task completion"
+            >
+              {isCompleted && <Check className="w-4 h-4 sm:w-3 sm:h-3 stroke-[3]" />}
+            </button>
+          </div>
           <div className="flex-1 min-w-0">
-            <h4 className={`text-xs font-bold leading-snug break-words ${isCompleted ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'}`}>
+            <h4 className={`text-xs sm:text-sm font-extrabold leading-snug break-words transition-all ${isCompleted ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'}`}>
               {stripTimeFromTitle(task.title)}
             </h4>
-            {task.notes && (!task.checkpoints || task.checkpoints.length === 0) && (
-              <p className="text-[11px] text-purple-600 dark:text-purple-300 font-medium mt-1 flex items-center gap-1 line-clamp-1">
-                <FileText className="w-3 h-3 text-purple-500 shrink-0" />
-                <span>{task.notes}</span>
-              </p>
-            )}
+            {task.notes && (!task.checkpoints || task.checkpoints.length === 0) && (() => {
+              const isDietIngredients = task.notes.includes(';') || ['Health', 'Nutrition', 'Breakfast', 'Lunch', 'Dinner', 'Snack'].includes(task.category);
+              const ings = task.notes.split(';').map(s => s.trim()).filter(Boolean);
+
+              if (isDietIngredients && ings.length > 1) {
+                return (
+                  <div className="mt-2 pt-1.5 border-t border-dashed border-slate-200 dark:border-slate-800">
+                    <div className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
+                      <Utensils className="w-2.5 h-2.5" />
+                      <span>Ingredients ({ings.length}):</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {ings.slice(0, 4).map((ing, idx) => (
+                        <span
+                          key={idx}
+                          className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded text-[10px] font-semibold border border-emerald-200/50 dark:border-emerald-800/50"
+                        >
+                          {ing}
+                        </span>
+                      ))}
+                      {ings.length > 4 && (
+                        <span className="text-[9px] font-bold text-slate-400 self-center">
+                          +{ings.length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <p className="text-[11px] text-purple-600 dark:text-purple-300 font-medium mt-1 flex items-center gap-1 line-clamp-1">
+                  <FileText className="w-3 h-3 text-purple-500 shrink-0" />
+                  <span>{task.notes}</span>
+                </p>
+              );
+            })()}
             {task.checkpoints && task.checkpoints.length > 0 && (() => {
               const isExpanded = !!expandedSubtasks[task.id];
               const doneCount = task.checkpoints.filter(c => c.done).length;
@@ -1306,8 +1927,103 @@ No office calls unless it's a true emergency.`);
     );
   };
 
+  const renderRightColumnWidgets = () => (
+    <>
+      {/* Quick Diet & Health Card */}
+      <div className="card-base p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-cyan-500/5 dark:from-emerald-950/40 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800/60 shadow-sm flex flex-col justify-between">
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                <Utensils className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-black text-xs text-emerald-950 dark:text-emerald-200">Weekly Diet & Health Plan</h4>
+                <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">7-Day Calibrated Nutrition</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setActiveMainTab('diet')}
+              className="p-1 text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 cursor-pointer"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <p className="text-[11px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed mt-1">
+            Access calibrated meals, next-day ingredient prep, and real-time health score.
+          </p>
+
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              onClick={() => setActiveMainTab('diet')}
+              className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+            >
+              <Utensils className="w-3.5 h-3.5" />
+              <span>Open Full Diet Hub</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Plan Summary */}
+      <div className="card-base p-4 rounded-2xl bg-gradient-to-br from-purple-50/70 to-indigo-50/70 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-100 dark:border-purple-900/50 flex flex-col justify-between">
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-600" />
+              <h4 className="font-extrabold text-xs text-purple-900 dark:text-purple-300">AI Plan Summary</h4>
+            </div>
+            <ChevronRight className="w-4 h-4 text-purple-400 shrink-0" />
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
+            <div>• {totalTasks || 3} tasks scheduled for today</div>
+            <div>• Execution rate: {completionRate || 33}%</div>
+            <div>• {highPriority.length || 1} high priority tasks</div>
+            <div>• Estimated productivity: {completionRate || 33}%</div>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Suggestions Card */}
+      <div className="card-base p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-blue-600" />
+            <span className="font-extrabold text-xs text-slate-900 dark:text-white">AI Suggestions</span>
+          </div>
+          <button onClick={onOpenAI} className="text-xs text-blue-600 font-extrabold hover:underline cursor-pointer">Ask AI</button>
+        </div>
+
+        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80 flex items-center justify-between">
+          <div>
+            <div className="font-extrabold text-xs text-slate-900 dark:text-white">Peak Focus Slot</div>
+            <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium mt-0.5">10:00 AM – 12:30 PM (Peak Focus)</p>
+          </div>
+          <button
+            onClick={() => alert("AI optimization applied to your daily schedule!")}
+            className="px-3 py-1.5 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 text-xs font-extrabold rounded-xl transition-colors shrink-0 cursor-pointer"
+          >
+            View All Suggestions
+          </button>
+        </div>
+      </div>
+
+      {/* Task Status Legend */}
+      <div className="card-base p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
+        <span className="font-extrabold text-xs text-slate-900 dark:text-white block">Task Status Legend</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Completed</div>
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Pending</div>
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> In Progress</div>
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Overdue</div>
+        </div>
+      </div>
+    </>
+  );
+
   return (
-    <div className="space-y-4 sm:space-y-6 pb-20 lg:pb-12 text-slate-800 dark:text-slate-100">
+    <div className="space-y-3.5 sm:space-y-5 pb-28 sm:pb-24 lg:pb-12 text-slate-800 dark:text-slate-100">
       {/* Loading state while DB data is fetched */}
       {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
@@ -1322,38 +2038,50 @@ No office calls unless it's a true emergency.`);
       )}
 
       {/* Top Page Header & Navigation */}
-      <div className="flex flex-col gap-3 sm:gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col gap-2.5 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
           <div>
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
-                <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <div className="p-1.5 sm:p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+                <Calendar className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Daily Planner</h1>
+              <h1 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">Daily Planner</h1>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+            <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
               AI-driven date-wise agenda planner and operational schedule.
             </p>
           </div>
 
-          {/* Date Selector Navigation Bar */}
-          <div className="flex items-center justify-between sm:justify-end gap-2 bg-white dark:bg-slate-900 p-1.5 sm:p-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          {/* Date Selector Navigation Bar - Fully responsive on mobile */}
+          <div className="flex items-center justify-between gap-1.5 sm:gap-2 bg-white dark:bg-slate-900 p-1.5 sm:p-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs w-full sm:w-auto">
             <button
               onClick={() => handleDateChange(-1)}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
               title="Previous Day"
             >
               <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-              <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
-              <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate">{formattedDate}</span>
+            <div className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60 flex-1 sm:flex-initial min-w-0 relative">
+              <input
+                type="date"
+                value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    const [y, m, d] = e.target.value.split('-').map(Number);
+                    setCurrentDate(new Date(y, m - 1, d));
+                  }
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                title="Tap to select custom date"
+              />
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 shrink-0 pointer-events-none" />
+              <span className="font-black text-xs text-slate-900 dark:text-white truncate pointer-events-none">{formattedDate}</span>
             </div>
 
             <button
               onClick={() => handleDateChange(1)}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
               title="Next Day"
             >
               <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1362,59 +2090,356 @@ No office calls unless it's a true emergency.`);
             <button
               onClick={() => setCurrentDate(new Date())}
               title="Return to Today"
-              className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-extrabold hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition-all cursor-pointer min-w-[80px]"
+              className="px-2.5 sm:px-3 py-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-black hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition-all cursor-pointer shrink-0"
             >
-              {currentDate.toLocaleDateString('en-US', { weekday: 'long' })}
+              <span className="sm:hidden">Today</span>
+              <span className="hidden sm:inline">{currentDate.toLocaleDateString('en-US', { weekday: 'long' })}</span>
             </button>
           </div>
         </div>
 
-        {/* Action Buttons Row */}
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-end sm:gap-3">
+        {/* Primary Planner View Switcher: Executive Tasks vs Weekly Diet Plan */}
+        <div className="bg-slate-100 dark:bg-slate-800/70 p-1.5 rounded-2xl grid grid-cols-2 sm:inline-flex sm:w-auto gap-1.5 border border-slate-200/60 dark:border-slate-700/60">
           <button
-            onClick={() => setShowAgendaModal(true)}
-            className="w-full sm:w-auto px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
-            title="Upload Document / Agenda"
+            onClick={() => setActiveMainTab('tasks')}
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              activeMainTab === 'tasks'
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/60 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
           >
-            <Upload className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">Upload Document / Agenda</span>
-            <span className="sm:hidden text-[11px] truncate">Upload Agenda</span>
+            <CheckSquare className="w-4 h-4 shrink-0" />
+            <span className="truncate">
+              <span className="sm:hidden">Tasks</span>
+              <span className="hidden sm:inline">Executive Tasks & Agenda</span>
+            </span>
+            <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] shrink-0 ${activeMainTab === 'tasks' ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300 font-black' : 'bg-slate-200/70 dark:bg-slate-700 text-slate-500'}`}>
+              {totalTasks || 0}
+            </span>
           </button>
 
           <button
-            onClick={handleClearAllPlannerTasks}
-            className="w-full sm:w-auto px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 dark:text-rose-300 rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 border border-rose-100 dark:border-rose-900/60 transition-all cursor-pointer"
-            title="Clear all tasks from database"
+            onClick={() => setActiveMainTab('diet')}
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              activeMainTab === 'diet'
+                ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-200/60 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
           >
-            <Trash2 className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">Clear All Tasks</span>
-            <span className="sm:hidden text-[11px] truncate">Clear Tasks</span>
+            <Utensils className="w-4 h-4 shrink-0 text-emerald-500" />
+            <span className="truncate">
+              <span className="sm:hidden">Diet Hub</span>
+              <span className="hidden sm:inline">Weekly Diet & Health Plan</span>
+            </span>
+            <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-black shrink-0">
+              7 Days
+            </span>
           </button>
         </div>
       </div>
 
-      {/* Mobile Compact 1-Row Summary Bar (< sm - Saves Space on Mobile) */}
-      <div className="sm:hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-2.5 shadow-sm flex items-center justify-between gap-1 text-[11px] font-extrabold text-slate-700 dark:text-slate-200">
-        <div className="flex items-center gap-1">
-          <CheckSquare className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-          <span>{totalTasks || 3} Tasks</span>
-        </div>
-        <span className="text-slate-300 dark:text-slate-700">•</span>
-        <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-          <TrendingUp className="w-3.5 h-3.5 shrink-0" />
-          <span>{completionRate || 33}%</span>
-        </div>
-        <span className="text-slate-300 dark:text-slate-700">•</span>
-        <div className="flex items-center gap-1 text-amber-500">
-          <Clock className="w-3.5 h-3.5 shrink-0" />
-          <span>{pendingCount || 1} Pending</span>
-        </div>
-        <span className="text-slate-300 dark:text-slate-700">•</span>
-        <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400">
-          <Brain className="w-3.5 h-3.5 shrink-0" />
-          <span>94% AI</span>
-        </div>
-      </div>
+      {activeMainTab === 'diet' ? (
+        <WeeklyDietManager
+          plannerTasks={plannerTasks}
+          setPlannerTasks={setPlannerTasks}
+          setScheduleTimeline={setScheduleTimeline}
+          onOpenTaskModal={openTaskModal}
+        />
+      ) : (
+        <>
+          {/* Action Command Toolbar: Mobile-Optimized 2-Row Layout, Desktop 1-Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            {/* Primary Action Buttons: On Mobile, 2 prominent thumb buttons */}
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onMouseDown={handleVoiceHoldStart}
+                onMouseUp={handleVoiceHoldEnd}
+                onTouchStart={handleVoiceHoldStart}
+                onTouchEnd={handleVoiceHoldEnd}
+                onTouchCancel={handleVoiceCancel}
+                onClick={() => {
+                  if (Date.now() - holdStartTimeRef.current < 220 && !isHoldModeRef.current) {
+                    setShowVoiceAssistantModal(true);
+                  }
+                }}
+                className={`px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-black shadow-md flex items-center justify-center gap-1.5 transition-all select-none cursor-pointer active:scale-95 ${
+                  isHoldingVoice || isQuickListening
+                    ? 'bg-rose-600 text-white animate-pulse ring-4 ring-rose-400/50 shadow-rose-500/40'
+                    : isQuickAnalyzing
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-indigo-500/20'
+                }`}
+                title="Hold to speak, release to create task • Or tap for full Voice AI modal"
+              >
+                {isQuickAnalyzing ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-white shrink-0" />
+                ) : (
+                  <Mic className={`w-4 h-4 text-white shrink-0 ${isHoldingVoice ? 'animate-bounce' : 'animate-pulse'}`} />
+                )}
+                <span>{isHoldingVoice ? 'Release to Create' : isQuickAnalyzing ? 'Analyzing...' : 'Voice AI'}</span>
+              </button>
+
+              <button
+                onClick={onAddTask}
+                className="px-3.5 py-2.5 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
+                title="Add new task"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>Add Task</span>
+              </button>
+            </div>
+
+            {/* Secondary Tools: Compact horizontal strip */}
+            <div className="flex items-center justify-between sm:justify-end gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              <button
+                onClick={() => {
+                  setIngredientsTargetDay(null);
+                  setIngredientsTargetMealId(null);
+                  setShowIngredientsModal(true);
+                }}
+                className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 dark:text-emerald-300 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center gap-1 border border-emerald-200/70 dark:border-emerald-800/60 shadow-xs transition-all cursor-pointer active:scale-95 shrink-0"
+                title="View next-day meal ingredients"
+              >
+                <Utensils className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Ingredients</span>
+              </button>
+
+              <button
+                onClick={() => setShowAgendaModal(true)}
+                className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center gap-1 border border-slate-200/80 dark:border-slate-800 shadow-xs transition-all cursor-pointer active:scale-95 shrink-0"
+                title="Upload document or agenda"
+              >
+                <Upload className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <span>Upload Agenda</span>
+              </button>
+
+              <button
+                onClick={handleCleanDuplicates}
+                disabled={isDeduplicating}
+                className="px-2 sm:px-2.5 py-1.5 sm:py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center gap-1 border border-amber-200/60 dark:border-amber-800/60 transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                title="Clean duplicate tasks"
+              >
+                <Sparkles className={`w-3.5 h-3.5 text-amber-600 shrink-0 ${isDeduplicating ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Clean Dups</span>
+                <span className="sm:hidden">Clean</span>
+              </button>
+
+              <button
+                onClick={handleClearAllPlannerTasks}
+                className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-all cursor-pointer shrink-0"
+                title="Clear all tasks"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Interactive 4-Card Summary Grid (1-Tap Filter on Phone) */}
+          <div className="sm:hidden grid grid-cols-4 gap-1.5">
+            <button
+              onClick={() => setStatusFilter('All')}
+              className={`rounded-2xl border p-2 shadow-xs text-center flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 ${
+                statusFilter === 'All'
+                  ? 'bg-blue-50/90 border-blue-300 dark:bg-blue-950/50 dark:border-blue-700 ring-2 ring-blue-500/30'
+                  : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800'
+              }`}
+            >
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tasks</span>
+              <span className="text-base font-black text-slate-900 dark:text-white mt-0.5">{totalTasks || 0}</span>
+            </button>
+
+            <button
+              onClick={() => setStatusFilter('Completed')}
+              className={`rounded-2xl border p-2 shadow-xs text-center flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 ${
+                statusFilter === 'Completed'
+                  ? 'bg-emerald-50/90 border-emerald-300 dark:bg-emerald-950/50 dark:border-emerald-700 ring-2 ring-emerald-500/30'
+                  : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800'
+              }`}
+            >
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Done</span>
+              <span className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-0.5">{completionRate || 0}%</span>
+            </button>
+
+            <button
+              onClick={() => setStatusFilter('Pending')}
+              className={`rounded-2xl border p-2 shadow-xs text-center flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 ${
+                statusFilter === 'Pending'
+                  ? 'bg-amber-50/90 border-amber-300 dark:bg-amber-950/50 dark:border-amber-700 ring-2 ring-amber-500/30'
+                  : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800'
+              }`}
+            >
+              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Pending</span>
+              <span className="text-base font-black text-amber-600 dark:text-amber-400 mt-0.5">{pendingCount || 0}</span>
+            </button>
+
+            <button
+              onClick={() => setStatusFilter('High')}
+              className={`rounded-2xl border p-2 shadow-xs text-center flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 ${
+                statusFilter === 'High'
+                  ? 'bg-rose-50/90 border-rose-300 dark:bg-rose-950/50 dark:border-rose-700 ring-2 ring-rose-500/30'
+                  : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800'
+              }`}
+            >
+              <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">High</span>
+              <span className="text-base font-black text-rose-600 dark:text-rose-400 mt-0.5">{highPriorityCount || 0}</span>
+            </button>
+          </div>
+
+          {/* Fast Mobile Inline Quick-Add Task Bar with Embedded AI Voice Assistance */}
+          <div className="space-y-1.5">
+            <form
+              onSubmit={handleInlineQuickAdd}
+              className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-1.5 sm:p-2 rounded-2xl shadow-xs transition-all focus-within:border-blue-500/80 focus-within:ring-2 focus-within:ring-blue-500/20"
+            >
+              <div className="relative flex-1 min-w-0 flex items-center">
+                <Plus className="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" />
+                <input
+                  type="text"
+                  value={quickTaskTitle}
+                  onChange={(e) => setQuickTaskTitle(e.target.value)}
+                  placeholder={isQuickListening ? "Listening... Speak now..." : "Quick add task or tap mic..."}
+                  disabled={isQuickListening || isQuickAnalyzing}
+                  className="w-full pl-8 pr-10 py-1.5 text-sm sm:text-xs font-semibold bg-transparent text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+                />
+
+                {/* Inline Voice Assistance Mic Button with Push-To-Talk Hold */}
+                <button
+                  type="button"
+                  onMouseDown={handleVoiceHoldStart}
+                  onMouseUp={handleVoiceHoldEnd}
+                  onTouchStart={handleVoiceHoldStart}
+                  onTouchEnd={handleVoiceHoldEnd}
+                  onTouchCancel={handleVoiceCancel}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (Date.now() - holdStartTimeRef.current < 220 && !isHoldModeRef.current) {
+                      handleQuickVoiceToggle();
+                    }
+                  }}
+                  className={`absolute right-1 p-1.5 rounded-xl transition-all select-none cursor-pointer ${
+                    isHoldingVoice || isQuickListening
+                      ? 'bg-rose-500 text-white animate-pulse shadow-md shadow-rose-500/30 ring-2 ring-rose-400/50 scale-110'
+                      : isQuickAnalyzing
+                      ? 'bg-indigo-600 text-white animate-spin'
+                      : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800'
+                  }`}
+                  title="Hold to speak, release to create • Or tap to toggle"
+                >
+                  {isHoldingVoice || isQuickListening ? (
+                    <Mic className="w-3.5 h-3.5 animate-bounce" />
+                  ) : isQuickAnalyzing ? (
+                    <Loader2 className="w-3.5 h-3.5" />
+                  ) : (
+                    <Mic className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+
+              <select
+                value={quickTaskPriority}
+                onChange={(e) => setQuickTaskPriority(e.target.value)}
+                className="text-[11px] font-black bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1 text-slate-700 dark:text-slate-200 shrink-0 cursor-pointer"
+              >
+                <option value="High">🔥 High</option>
+                <option value="Medium">🟡 Med</option>
+                <option value="Low">🟢 Low</option>
+              </select>
+
+              <button
+                type="submit"
+                disabled={!quickTaskTitle.trim() || isQuickListening || isQuickAnalyzing}
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shrink-0 transition-all disabled:opacity-40 cursor-pointer active:scale-95 shadow-xs"
+              >
+                Add
+              </button>
+            </form>
+
+            {/* LIVE VOICE WRITING BAR & SOUNDWAVE INDICATOR */}
+            {(isQuickListening || isHoldingVoice) && (
+              <div className="flex items-center justify-between gap-2.5 px-3 py-2 bg-gradient-to-r from-rose-50 via-pink-50 to-purple-50 dark:from-rose-950/40 dark:via-purple-950/40 dark:to-slate-900 border border-rose-200/80 dark:border-rose-900/60 rounded-xl animate-in fade-in slide-in-from-top-1 shadow-xs">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  {/* Soundwave Bars */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="w-1 h-3 bg-rose-500 rounded-full animate-bounce [animation-delay:0ms]" />
+                    <span className="w-1 h-5 bg-rose-500 rounded-full animate-bounce [animation-delay:150ms]" />
+                    <span className="w-1 h-2 bg-rose-500 rounded-full animate-bounce [animation-delay:300ms]" />
+                    <span className="w-1 h-4 bg-rose-500 rounded-full animate-bounce [animation-delay:100ms]" />
+                  </div>
+                  {/* Live Writing Bar Text */}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                      {isHoldingVoice ? '🎙️ Hold & Speak • Release When Done' : 'Live Voice Bar • Listening'}
+                    </div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                      {quickVoiceTranscript ? `“${quickVoiceTranscript}”` : isHoldingVoice ? 'Keep holding and speak your task...' : 'Speak your task (e.g., "Urgent client meeting at 2pm")...'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopQuickVoice();
+                    if (quickTranscriptRef.current) analyzeAndCreateQuickTask(quickTranscriptRef.current);
+                  }}
+                  className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-black shrink-0 transition-all cursor-pointer shadow-xs active:scale-95"
+                >
+                  Done
+                </button>
+              </div>
+            )}
+
+            {/* AI AUTOCORRECTING & ANALYZING STATUS */}
+            {isQuickAnalyzing && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50/80 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-900/60 rounded-xl text-xs font-bold text-indigo-700 dark:text-indigo-300 animate-pulse shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 animate-spin text-indigo-600 dark:text-indigo-400 shrink-0" />
+                <span>AI is autocorrecting speech & structuring best task...</span>
+              </div>
+            )}
+
+            {/* SUCCESS BANNER: BEST TASK CREATED */}
+            {quickVoiceResult && (
+              <div className="flex items-center justify-between gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900/60 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-200 shadow-xs animate-in fade-in zoom-in-95">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <div className="truncate">
+                    <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wide block">
+                      Autocorrected & Task Created!
+                    </span>
+                    <span className="font-extrabold text-slate-800 dark:text-slate-100">{quickVoiceResult.title}</span>
+                    <span className="ml-1.5 px-1.5 py-0.2 text-[9px] font-black bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 rounded">
+                      {quickVoiceResult.priority}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setQuickVoiceResult(null)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-[10px] font-black shrink-0 px-1 py-0.5 cursor-pointer"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
+
+            {/* ERROR NOTIFICATION */}
+            {quickVoiceError && (
+              <div className="flex items-center justify-between gap-2 px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-300">
+                <span>{quickVoiceError}</span>
+                <button
+                  type="button"
+                  onClick={() => setQuickVoiceError(null)}
+                  className="text-rose-500 hover:text-rose-700 text-[10px] font-bold cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
+
 
       {/* Desktop KPI Overview Cards (hidden on mobile, sm:grid on larger screens) */}
       <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
@@ -1482,46 +2507,104 @@ No office calls unless it's a true emergency.`);
         {/* Left Column: Active Day's Tasks Checklist (8 Cols) */}
         <div className="lg:col-span-8 card-base p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
           <div>
-            {/* Header & Filter Controls Bar (Ultra-Compact 1-Row on Mobile) */}
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <h3 className="font-black text-slate-900 dark:text-white text-sm sm:text-base truncate">
-                {dayFilter === 'All Days' ? 'All Scheduled Tasks' : `Today's Tasks`} ({totalTasks || 3})
-              </h3>
+            {/* Header & Filter Controls Bar (Mobile-Optimized) */}
+            <div className="space-y-2 mb-3">
+              {/* Row 1: Title & Action Buttons */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <h3 className="font-black text-slate-900 dark:text-white text-sm sm:text-base truncate">
+                    {dayFilter === 'All Days' ? 'All Scheduled Tasks' : `Today's Tasks`}
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 text-xs font-black shrink-0">
+                    {totalTasks || 0}
+                  </span>
+                </div>
 
-              <div className="flex items-center gap-1.5 shrink-0">
-                <select
-                  value={groupBy}
-                  onChange={(e) => setGroupBy(e.target.value)}
-                  className="text-[11px] sm:text-xs font-extrabold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-slate-700 dark:text-slate-200 cursor-pointer"
-                >
-                  <option value="Time">📋 Time</option>
-                  <option value="Priority">🔥 Priority</option>
-                  <option value="Status">📊 Status</option>
-                </select>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <select
+                    value={groupBy}
+                    onChange={(e) => setGroupBy(e.target.value)}
+                    className="text-[11px] sm:text-xs font-black bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1.5 text-slate-700 dark:text-slate-200 cursor-pointer"
+                  >
+                    <option value="Time">📋 Time</option>
+                    <option value="Priority">🔥 Priority</option>
+                    <option value="Status">📊 Status</option>
+                  </select>
 
-                <button
-                  onClick={handleAISmartPrioritize}
-                  className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 hover:bg-purple-100 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1 border border-purple-200 dark:border-purple-800 transition-all cursor-pointer"
-                  title="Auto-sort tasks by priority & impact"
-                >
-                  <Zap className="w-3.5 h-3.5 text-purple-600 animate-pulse shrink-0" />
-                  <span className="hidden sm:inline">AI Prioritize</span>
-                  <span className="sm:hidden">AI</span>
-                </button>
+                  <button
+                    onClick={handleAISmartPrioritize}
+                    className="px-2.5 py-1.5 bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 hover:bg-purple-100 rounded-xl text-[11px] sm:text-xs font-black flex items-center justify-center gap-1 border border-purple-200 dark:border-purple-800 transition-all cursor-pointer active:scale-95"
+                    title="Auto-sort tasks by priority & impact"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-purple-600 animate-pulse shrink-0" />
+                    <span className="hidden sm:inline">AI Prioritize</span>
+                    <span className="sm:hidden">AI</span>
+                  </button>
 
-                <button
-                  onClick={onAddTask}
-                  className="hidden sm:flex px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold items-center justify-center gap-1 shadow-sm transition-all cursor-pointer shrink-0"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add</span>
-                </button>
+                  <button
+                    onClick={onAddTask}
+                    className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black flex items-center justify-center gap-1 shadow-xs transition-all cursor-pointer shrink-0 active:scale-95"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Row 2: Search Input (Full width, responsive, instant reset) */}
+              <div className="relative w-full">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search scheduled tasks by title, category, or notes..."
+                  className="w-full pl-8 pr-7 py-1.5 sm:py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
 
-
-
-            {/* Task List Grouped / Chronological */}
+            {/* Quick Status Filter Tabs with Icons & Color Badges */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2.5 mb-3 border-b border-slate-100 dark:border-slate-800/80">
+              {[
+                { id: 'All', label: 'All Tasks', icon: List, count: totalTasks, activeColor: 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' },
+                { id: 'Pending', label: 'Pending', icon: Clock, count: pendingCount, activeColor: 'bg-amber-500 text-white shadow-amber-500/20' },
+                { id: 'Completed', label: 'Done', icon: CheckCircle2, count: completedCount, activeColor: 'bg-emerald-600 text-white shadow-emerald-600/20' },
+                { id: 'High', label: 'High Priority', icon: Flame, count: highPriorityCount, activeColor: 'bg-rose-600 text-white shadow-rose-600/20' }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = statusFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setStatusFilter(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 active:scale-95 ${
+                      isActive
+                        ? `${tab.activeColor} shadow-xs`
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span>{tab.label}</span>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                    }`}>
+                      {tab.count || 0}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
             <div className="space-y-3 max-h-[550px] overflow-y-auto pr-1">
               {filteredTasks.length > 0 ? (
                 groupBy === 'Time' ? (
@@ -1578,73 +2661,46 @@ No office calls unless it's a true emergency.`);
           </div>
         </div>
 
-        {/* Right Column: AI Insights & Plan Source (4 Cols) */}
-        <div className="lg:col-span-4 space-y-4">
-          {/* AI Plan Summary (Matches Screenshot) */}
-          <div className="card-base p-4 rounded-2xl bg-gradient-to-br from-purple-50/70 to-indigo-50/70 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-100 dark:border-purple-900/50 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
+        {/* Right Column: AI Insights & Plan Source (4 Cols on desktop, collapsible on mobile) */}
+        <div className="lg:col-span-4">
+          {/* Mobile Collapsible Accordion (Prevents long scroll past all tasks on phones) */}
+          <div className="lg:hidden mb-2">
+            <details className="group rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
+              <summary className="flex items-center justify-between p-3.5 cursor-pointer list-none select-none font-black text-xs text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-600" />
-                  <h4 className="font-extrabold text-xs text-purple-900 dark:text-purple-300">AI Plan Summary</h4>
+                  <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span>AI Insights, Diet Hub & Legend</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-purple-400 shrink-0" />
+                <ChevronDown className="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform duration-200 shrink-0" />
+              </summary>
+              <div className="p-3 pt-1 space-y-3.5 border-t border-slate-100 dark:border-slate-800/80">
+                {renderRightColumnWidgets()}
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
-                <div>• {totalTasks || 3} tasks scheduled for today</div>
-                <div>• Execution rate: {completionRate || 33}%</div>
-                <div>• {highPriority.length || 1} high priority tasks</div>
-                <div>• Estimated productivity: {completionRate || 33}%</div>
-              </div>
-            </div>
+            </details>
           </div>
 
-          {/* AI Suggestions Card (Matches Screenshot) */}
-          <div className="card-base p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-blue-600" />
-                <span className="font-extrabold text-xs text-slate-900 dark:text-white">AI Suggestions</span>
-              </div>
-              <button onClick={onOpenAI} className="text-xs text-blue-600 font-extrabold hover:underline cursor-pointer">Ask AI</button>
-            </div>
-
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80 flex items-center justify-between">
-              <div>
-                <div className="font-extrabold text-xs text-slate-900 dark:text-white">Peak Focus Slot</div>
-                <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium mt-0.5">10:00 AM – 12:30 PM (Peak Focus)</p>
-              </div>
-              <button
-                onClick={() => alert("AI optimization applied to your daily schedule!")}
-                className="px-3 py-1.5 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 text-xs font-extrabold rounded-xl transition-colors shrink-0 cursor-pointer"
-              >
-                View All Suggestions
-              </button>
-            </div>
-          </div>
-
-          {/* Task Status Legend (Matches Screenshot) */}
-          <div className="card-base p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
-            <span className="font-extrabold text-xs text-slate-900 dark:text-white block">Task Status Legend</span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Completed</div>
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Pending</div>
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> In Progress</div>
-              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Overdue</div>
-            </div>
+          {/* Desktop Persistent 4-Column Layout */}
+          <div className="hidden lg:block space-y-4">
+            {renderRightColumnWidgets()}
           </div>
         </div>
       </div>
+      </>
+      )}
 
       {/* AI Agenda & Document Upload Modal Overlay */}
       {showAgendaModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg p-4 sm:p-6 space-y-3.5 my-auto max-h-[90vh] overflow-y-auto max-w-full">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+          <div className="fixed inset-0" onClick={() => { setShowAgendaModal(false); setSelectedFile(null); }} />
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg p-4 sm:p-6 space-y-3.5 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto z-10 animate-in slide-in-from-bottom duration-200">
+            {/* Mobile Drag Indicator Bar */}
+            <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto -mt-1 mb-2 sm:hidden" />
+
             {/* Modal Header (Sticky on Mobile) */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 sticky top-0 bg-white dark:bg-slate-900 z-10">
               <h3 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base flex items-center gap-2 truncate pr-2">
                 <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 shrink-0" />
-                <span className="truncate">Upload Agenda & AI Task Generator</span>
+                <span className="truncate">Upload Agenda & AI Tasks</span>
               </h3>
               <button
                 onClick={() => {
@@ -1975,8 +3031,12 @@ No office calls unless it's a true emergency.`);
 
       {/* Task Details & Notes Modal Overlay */}
       {selectedTaskModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg p-4 sm:p-6 space-y-4 my-auto max-h-[90vh] overflow-y-auto max-w-full">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+          <div className="fixed inset-0" onClick={() => setSelectedTaskModal(null)} />
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg p-4 sm:p-6 space-y-4 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto z-10 animate-in slide-in-from-bottom duration-200">
+            {/* Mobile Drag Indicator Bar */}
+            <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto -mt-1 mb-2 sm:hidden" />
+
             <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand-600 bg-brand-50 dark:bg-brand-900/30 px-2 py-0.5 rounded-md">
@@ -2018,6 +3078,44 @@ No office calls unless it's a true emergency.`);
               </div>
             </div>
 
+            {/* Ingredients Breakdown if task has ingredients in notes */}
+            {taskNotes && (taskNotes.includes(';') || ['Health', 'Nutrition', 'Breakfast', 'Lunch', 'Dinner', 'Snack'].includes(selectedTaskModal.category)) && (() => {
+              const ings = taskNotes.split(';').map(s => s.trim()).filter(Boolean);
+              if (ings.length <= 1) return null;
+              return (
+                <div className="space-y-2 p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[11px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                      <Utensils className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Ingredients & Quantities ({ings.length}):</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedTaskModal.targetDay) setIngredientsTargetDay(selectedTaskModal.targetDay);
+                        const dId = selectedTaskModal.dietId || (String(selectedTaskModal.id).startsWith('diet_') ? selectedTaskModal.id : null);
+                        if (dId) setIngredientsTargetMealId(dId);
+                        setShowIngredientsModal(true);
+                      }}
+                      className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-300 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      🥕 Choose Meal & View Ingredients →
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {ings.map((ing, i) => (
+                      <span
+                        key={i}
+                        className="px-2.5 py-1 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-emerald-950 dark:text-emerald-100 border border-emerald-200 dark:border-emerald-800 shadow-2xs"
+                      >
+                        {ing}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Task Execution Notes */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
@@ -2057,29 +3155,33 @@ No office calls unless it's a true emergency.`);
             </div>
 
             {/* Modal Actions */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 gap-2">
               <button
                 onClick={() => {
                   deleteTask(selectedTaskModal.id);
                   setSelectedTaskModal(null);
                 }}
-                className="px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl flex items-center gap-1"
+                className="px-3 py-2 min-h-[40px] text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl flex items-center gap-1 cursor-pointer transition-colors active:scale-95"
               >
-                <Trash2 className="w-3.5 h-3.5" /> Delete Task
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Delete Task</span>
+                <span className="sm:hidden">Delete</span>
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   onClick={() => setSelectedTaskModal(null)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="px-3 sm:px-4 py-2 min-h-[40px] border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer active:scale-95"
                 >
                   Close
                 </button>
                 <button
                   onClick={handleSaveTaskDetails}
-                  className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"
+                  className="px-3.5 sm:px-5 py-2 min-h-[40px] bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-extrabold shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95"
                 >
-                  <CheckCircle2 className="w-4 h-4" /> Save Notes & Changes
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Save Notes & Changes</span>
+                  <span className="sm:hidden">Save</span>
                 </button>
               </div>
             </div>
@@ -2087,14 +3189,35 @@ No office calls unless it's a true emergency.`);
         </div>
       )}
 
-      {/* ── Floating Filter Button (Mobile Only: lg:hidden) ── */}
+      {/* ── Next-Day Ingredients & Meal Preparation Modal ── */}
+      <NextDayIngredientsModal
+        isOpen={showIngredientsModal}
+        onClose={() => {
+          setShowIngredientsModal(false);
+          setIngredientsTargetMealId(null);
+        }}
+        initialTargetDay={ingredientsTargetDay}
+        initialMealId={ingredientsTargetMealId}
+      />
+
+      {/* ── Floating Voice Assistant Button (Mobile & Tablet: Bottom Right with safe-area spacing) ── */}
       <button
-        onClick={() => setShowMobileFilterModal(true)}
-        className="fixed bottom-20 right-4 z-40 lg:hidden p-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all scale-100 active:scale-95 border-2 border-white dark:border-slate-900 cursor-pointer"
-        title="Open Planner Filters"
+        onClick={() => setShowVoiceAssistantModal(true)}
+        className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] right-4 z-40 lg:hidden px-3.5 py-2.5 bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white rounded-full shadow-2xl shadow-indigo-500/30 flex items-center gap-1.5 transition-all scale-100 active:scale-90 border-2 border-white dark:border-slate-900 cursor-pointer"
+        title="Speak to AI Voice Assistant"
+        aria-label="AI Voice Assistant"
       >
-        <Filter className="w-6 h-6 text-white" />
+        <Mic className="w-4 h-4 text-white animate-pulse" />
+        <span className="text-xs font-black tracking-wide">Voice</span>
       </button>
+
+      {/* ── AI Voice Assistant Modal ── */}
+      <VoiceAssistantModal
+        isOpen={showVoiceAssistantModal}
+        onClose={() => setShowVoiceAssistantModal(false)}
+        currentDate={currentDate}
+        onTaskCreated={handleCreateTaskFromVoice}
+      />
 
       {/* ── Mobile Filters Drawer Modal ── */}
       {showMobileFilterModal && (
@@ -2206,6 +3329,58 @@ No office calls unless it's a true emergency.`);
                 Apply Filters
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Voice Assistant Full Screen / Sheet Modal */}
+      {showVoiceAssistantModal && (
+        <VoiceAssistantModal
+          isOpen={showVoiceAssistantModal}
+          onClose={() => setShowVoiceAssistantModal(false)}
+          currentDate={currentDate}
+          onTaskCreated={(newTask) => {
+            setPlannerTasks(prev => [newTask, ...prev]);
+            createPlannerTaskAPI(newTask).catch(err => console.warn('Voice task save error:', err));
+          }}
+        />
+      )}
+
+      {/* Mobile Push-To-Talk Floating Active Hold HUD */}
+      {isHoldingVoice && (
+        <div className="fixed inset-x-3 bottom-20 z-50 p-4 rounded-3xl bg-slate-900/95 text-white backdrop-blur-xl border border-rose-500/50 shadow-2xl animate-in slide-in-from-bottom-5 duration-200">
+          <div className="flex items-center gap-3">
+            <div className="relative w-12 h-12 rounded-2xl bg-rose-500 flex items-center justify-center shrink-0 shadow-lg shadow-rose-500/50 animate-pulse">
+              <Mic className="w-6 h-6 text-white animate-bounce" />
+              <span className="absolute -inset-1 rounded-2xl bg-rose-400/30 animate-ping pointer-events-none" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                  Hold & Speak • Release When Done
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold">Release to create</span>
+              </div>
+
+              <p className="text-sm font-extrabold text-white truncate mt-1">
+                {quickVoiceTranscript ? `“${quickVoiceTranscript}”` : 'Listening... Speak your task naturally...'}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <div className="flex items-center gap-1">
+              <span className="w-1 h-3 bg-rose-500 rounded-full animate-bounce [animation-delay:0ms]" />
+              <span className="w-1 h-5 bg-rose-500 rounded-full animate-bounce [animation-delay:150ms]" />
+              <span className="w-1 h-2 bg-rose-500 rounded-full animate-bounce [animation-delay:300ms]" />
+              <span className="w-1 h-6 bg-rose-500 rounded-full animate-bounce [animation-delay:100ms]" />
+              <span className="w-1 h-4 bg-rose-500 rounded-full animate-bounce [animation-delay:250ms]" />
+            </div>
+            <span className="text-[10px] font-semibold text-rose-300">
+              ⚡ Releasing will autocorrect & create best task automatically
+            </span>
           </div>
         </div>
       )}

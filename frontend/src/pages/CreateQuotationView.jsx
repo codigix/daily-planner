@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   ArrowLeft, Plus, Trash2, Download, Printer, FileText, 
@@ -8,6 +8,23 @@ import {
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { toJpeg } from 'html-to-image';
+import { 
+  Editor as KendoEditor, 
+  EditorTools 
+} from '@progress/kendo-react-editor';
+import '@progress/kendo-theme-default/dist/all.css';
+
+const {
+  Bold, Italic, Underline, Strikethrough, Subscript, Superscript,
+  AlignLeft, AlignCenter, AlignRight, AlignJustify,
+  Indent, Outdent,
+  OrderedList, UnorderedList,
+  FormatBlock, FontSize, FontName, ForeColor, BackColor,
+  Undo, Redo,
+  Link, Unlink, InsertImage,
+  ViewHtml, CleanFormatting,
+  InsertTable, AddRowBefore, AddRowAfter, AddColumnBefore, AddColumnAfter, DeleteRow, DeleteColumn, DeleteTable, MergeCells, SplitCell
+} = EditorTools;
 
 // QUOTATION THEMES & TEMPLATES DEFINITION
 const QUOTATION_THEMES = [
@@ -205,7 +222,9 @@ const SAMPLE_CODIGIX_DATA = {
     }
   ],
 
-  deliverables: [
+  scopeOfWorkHtml: '<p>Enter your detailed scope of work here, including tables...</p>',
+    sowMode: 'advanced',
+    deliverables: [
     'UI/UX Design & Prototyping',
     'Trainer Mobile Application – Android & iOS',
     'Client Mobile Application – Android & iOS',
@@ -307,48 +326,29 @@ const EMPTY_QUOTATION_STATE = {
   statClients: '',
   ourFocusTag: '',
   ourFocusTitle: '',
-  valueBadges: ['', '', ''],
+  valueBadges: [],
 
   execSummary: '',
   ecosystemTagline: '',
+  solutionCards: [],
 
-  solutionCards: [
-    { badge: '', title: '', description: '', footer: '', icon: '📱' },
-    { badge: '', title: '', description: '', footer: '', icon: '📱' },
-    { badge: '', title: '', description: '', footer: '', icon: '💻' }
-  ],
+  scopeOfWorkHtml: '<p></p>',
+  sowMode: 'advanced',
+  deliverables: [],
 
-  deliverables: [''],
-
-  teamList: [
-    { role: '', count: '', details: '' }
-  ],
-
-  integrations: [
-    'Google Play Developer Account',
-    'Apple Developer Program',
-    'Cloud Hosting (AWS/Azure/GCP)',
-    'Domain & SSL',
-    'SMS / OTP Gateway',
-    'Payment Gateway',
-    'WhatsApp Business API'
-  ],
+  teamList: [],
+  integrations: [],
 
   totalCost: '',
   gstPercent: '18',
-  particulars: [
-    { name: 'AMC', value: '30% of total Project Cost' },
-    { name: 'Support', value: '60 Days (Post-handover)' },
-    { name: 'Extra Customizations / Modules', value: 'Chargeable as per requirement' },
-    { name: 'Implementation Time', value: '90 working days (Mon-Fri)' },
-    { name: 'Payment Terms', value: '1. 50% Advance\n2. 40% Once complete System Deployed on your domain\n3. 10% After System deployed' }
-  ],
+  particulars: [],
 
   bankAccountNo: '',
   bankAccountName: '',
   bankIFSC: '',
   bankBranch: '',
-  notesList: [''],
+  bankGST: '',
+  notesList: [],
 
   customPages: []
 };
@@ -378,7 +378,10 @@ export default function CreateQuotationView({ onNavigate }) {
   const storageKey = user?.id ? `codigix_quotation_data_${user.id}` : 'codigix_quotation_data';
 
   const [mainWorkflowTab, setMainWorkflowTab] = useState('fill'); // 'fill', 'theme', 'arrange', 'download'
-  const [activeSection, setActiveSection] = useState('cover'); // 'cover', 'about', 'summary', 'deliverables', 'team', 'budget', 'notes', 'images'
+  const [activeSection, setActiveSection] = useState('cover');
+  const [showSowModal, setShowSowModal] = useState(false);
+  const sowContentRef = useRef('');
+  const [tempSowHtml, setTempSowHtml] = useState(''); // 'cover', 'about', 'summary', 'deliverables', 'team', 'budget', 'notes', 'images'
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0); // 0 to 100%
   const [showSaveToast, setShowSaveToast] = useState(false);
@@ -390,11 +393,40 @@ export default function CreateQuotationView({ onNavigate }) {
       try {
         const parsed = JSON.parse(saved);
         if (!parsed.customPages) parsed.customPages = [];
-        if (!parsed.solutionCards) parsed.solutionCards = SAMPLE_CODIGIX_DATA.solutionCards;
-        if (!parsed.ecosystemTagline) parsed.ecosystemTagline = SAMPLE_CODIGIX_DATA.ecosystemTagline;
-        if (!parsed.valueBadges || parsed.valueBadges.length === 0) parsed.valueBadges = SAMPLE_CODIGIX_DATA.valueBadges;
-        if (!parsed.ourFocusTag) parsed.ourFocusTag = 'OUR FOCUS';
-        if (!parsed.ourFocusTitle) parsed.ourFocusTitle = 'Innovating Digital Excellence';
+        if (!parsed.solutionCards || (Array.isArray(parsed.solutionCards) && parsed.solutionCards.some(c => c.title === 'Trainer Mobile App'))) {
+          parsed.solutionCards = [];
+        }
+        if (parsed.deliverables && Array.isArray(parsed.deliverables) && parsed.deliverables.some(d => (typeof d === 'string' && d.includes('Trainer Mobile')) || (d?.title && d.title.includes('Trainer Mobile')))) {
+          parsed.deliverables = [];
+        }
+        if (parsed.execSummary && parsed.execSummary.includes('FitRack')) {
+          parsed.execSummary = '';
+        }
+        if (parsed.ecosystemTagline === 'CONNECTED 3-TIER ECOSYSTEM') {
+          parsed.ecosystemTagline = '';
+        }
+        if (parsed.valueBadges && Array.isArray(parsed.valueBadges) && parsed.valueBadges.some(b => b === 'High-Performance Enterprise Architecture')) {
+          parsed.valueBadges = [];
+        }
+        if (parsed.teamList && Array.isArray(parsed.teamList) && parsed.teamList.some(t => t.role === 'Project Manager' && t.details?.includes('Requirements, workflows'))) {
+          parsed.teamList = [];
+        }
+        if (parsed.integrations && Array.isArray(parsed.integrations) && parsed.integrations.some(i => i === 'Google Play Developer Account')) {
+          parsed.integrations = [];
+        }
+        if (parsed.particulars && Array.isArray(parsed.particulars) && parsed.particulars.some(p => p.name === 'AMC' && p.value?.includes('30%'))) {
+          parsed.particulars = [];
+        }
+        if (parsed.notesList && Array.isArray(parsed.notesList) && parsed.notesList.some(n => n?.includes('All Module features'))) {
+          parsed.notesList = [];
+        }
+        if (!parsed.solutionCards) parsed.solutionCards = [];
+        if (!parsed.valueBadges) parsed.valueBadges = [];
+        if (!parsed.deliverables) parsed.deliverables = [];
+        if (!parsed.teamList) parsed.teamList = [];
+        if (!parsed.integrations) parsed.integrations = [];
+        if (!parsed.particulars) parsed.particulars = [];
+        if (!parsed.notesList) parsed.notesList = [];
         if (!parsed.selectedTheme) parsed.selectedTheme = 'codigix_red';
         return parsed;
       } catch (e) {
@@ -447,6 +479,7 @@ export default function CreateQuotationView({ onNavigate }) {
   const handleClearForm = () => {
     setQuotationData({ ...EMPTY_QUOTATION_STATE, selectedTheme: currentThemeKey });
     localStorage.removeItem('codigix_quotation_data');
+    localStorage.removeItem(storageKey);
   };
 
   const handleInputChange = (field, value) => {
@@ -1203,7 +1236,45 @@ export default function CreateQuotationView({ onNavigate }) {
                 </button>
                 
                 {activeSection === 'deliverables' && (
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2">
+                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
+                    <div className="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="radio" 
+                          name="sowMode"
+                          checked={quotationData.sowMode === 'simple'}
+                          onChange={() => setQuotationData(prev => ({...prev, sowMode: 'simple'}))}
+                        />
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Simple Grid Mode</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="radio" 
+                          name="sowMode"
+                          checked={quotationData.sowMode === 'advanced'}
+                          onChange={() => setQuotationData(prev => ({...prev, sowMode: 'advanced'}))}
+                        />
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Advanced Editor Mode</span>
+                      </label>
+                    </div>
+
+                    {quotationData.sowMode === 'advanced' ? (
+                      <div className="mt-4 flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-xl bg-blue-50/50 dark:bg-blue-900/20">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 text-center max-w-sm">
+                          Advanced mode allows you to use a full rich-text editor with tables, lists, and deep formatting.
+                        </p>
+                        <button 
+                          onClick={() => {
+                            sowContentRef.current = quotationData.scopeOfWorkHtml;
+                            setShowSowModal(true);
+                          }}
+                          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow-sm transition-all flex items-center gap-2"
+                        >
+                          <Layout className="w-4 h-4" /> Open Full-Page Editor
+                        </button>
+                      </div>
+                    ) : (
+                    <div className="space-y-2">
                     {quotationData.deliverables.map((item, index) => {
                       const isHeading = typeof item === 'string' ? item.startsWith('## ') : item.title?.startsWith('## ');
                       const title = typeof item === 'string' ? item : (item.title || '');
@@ -1244,6 +1315,8 @@ export default function CreateQuotationView({ onNavigate }) {
                         + Add Heading
                       </button>
                     </div>
+                    </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1306,13 +1379,13 @@ export default function CreateQuotationView({ onNavigate }) {
                       <div className="flex items-center justify-between">
                         <label className="text-[11px] font-semibold text-slate-500 uppercase">Investment Blocks</label>
                         <button onClick={() => {
-                          const current = quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '7,80,000', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }];
+                          const current = quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }];
                           handleInputChange('pricingOptions', [...current, { title: 'NEW INVESTMENT PHASE', cost: '', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]);
                         }} className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
                           + Add Block
                         </button>
                       </div>
-                      {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '7,80,000', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, index) => (
+                      {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, index) => (
                         <div key={index} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2 relative group">
                            {((quotationData.pricingOptions?.length || 1) > 1) && (
                              <button onClick={() => {
@@ -1641,15 +1714,15 @@ export default function CreateQuotationView({ onNavigate }) {
              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
                 <div className="flex justify-between">
                    <span className="text-slate-500">Proposal Title:</span>
-                   <span className="font-bold text-slate-800 dark:text-slate-200">{quotationData.proposalTitle || 'Project Proposal'}</span>
+                   <span className="font-bold text-slate-800 dark:text-slate-200">{quotationData.proposalTitle}</span>
                 </div>
                 <div className="flex justify-between">
                    <span className="text-slate-500">Client Name:</span>
-                   <span className="font-bold text-slate-800 dark:text-slate-200">{quotationData.clientName || 'Client Name'}</span>
+                   <span className="font-bold text-slate-800 dark:text-slate-200">{quotationData.clientName}</span>
                 </div>
                 <div className="flex justify-between">
                    <span className="text-slate-500">Total Investment:</span>
-                   <span className="font-bold text-emerald-600">₹{quotationData.totalCost || '7,80,000'}/-</span>
+                   <span className="font-bold text-emerald-600">₹{quotationData.totalCost}/-</span>
                 </div>
                 <div className="flex justify-between">
                    <span className="text-slate-500">Active Theme:</span>
@@ -1728,22 +1801,22 @@ export default function CreateQuotationView({ onNavigate }) {
                   <div className="text-center space-y-4 py-8">
                      <div className="text-xs uppercase tracking-widest font-black text-[#D97706]">CONFIDENTIAL FINANCIAL PROPOSAL</div>
                      <h1 className="text-4xl sm:text-5xl font-black text-[#0F172A] tracking-tight leading-tight">
-                       {quotationData.proposalTitle || 'Project Proposal'}
+                       {quotationData.proposalTitle}
                      </h1>
                      <div className="w-24 h-0.5 bg-[#D97706] mx-auto"></div>
                      <p className="text-xl font-bold text-[#B45309]">
-                       {quotationData.subtitle || 'Web & Mobile App Development'}
+                       {quotationData.subtitle}
                      </p>
                   </div>
 
                   <div className="bg-[#0F172A] text-white p-5 rounded-lg border-t-2 border-[#D97706] grid grid-cols-2 text-center">
                      <div>
                        <div className="text-[10px] uppercase font-bold text-[#FBBF24]">PREPARED FOR</div>
-                       <div className="text-base font-black mt-0.5">{quotationData.clientName || 'Client Name'}</div>
+                       <div className="text-base font-black mt-0.5">{quotationData.clientName}</div>
                      </div>
                      <div>
                        <div className="text-[10px] uppercase font-bold text-[#FBBF24]">PREPARED BY</div>
-                       <div className="text-base font-black mt-0.5">{quotationData.companyName || 'Codigix Infotech Pvt. Ltd.'}</div>
+                       <div className="text-base font-black mt-0.5">{quotationData.companyName}</div>
                      </div>
                   </div>
                 </div>
@@ -1754,7 +1827,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       <img src={quotationData.logoUrl || '/codigix-logo.svg'} alt="Codigix Logo" className="h-10 object-contain" />
                     </div>
                     <div className="text-right text-xs text-[#475569] font-medium flex items-center gap-4">
-                      <span>Date: <span className="font-bold text-[#0F172A]">{quotationData.date || '11 Aug 2026'}</span></span>
+                      <span>Date: <span className="font-bold text-[#0F172A]">{quotationData.date}</span></span>
                       <RedBarcodePattern color={currentTheme.barcodeColor} />
                     </div>
                   </div>
@@ -1764,19 +1837,19 @@ export default function CreateQuotationView({ onNavigate }) {
                        <div className="bg-[#7C3AED]/5 border border-[#7C3AED]/20 p-8 rounded-2xl w-full text-center space-y-3 backdrop-blur-sm shadow-sm">
                           <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#7C3AED] text-white">PROJECT ARCHITECTURE PROPOSAL</span>
                           <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight" style={{ color: currentTheme.primaryColor }}>
-                            {quotationData.proposalTitle || 'Project Proposal'}
+                            {quotationData.proposalTitle}
                           </h1>
                           <p className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: currentTheme.primaryColor }}>
-                            {quotationData.subtitle || 'Web & Mobile App Development'}
+                            {quotationData.subtitle}
                           </p>
                        </div>
                      ) : (
                        <>
                          <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight" style={{ color: currentTheme.primaryColor }}>
-                           {quotationData.proposalTitle || 'Project Proposal'}
+                           {quotationData.proposalTitle}
                          </h1>
                          <p className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: currentTheme.primaryColor }}>
-                           {quotationData.subtitle || 'Web & Mobile App Development'}
+                           {quotationData.subtitle}
                          </p>
                        </>
                      )}
@@ -1784,18 +1857,18 @@ export default function CreateQuotationView({ onNavigate }) {
 
                   <div className="shrink-0 w-full">
                     <div className={`px-8 py-3 flex justify-between text-xs text-[#475569] font-medium border-t border-[#F1F5F9] ${currentTheme.layoutStyle === 'modern_sidebar' ? 'pl-12' : ''}`}>
-                      <span>{quotationData.companyEmail || 'info@codigixinfotech.com'}</span>
-                      <span>{quotationData.companyWebsite || 'www.codigixinfotech.com'}</span>
+                      <span>{quotationData.companyEmail}</span>
+                      <span>{quotationData.companyWebsite}</span>
                     </div>
 
                     <div className={`${currentTheme.bannerBg} ${currentTheme.bannerText} p-6 grid grid-cols-2 text-center items-center w-full shadow-inner`}>
                        <div>
                          <div className="text-xs uppercase font-medium tracking-wider opacity-90">Prepared for:</div>
-                         <div className="text-lg sm:text-xl font-bold mt-0.5">{quotationData.clientName || 'Client Name'}</div>
+                         <div className="text-lg sm:text-xl font-bold mt-0.5">{quotationData.clientName}</div>
                        </div>
                        <div>
                          <div className="text-xs uppercase font-medium tracking-wider opacity-90">Prepared by:</div>
-                         <div className="text-lg sm:text-xl font-bold mt-0.5">{quotationData.companyName || 'Codigix Infotech Pvt. Ltd.'}</div>
+                         <div className="text-lg sm:text-xl font-bold mt-0.5">{quotationData.companyName}</div>
                        </div>
                     </div>
                   </div>
@@ -1813,7 +1886,7 @@ export default function CreateQuotationView({ onNavigate }) {
                   <img src={quotationData.logoUrl || '/codigix-logo.svg'} alt="Codigix Logo" className="h-9 object-contain" />
                 </div>
                 <div className="text-right text-xs text-[#475569] font-medium flex items-center gap-4">
-                  <span>Date: <span className="font-bold text-[#0F172A]">{quotationData.date || '11 Aug 2026'}</span></span>
+                  <span>Date: <span className="font-bold text-[#0F172A]">{quotationData.date}</span></span>
                   <RedBarcodePattern color={currentTheme.barcodeColor} />
                 </div>
               </div>
@@ -1828,7 +1901,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       <span>About The Company</span>
                     </div>
                     <h2 className="text-3xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
-                      {quotationData.companyName || 'Codigix Infotech Pvt. Ltd.'}
+                      {quotationData.companyName}
                     </h2>
                     <div className="w-16 h-1 rounded-full" style={{ backgroundColor: currentTheme.accentColor }}></div>
                  </div>
@@ -1839,15 +1912,15 @@ export default function CreateQuotationView({ onNavigate }) {
                    <div className="space-y-4 flex-1 flex flex-col justify-between">
                       <div className="grid grid-cols-3 gap-3">
                         <div className="p-3 rounded-xl text-center text-white font-bold text-xs" style={{ backgroundColor: currentTheme.primaryColor }}>
-                           <div className="text-xl font-black">{quotationData.statYear || '2021'}</div>
+                           <div className="text-xl font-black">{quotationData.statYear}</div>
                            <div className="text-[9px] uppercase tracking-wider opacity-80">Established</div>
                         </div>
                         <div className="p-3 rounded-xl text-center text-white font-bold text-xs" style={{ backgroundColor: currentTheme.accentColor }}>
-                           <div className="text-xl font-black">{quotationData.statTeam || '15'}+</div>
+                           <div className="text-xl font-black">{quotationData.statTeam}+</div>
                            <div className="text-[9px] uppercase tracking-wider opacity-90">Experts</div>
                         </div>
                         <div className="p-3 rounded-xl text-center text-white font-bold text-xs bg-[#0F172A]">
-                           <div className="text-xl font-black">{quotationData.statClients || '44'}+</div>
+                           <div className="text-xl font-black">{quotationData.statClients}+</div>
                            <div className="text-[9px] uppercase tracking-wider opacity-80">Clients</div>
                         </div>
                       </div>
@@ -1858,7 +1931,7 @@ export default function CreateQuotationView({ onNavigate }) {
                          </div>
                          <div className="col-span-7 space-y-3">
                             <p className="text-xs text-[#334155] leading-relaxed p-3.5 bg-[#F8FAFC] rounded-xl border">
-                              {quotationData.aboutText || 'Codigix Infotech is a technology-driven company specializing in AI-based Automation, ERP/CRM Systems, and Enterprise Applications.'}
+                              {quotationData.aboutText}
                             </p>
                             <div className="space-y-1.5">
                               {(quotationData.valueBadges?.filter(Boolean) || []).slice(0, 3).map((badge, idx) => (
@@ -1876,15 +1949,15 @@ export default function CreateQuotationView({ onNavigate }) {
                    <div className="space-y-4 flex-1 flex flex-col justify-between">
                       <div className="grid grid-cols-3 gap-3">
                          <div className="p-3 rounded-xl text-center bg-[#7C3AED]/10 border border-[#7C3AED]/30 text-[#6D28D9]">
-                            <div className="text-xl font-black">{quotationData.statYear || '2021'}</div>
+                            <div className="text-xl font-black">{quotationData.statYear}</div>
                             <div className="text-[9px] font-bold uppercase">Year Founded</div>
                          </div>
                          <div className="p-3 rounded-xl text-center bg-[#7C3AED] text-white">
-                            <div className="text-xl font-black">{quotationData.statTeam || '15'}+</div>
+                            <div className="text-xl font-black">{quotationData.statTeam}+</div>
                             <div className="text-[9px] font-bold uppercase">Tech Engineers</div>
                          </div>
                          <div className="p-3 rounded-xl text-center bg-[#1E1B4B] text-white">
-                            <div className="text-xl font-black">{quotationData.statClients || '44'}+</div>
+                            <div className="text-xl font-black">{quotationData.statClients}+</div>
                             <div className="text-[9px] font-bold uppercase">Global Projects</div>
                          </div>
                       </div>
@@ -1892,7 +1965,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       <div className="grid grid-cols-2 gap-4 flex-1">
                          <div className="bg-[#F8FAFC] p-4 rounded-2xl border border-[#DDD6FE] flex flex-col justify-between">
                             <p className="text-xs text-[#334155] leading-relaxed">
-                              {quotationData.aboutText || 'Codigix Infotech delivers high-performance enterprise architecture and AI automation.'}
+                              {quotationData.aboutText}
                             </p>
                             <div className="space-y-1.5 pt-2">
                                {(quotationData.valueBadges?.filter(Boolean) || []).slice(0, 2).map((badge, idx) => (
@@ -1907,8 +1980,8 @@ export default function CreateQuotationView({ onNavigate }) {
                          <div className="rounded-2xl overflow-hidden shadow border relative bg-slate-900">
                             <img src={quotationData.page2ImageUrl || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80'} alt="Team" className="w-full h-full object-cover opacity-85" />
                             <div className="absolute inset-x-2 bottom-2 bg-[#1E1B4B]/90 backdrop-blur-md p-2 rounded-xl text-center text-white text-[10px] font-bold">
-                               <span className="text-[#7C3AED] uppercase block text-[9px]">{quotationData.ourFocusTag || 'OUR FOCUS'}</span>
-                               {quotationData.ourFocusTitle || 'Innovating Digital Excellence'}
+                               <span className="text-[#7C3AED] uppercase block text-[9px]">{quotationData.ourFocusTag}</span>
+                               {quotationData.ourFocusTitle}
                             </div>
                          </div>
                       </div>
@@ -1919,14 +1992,11 @@ export default function CreateQuotationView({ onNavigate }) {
                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center flex-1">
                         <div className="md:col-span-7 space-y-4">
                            <p className="text-xs text-[#334155] leading-relaxed font-normal bg-[#F8FAFC] p-4 rounded-xl border border-[#E2E8F0]">
-                             {quotationData.aboutText || 'Codigix Infotech is a technology-driven company specializing in advanced IT solutions such as AI-based Automation, Custom ERP and CRM Systems, Mobile Applications, and Scalable Website Development.'}
+                             {quotationData.aboutText}
                            </p>
 
                            <div className="space-y-2 pt-1">
-                              {(quotationData.valueBadges?.filter(Boolean).length > 0 
-                                ? quotationData.valueBadges.filter(Boolean) 
-                                : ['High-Performance Enterprise Architecture', 'Bank-grade Data Security & Scalable Cloud Services', 'Business-Driven Digital Transformation']
-                              ).map((badge, idx) => (
+                              {(quotationData.valueBadges?.filter(Boolean) || []).map((badge, idx) => (
                                 <div key={idx} className="flex items-center gap-2 text-xs font-semibold" style={{ color: currentTheme.primaryColor }}>
                                   <span className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: idx % 2 === 1 ? currentTheme.accentColor : currentTheme.primaryColor }}>✓</span>
                                   <span>{badge}</span>
@@ -1943,8 +2013,8 @@ export default function CreateQuotationView({ onNavigate }) {
                                 className="w-full h-full object-cover object-center"
                               />
                               <div className="absolute bottom-3 left-3 right-3 bg-[#0F172A]/90 backdrop-blur-md text-white p-2.5 rounded-xl border border-white/20 text-center">
-                                 <div className="text-[10px] uppercase tracking-widest font-bold" style={{ color: currentTheme.accentColor }}>{quotationData.ourFocusTag || 'OUR FOCUS'}</div>
-                                 <div className="text-xs font-bold mt-0.5">{quotationData.ourFocusTitle || 'Innovating Digital Excellence'}</div>
+                                 <div className="text-[10px] uppercase tracking-widest font-bold" style={{ color: currentTheme.accentColor }}>{quotationData.ourFocusTag}</div>
+                                 <div className="text-xs font-bold mt-0.5">{quotationData.ourFocusTitle}</div>
                               </div>
                            </div>
                         </div>
@@ -1952,15 +2022,15 @@ export default function CreateQuotationView({ onNavigate }) {
 
                      <div className="grid grid-cols-3 gap-4 pt-2">
                         <div className="text-white p-4 rounded-xl text-center shadow-md space-y-0.5 border" style={{ backgroundColor: currentTheme.primaryColor, borderColor: currentTheme.primaryColor }}>
-                          <div className="text-2xl font-black text-white">{quotationData.statYear || '2021'}</div>
+                          <div className="text-2xl font-black text-white">{quotationData.statYear}</div>
                           <div className="text-[10px] font-semibold text-[#CBD5E1] uppercase tracking-wider">Established</div>
                         </div>
                         <div className="text-white p-4 rounded-xl text-center shadow-md space-y-0.5 border" style={{ backgroundColor: currentTheme.accentColor, borderColor: currentTheme.accentColor }}>
-                          <div className="text-2xl font-black text-white">{quotationData.statTeam || '15'}+</div>
+                          <div className="text-2xl font-black text-white">{quotationData.statTeam}+</div>
                           <div className="text-[10px] font-semibold text-white/90 uppercase tracking-wider">In-House Experts</div>
                         </div>
                         <div className="bg-[#0F172A] text-white p-4 rounded-xl text-center shadow-md space-y-0.5 border border-[#0F172A]">
-                          <div className="text-2xl font-black text-white">{quotationData.statClients || '44'}+</div>
+                          <div className="text-2xl font-black text-white">{quotationData.statClients}+</div>
                           <div className="text-[10px] font-semibold text-[#CBD5E1] uppercase tracking-wider">Delighted Clients</div>
                         </div>
                      </div>
@@ -1976,13 +2046,7 @@ export default function CreateQuotationView({ onNavigate }) {
 
            {/* ================= PAGE 3: EXECUTIVE SUMMARY (LAYOUT ADAPTIVE, MULTI-PAGE) ================= */}
            {(() => {
-             const cards = quotationData.solutionCards && quotationData.solutionCards.length > 0 
-               ? quotationData.solutionCards 
-               : [
-                   { badge: 'SOLUTION 01', title: 'Trainer Mobile App', description: 'Client onboarding, assessments, personalized diet & workout plans.', footer: '• Android & iOS Apps', icon: '📱' },
-                   { badge: 'SOLUTION 02', title: 'Client Mobile App', description: 'Customized daily tasks, workout & water logs, appointment booking.', footer: '• Android & iOS Apps', icon: '📱' },
-                   { badge: 'SOLUTION 03', title: 'Super Admin Panel', description: 'Central platform control, multi-tenant subscription tiers & analytics.', footer: '• Web Dashboard', icon: '💻' }
-                 ];
+             const cards = (quotationData.solutionCards || []).filter(c => c && (c.title?.trim() || c.description?.trim()));
              
              // First page has title and intro, so it fits max 2 cards comfortably.
              // Subsequent pages don't have title/intro, so they can fit 3 cards.
@@ -2005,7 +2069,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       <img src={quotationData.logoUrl || '/codigix-logo.svg'} alt="Codigix Logo" className="h-9 object-contain" />
                     </div>
                     <div className="text-right text-xs text-[#475569] font-medium flex items-center gap-4">
-                      <span>Date: <span className="font-bold text-[#0F172A]">{quotationData.date || '11 Aug 2026'}</span></span>
+                      <span>Date: <span className="font-bold text-[#0F172A]">{quotationData.date}</span></span>
                       <RedBarcodePattern color={currentTheme.barcodeColor} />
                     </div>
                   </div>
@@ -2024,95 +2088,105 @@ export default function CreateQuotationView({ onNavigate }) {
                             <h2 className="text-3xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
                               Executive Summary
                             </h2>
-                            <p className="text-xs font-semibold text-[#64748B]">
-                              {quotationData.subtitle ? `${quotationData.subtitle} Scope` : 'Scalable Enterprise App Platform'}
-                            </p>
+                            {quotationData.subtitle && (
+                              <p className="text-xs font-semibold text-[#64748B]">
+                                {quotationData.subtitle} Scope
+                              </p>
+                            )}
                          </div>
 
-                         <div className="bg-[#F8FAFC] p-4 rounded-r-xl space-y-1.5 shadow-sm shrink-0" style={{ borderLeft: `4px solid ${currentTheme.primaryColor}` }}>
-                            <p className="text-xs text-[#334155] leading-relaxed font-normal whitespace-pre-wrap">
-                              {quotationData.execSummary || 'FitRack is engineered as a unified, multi-tenant digital ecosystem connecting Fitness Coaches, Dietitians, Clients, and Platform Administrators under one seamless architecture.'}
-                            </p>
-                         </div>
+                         {quotationData.execSummary && (
+                           <div className="bg-[#F8FAFC] p-4 rounded-r-xl space-y-1.5 shadow-sm shrink-0" style={{ borderLeft: `4px solid ${currentTheme.primaryColor}` }}>
+                              <p className="text-xs text-[#334155] leading-relaxed font-normal whitespace-pre-wrap">
+                                {quotationData.execSummary}
+                              </p>
+                           </div>
+                         )}
                        </>
                      )}
 
-                     {/* LAYOUT ADAPTIVE SOLUTION CARDS FOR THIS CHUNK */}
-                     {currentTheme.layoutStyle === 'modern_sidebar' ? (
-                       /* EXECUTIVE EMERALD: Stacked Horizontal Solution Rows */
-                       <div className="space-y-3 flex-1 flex flex-col justify-start pt-2">
-                          {chunk.map((card, idx) => (
-                            <div key={idx} className="p-3.5 bg-slate-50 border border-[#A7F3D0] rounded-xl flex items-center justify-between gap-4 shadow-sm">
-                               <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-xl bg-[#047857] text-white flex items-center justify-center text-lg font-bold shrink-0">
-                                    {card.icon || '📱'}
-                                  </div>
-                                  <div>
-                                     <span className="text-[9px] font-black text-[#047857] uppercase tracking-wider">{card.badge || `SOLUTION`}</span>
-                                     <h3 className="text-xs font-black text-[#0F172A]">{card.title || 'Solution Title'}</h3>
-                                     <p className="text-[10px] text-[#475569] leading-snug">{card.description}</p>
-                                  </div>
-                               </div>
-                               <span className="px-2.5 py-1 rounded bg-[#10B981]/15 text-[#047857] text-[10px] font-bold shrink-0">{card.footer}</span>
-                            </div>
-                          ))}
-                       </div>
-                     ) : currentTheme.layoutStyle === 'cyber_bento' ? (
-                       /* CYBER VIOLET: Bento Grid (1 Feature Card + 2 Stacked Cards) */
-                       <div className="grid grid-cols-12 gap-3 flex-1 items-start pt-2">
-                          {chunk[0] && (
-                            <div className="col-span-5 bg-[#1E1B4B] text-white p-4 rounded-2xl flex flex-col shadow border border-[#7C3AED]/30 h-full">
-                               <div className="space-y-2 flex-1">
-                                  <span className="px-2 py-0.5 rounded text-[9px] font-black bg-[#7C3AED] uppercase">FEATURE SOLUTION</span>
-                                  <h3 className="text-base font-black text-white">{chunk[0].title || 'Trainer App'}</h3>
-                                  <p className="text-[11px] text-[#DDD6FE] leading-relaxed">{chunk[0].description || 'Complete onboarding, assessments & workouts.'}</p>
-                               </div>
-                               <div className="text-[10px] font-bold text-[#7C3AED] mt-4">{chunk[0].footer || '• Core Platform'}</div>
-                            </div>
-                          )}
+                     {/* LAYOUT ADAPTIVE SOLUTION CARDS FOR THIS CHUNK (Only when cards exist) */}
+                     {chunk.length > 0 && (
+                       currentTheme.layoutStyle === 'modern_sidebar' ? (
+                         /* EXECUTIVE EMERALD: Stacked Horizontal Solution Rows */
+                         <div className="space-y-3 flex-1 flex flex-col justify-start pt-2">
+                            {chunk.map((card, idx) => (
+                              <div key={idx} className="p-3.5 bg-slate-50 border border-[#A7F3D0] rounded-xl flex items-center justify-between gap-4 shadow-sm">
+                                 <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-[#047857] text-white flex items-center justify-center text-lg font-bold shrink-0">
+                                      {card.icon || '📱'}
+                                    </div>
+                                    <div>
+                                       <span className="text-[9px] font-black text-[#047857] uppercase tracking-wider">{card.badge || `SOLUTION`}</span>
+                                       <h3 className="text-xs font-black text-[#0F172A]">{card.title}</h3>
+                                       <p className="text-[10px] text-[#475569] leading-snug">{card.description}</p>
+                                    </div>
+                                 </div>
+                                 {card.footer && <span className="px-2.5 py-1 rounded bg-[#10B981]/15 text-[#047857] text-[10px] font-bold shrink-0">{card.footer}</span>}
+                              </div>
+                            ))}
+                         </div>
+                       ) : currentTheme.layoutStyle === 'cyber_bento' ? (
+                         /* CYBER VIOLET: Bento Grid (1 Feature Card + 2 Stacked Cards) */
+                         <div className="grid grid-cols-12 gap-3 flex-1 items-start pt-2">
+                            {chunk[0] && (
+                              <div className="col-span-5 bg-[#1E1B4B] text-white p-4 rounded-2xl flex flex-col shadow border border-[#7C3AED]/30 h-full">
+                                 <div className="space-y-2 flex-1">
+                                    <span className="px-2 py-0.5 rounded text-[9px] font-black bg-[#7C3AED] uppercase">FEATURE SOLUTION</span>
+                                    <h3 className="text-base font-black text-white">{chunk[0].title}</h3>
+                                    <p className="text-[11px] text-[#DDD6FE] leading-relaxed">{chunk[0].description}</p>
+                                 </div>
+                                 {chunk[0].footer && <div className="text-[10px] font-bold text-[#7C3AED] mt-4">{chunk[0].footer}</div>}
+                              </div>
+                            )}
 
-                          <div className="col-span-7 space-y-3 flex flex-col justify-start">
-                             {chunk.slice(1, 3).map((card, idx) => (
-                               <div key={idx} className="p-3.5 bg-white border-2 border-[#DDD6FE] rounded-xl flex flex-col shadow-sm">
-                                  <div>
-                                     <span className="text-[9px] font-black text-[#7C3AED] uppercase">{card.badge || `SOLUTION`}</span>
-                                     <h4 className="text-xs font-black text-[#1E1B4B]">{card.title}</h4>
-                                     <p className="text-[10px] text-slate-600">{card.description}</p>
-                                  </div>
-                                  <span className="text-[9px] font-bold text-[#6D28D9] pt-1">{card.footer}</span>
-                               </div>
-                             ))}
-                           </div>
-                        </div>
-                      ) : (
-                        /* EXECUTIVE STACKED HORIZONTAL SOLUTION CARDS */
-                        <div className="space-y-3.5 flex-1 flex flex-col justify-start pt-2">
-                           {chunk.map((card, idx) => (
-                             <div key={idx} className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between gap-4 shadow-xs transition-all hover:border-slate-300">
-                                <div className="flex items-center gap-3.5">
-                                   <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center shrink-0 shadow-xs leading-none" style={{ backgroundColor: idx % 2 !== 0 ? currentTheme.accentColor : currentTheme.primaryColor }}>
-                                     {card.icon === '💻' ? <Laptop className="w-5 h-5 text-white" /> : <Smartphone className="w-5 h-5 text-white" />}
-                                   </div>
-                                   <div className="space-y-0.5">
-                                      <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: currentTheme.accentColor }}>{card.badge || `SOLUTION`}</span>
-                                      <h3 className="text-sm font-black text-[#0F172A] leading-tight">{card.title || 'Solution Title'}</h3>
-                                      <p className="text-xs text-[#475569] leading-snug font-medium">{card.description || 'Solution details and module description.'}</p>
-                                   </div>
-                                </div>
-                                <span className="px-3 py-1 rounded-full text-xs font-bold shrink-0 border" style={{ color: currentTheme.primaryColor, backgroundColor: `${currentTheme.primaryColor}10`, borderColor: `${currentTheme.primaryColor}30` }}>
-                                  {card.footer || '• Module Details'}
-                                </span>
+                            <div className="col-span-7 space-y-3 flex flex-col justify-start">
+                               {chunk.slice(1, 3).map((card, idx) => (
+                                 <div key={idx} className="p-3.5 bg-white border-2 border-[#DDD6FE] rounded-xl flex flex-col shadow-sm">
+                                    <div>
+                                       <span className="text-[9px] font-black text-[#7C3AED] uppercase">{card.badge || `SOLUTION`}</span>
+                                       <h4 className="text-xs font-black text-[#1E1B4B]">{card.title}</h4>
+                                       <p className="text-[10px] text-slate-600">{card.description}</p>
+                                    </div>
+                                    {card.footer && <span className="text-[9px] font-bold text-[#6D28D9] pt-1">{card.footer}</span>}
+                                 </div>
+                               ))}
                              </div>
-                           ))}
-                        </div>
-                      )}
+                          </div>
+                       ) : (
+                         /* EXECUTIVE STACKED HORIZONTAL SOLUTION CARDS */
+                         <div className="space-y-3.5 flex-1 flex flex-col justify-start pt-2">
+                            {chunk.map((card, idx) => (
+                              <div key={idx} className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between gap-4 shadow-xs transition-all hover:border-slate-300">
+                                 <div className="flex items-center gap-3.5">
+                                    <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center shrink-0 shadow-xs leading-none" style={{ backgroundColor: idx % 2 !== 0 ? currentTheme.accentColor : currentTheme.primaryColor }}>
+                                      {card.icon === '💻' ? <Laptop className="w-5 h-5 text-white" /> : <Smartphone className="w-5 h-5 text-white" />}
+                                    </div>
+                                    <div className="space-y-0.5">
+                                       <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: currentTheme.accentColor }}>{card.badge || `SOLUTION`}</span>
+                                       <h3 className="text-sm font-black text-[#0F172A] leading-tight">{card.title}</h3>
+                                       <p className="text-xs text-[#475569] leading-snug font-medium">{card.description}</p>
+                                    </div>
+                                 </div>
+                                 {card.footer && (
+                                   <span className="px-3 py-1 rounded-full text-xs font-bold shrink-0 border" style={{ color: currentTheme.primaryColor, backgroundColor: `${currentTheme.primaryColor}10`, borderColor: `${currentTheme.primaryColor}30` }}>
+                                     {card.footer}
+                                   </span>
+                                 )}
+                              </div>
+                            ))}
+                         </div>
+                       )
+                     )}
 
                      {/* Bottom Barcode Accent - Pinned to bottom using mt-auto */}
                      <div className="flex justify-between items-center pt-2 mt-auto shrink-0 border-t border-slate-100">
                        <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
-                       <span className="text-[10px] font-bold text-[#64748B]">
-                         {quotationData.ecosystemTagline || 'CONNECTED 3-TIER ECOSYSTEM'}
-                       </span>
+                       {quotationData.ecosystemTagline && (
+                         <span className="text-[10px] font-bold text-[#64748B]">
+                           {quotationData.ecosystemTagline}
+                         </span>
+                       )}
                        <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
                      </div>
 
@@ -2124,10 +2198,31 @@ export default function CreateQuotationView({ onNavigate }) {
              ));
            })()}
 
-
            {/* ================= PAGE 4+: SCOPE OF WORK (LAYOUT ADAPTIVE & DYNAMIC PAGINATION) ================= */}
-           {(() => {
-             const rawItems = quotationData.deliverables.filter(Boolean).length > 0 ? quotationData.deliverables.filter(Boolean) : ['UI/UX Design', 'Mobile App Development', 'Super Admin Web Panel', 'Backend REST APIs'];
+           {quotationData.sowMode === 'advanced' ? (
+              /* ADVANCED SOW: HTML WYSIWYG Content Output */
+              <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+                  <div className="p-8 space-y-4 flex-1">
+                     <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
+                       <div>
+                         <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Scope of Work</h2>
+                         <p className="text-xs text-slate-500 font-semibold">Detailed Specification & Deliverables</p>
+                       </div>
+                       <RedBarcodePattern color={currentTheme.barcodeColor} />
+                     </div>
+                     <div 
+                        className="jodit-preview-content prose max-w-none text-sm"
+                        dangerouslySetInnerHTML={{ __html: quotationData.scopeOfWorkHtml }}
+                     />
+                  </div>
+                  {/* Page Footer */}
+                  <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center z-10 shrink-0">
+                    <span className="text-[10px] font-bold text-slate-400">Page 4</span>
+                    <img src={quotationData.logoUrl || "/codigix-logo.svg"} alt="Logo" className="h-4 object-contain opacity-50 grayscale" />
+                  </div>
+              </div>
+           ) : (() => {
+             const rawItems = (quotationData.deliverables?.filter(Boolean) || []);
              
              const MAX_ITEMS_PER_PAGE = 12; 
              const chunks = [];
@@ -2189,7 +2284,7 @@ export default function CreateQuotationView({ onNavigate }) {
                                   {description && <span className="text-[10px] text-slate-500 block mt-1 leading-snug">{description}</span>}
                                 </div>
                              </div>
-                           )
+                           );
                          } else {
                            return (
                              <div key={idx} className="flex gap-3 h-fit items-start">
@@ -2199,7 +2294,7 @@ export default function CreateQuotationView({ onNavigate }) {
                                   {description && <span className="text-[10px] text-slate-500 block mt-0.5 leading-snug">{description}</span>}
                                 </div>
                              </div>
-                           )
+                           );
                          }
                        })}
                      </div>
@@ -2210,7 +2305,6 @@ export default function CreateQuotationView({ onNavigate }) {
                </div>
              ));
            })()}
-
 
            {/* ================= PAGE 5: TEAM & INTEGRATIONS (LAYOUT ADAPTIVE) ================= */}
            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
@@ -2234,15 +2328,7 @@ export default function CreateQuotationView({ onNavigate }) {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#E2E8F0] bg-white">
-                          {(quotationData.teamList.filter(t => t.role).length > 0 
-                            ? quotationData.teamList.filter(t => t.role) 
-                            : [
-                                { role: 'Project Manager', count: '1', details: 'Requirements & Client Management' },
-                                { role: 'UI/UX Designer', count: '1', details: 'Figma Prototypes & Design System' },
-                                { role: 'Full Stack Developers', count: '2', details: 'Frontend & Backend Architecture' },
-                                { role: 'QA Automation Engineer', count: '1', details: 'Testing & Quality Assurance' }
-                              ]
-                          ).map((t, idx) => (
+                          {(quotationData.teamList?.filter(t => t && t.role) || []).map((t, idx) => (
                             <tr key={idx} className="text-[#1E293B] hover:bg-slate-50/80 transition-colors">
                               <td className="py-3 px-4 font-black border-r border-[#E2E8F0] text-xs" style={{ color: currentTheme.primaryColor }}>{t.role}</td>
                               <td className="py-3 px-3 text-center font-black border-r border-[#E2E8F0] text-xs">
@@ -2264,18 +2350,7 @@ export default function CreateQuotationView({ onNavigate }) {
                     </div>
 
                     <div className="grid grid-cols-2 gap-x-8 gap-y-3.5 pt-2">
-                       {(quotationData.integrations.filter(Boolean).length > 0 
-                         ? quotationData.integrations.filter(Boolean) 
-                         : [
-                             'Google Play Developer Account',
-                             'Apple Developer Program',
-                             'Cloud Hosting (AWS/Azure/GCP)',
-                             'Domain & SSL Certificate',
-                             'SMS / OTP Gateway',
-                             'Payment Gateway Account',
-                             'WhatsApp Business API'
-                           ]
-                       ).map((item, idx) => (
+                       {(quotationData.integrations?.filter(Boolean) || []).map((item, idx) => (
                          <div key={idx} className="flex items-center gap-3">
                             <div className="w-5 h-5 rounded-full text-white flex items-center justify-center shrink-0 shadow-xs leading-none" style={{ backgroundColor: currentTheme.primaryColor }}>
                                <Check className="w-3 h-3 text-white stroke-[3]" />
@@ -2295,7 +2370,6 @@ export default function CreateQuotationView({ onNavigate }) {
               <div className="h-8 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
            </div>
 
-
            {/* ================= PAGE 6: BUDGET & TIMELINE (LAYOUT ADAPTIVE) ================= */}
            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
               <div className="p-8 space-y-6 flex-1 relative">
@@ -2308,10 +2382,10 @@ export default function CreateQuotationView({ onNavigate }) {
 
                  {/* DYNAMIC INVESTMENT BANNERS */}
                  <div className="space-y-3">
-                   {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '7,80,000', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, idx) => (
+                   {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, idx) => (
                      <div key={idx} className="p-4 rounded-xl shadow-xs flex items-center justify-between text-white" style={{ backgroundColor: currentTheme.primaryColor }}>
                         <div>
-                           <div className="text-[10px] uppercase font-extrabold tracking-widest opacity-80">{priceObj.title || 'TOTAL PROJECT INVESTMENT'}</div>
+                           <div className="text-[10px] uppercase font-extrabold tracking-widest opacity-80">{priceObj.title}</div>
                            <div className="text-2xl sm:text-3xl font-black">Cost: ₹{priceObj.cost}/-</div>
                         </div>
                         {priceObj.gst && (
@@ -2333,16 +2407,7 @@ export default function CreateQuotationView({ onNavigate }) {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E2E8F0] bg-white text-[#1E293B]">
-                        {(quotationData.particulars.filter(p => p.name || p.value).length > 0 
-                          ? quotationData.particulars.filter(p => p.name || p.value) 
-                          : [
-                              { name: 'AMC', value: '30% of total Project Cost' },
-                              { name: 'Support', value: '60 Days (Post-handover)' },
-                              { name: 'Extra Customizations', value: 'Chargeable as per requirement' },
-                              { name: 'Implementation Time', value: '90 working days (Mon-Fri)' },
-                              { name: 'Payment Terms', value: '1. 50% Advance\n2. 40% Once complete System Deployed on your domain\n3. 10% After System deployed' }
-                            ]
-                        ).map((p, idx) => (
+                        {(quotationData.particulars.filter(p => p.name || p.value).length > 0 ? quotationData.particulars.filter(p => p.name || p.value) : []).map((p, idx) => (
                           <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                             <td className="py-2.5 px-4 font-black border-r border-[#E2E8F0] bg-[#F8FAFC] text-xs" style={{ color: currentTheme.primaryColor }}>{p.name}</td>
                             <td className="py-2.5 px-4 whitespace-pre-wrap font-semibold text-xs text-[#334155] leading-snug">{p.value}</td>
@@ -2361,23 +2426,23 @@ export default function CreateQuotationView({ onNavigate }) {
                     <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-2 text-xs font-semibold text-[#1E293B]">
                        <div className="flex items-center gap-2">
                          <span className="font-bold text-[#64748B] w-28 shrink-0">Account Name:</span>
-                         <span className="font-extrabold text-[#0F172A]">{quotationData.bankAccountName || 'Codigix Infotech Private Limited'}</span>
+                         <span className="font-extrabold text-[#0F172A]">{quotationData.bankAccountName}</span>
                        </div>
                        <div className="flex items-center gap-2">
                          <span className="font-bold text-[#64748B] w-28 shrink-0">Account No:</span>
-                         <span className="font-extrabold text-[#0F172A] font-mono">{quotationData.bankAccountNo || '07230200002691'}</span>
+                         <span className="font-extrabold text-[#0F172A] font-mono">{quotationData.bankAccountNo}</span>
                        </div>
                        <div className="flex items-center gap-2">
                          <span className="font-bold text-[#64748B] w-28 shrink-0">IFSC Code:</span>
-                         <span className="font-extrabold text-[#0F172A] font-mono">{quotationData.bankIFSC || 'BARB0CHINCH'}</span>
+                         <span className="font-extrabold text-[#0F172A] font-mono">{quotationData.bankIFSC}</span>
                        </div>
                        <div className="flex items-center gap-2">
                          <span className="font-bold text-[#64748B] w-28 shrink-0">Branch Name:</span>
-                         <span className="font-bold text-[#334155]">{quotationData.bankBranch || 'Bank of Baroda Pimpri'}</span>
+                         <span className="font-bold text-[#334155]">{quotationData.bankBranch}</span>
                        </div>
                        <div className="flex items-center gap-2 col-span-2 pt-1 border-t border-[#E2E8F0]">
                          <span className="font-bold text-[#64748B] w-28 shrink-0">GST Registration:</span>
-                         <span className="font-mono font-extrabold text-[#2563EB]">{quotationData.bankGST || '27AANCC3632N1Z8'}</span>
+                         <span className="font-mono font-extrabold text-[#2563EB]">{quotationData.bankGST}</span>
                        </div>
                     </div>
                  </div>
@@ -2421,13 +2486,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       <span>📌 Important Notes & Guidelines</span>
                     </h3>
                     <div className="space-y-3 pt-1">
-                       {(quotationData.notesList.filter(Boolean).length > 0 
-                         ? quotationData.notesList.filter(Boolean) 
-                         : [
-                             'All Module features are shared in-detailed in the separate document, please refer.',
-                             '18% GST will be applicable on the above cost.'
-                           ]
-                       ).map((note, idx) => (
+                       {(quotationData.notesList?.filter(Boolean) || []).map((note, idx) => (
                          <div key={idx} className="flex items-center gap-3">
                            <NumberBadge num={idx + 1} color={currentTheme.accentColor} size={22} />
                            <span className="text-xs font-bold text-[#1E293B] leading-snug">{note}</span>
@@ -2461,24 +2520,24 @@ export default function CreateQuotationView({ onNavigate }) {
                     {/* Right: Corporate Contact Details Card */}
                     <div className="w-7/12 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] shadow-xs space-y-2 shrink-0">
                        <div className="font-extrabold text-sm border-b border-[#E2E8F0] pb-1.5" style={{ color: currentTheme.primaryColor }}>
-                         {quotationData.companyName || 'Codigix Infotech Pvt. Ltd.'}
+                         {quotationData.companyName}
                        </div>
                        <div className="grid grid-cols-1 gap-1 text-xs text-[#334155] font-semibold">
                           <div className="flex items-center gap-2">
                              <span className="font-bold text-[#64748B] w-16">Contact:</span>
-                             <span>{quotationData.companyPhone || '91127 06604'}</span>
+                             <span>{quotationData.companyPhone}</span>
                           </div>
                           <div className="flex items-center gap-2">
                              <span className="font-bold text-[#64748B] w-16">Email:</span>
-                             <span className="text-[#2563EB]">{quotationData.companyEmail || 'info@codigixinfotech.com'}</span>
+                             <span className="text-[#2563EB]">{quotationData.companyEmail}</span>
                           </div>
                           <div className="flex items-center gap-2">
                              <span className="font-bold text-[#64748B] w-16">Website:</span>
-                             <span>{quotationData.companyWebsite || 'www.codigixinfotech.com'}</span>
+                             <span>{quotationData.companyWebsite}</span>
                           </div>
                           <div className="flex items-start gap-2 pt-0.5">
                              <span className="font-bold text-[#64748B] w-16 shrink-0">Address:</span>
-                             <span className="text-[11px] leading-tight">{quotationData.companyAddress || 'Office No 514, Brahma Sky Uzuri, Pimpri, Pune.'}</span>
+                             <span className="text-[11px] leading-tight">{quotationData.companyAddress}</span>
                           </div>
                        </div>
                     </div>
@@ -2501,7 +2560,7 @@ export default function CreateQuotationView({ onNavigate }) {
                     <img src={quotationData.logoUrl || '/codigix-logo.svg'} alt="Codigix Logo" className="h-9 object-contain" />
                   </div>
                   <div className="text-right text-xs text-[#475569] font-medium flex items-center gap-4">
-                    <span>Date: <span className="font-bold text-[#0F172A]">{quotationData.date || '11 Aug 2026'}</span></span>
+                    <span>Date: <span className="font-bold text-[#0F172A]">{quotationData.date}</span></span>
                     <RedBarcodePattern color={currentTheme.barcodeColor} />
                   </div>
                 </div>
@@ -2559,7 +2618,70 @@ export default function CreateQuotationView({ onNavigate }) {
 
          </div>
        </div>
-     </div>
+     
+      {/* SOW Full Page Modal */}
+      {showSowModal && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex flex-col overflow-hidden">
+          <div className="flex-1 bg-white dark:bg-slate-900 w-full h-full flex flex-col overflow-hidden">
+            
+            {/* Modal Header */}
+            <div className="px-6 py-3.5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0 z-20 shadow-xs">
+              <div>
+                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">Advanced Scope of Work Editor</h2>
+                <p className="text-xs text-slate-500">Add tables, headings, lists, formatting, and rich text deliverables.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setShowSowModal(false)}
+                  className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    setQuotationData(prev => ({ ...prev, scopeOfWorkHtml: sowContentRef.current }));
+                    setShowSowModal(false);
+                  }}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-lg shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" /> Save Content
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body & Editor Viewport */}
+            <div className="flex-1 p-3 sm:p-5 overflow-hidden flex flex-col bg-slate-100 dark:bg-slate-950 text-slate-900">
+              <div className="max-w-[1250px] w-full mx-auto h-full flex flex-col space-y-2.5 flex-1 min-h-0">
+                <div className="flex items-center justify-between text-xs text-slate-600 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shrink-0 shadow-2xs">
+                  <span className="font-semibold">💡 Tip: Use the <strong>Format (Paragraph/Heading)</strong> dropdown for Headings & Subheadings. Use the <strong>Table</strong> tools for grid deliverables and <strong>Lists</strong> for structured scope items.</span>
+                </div>
+                
+                <div className="flex-1 min-h-0 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                  <KendoEditor
+                    tools={[
+                      [FormatBlock, FontSize, FontName],
+                      [Bold, Italic, Underline, Strikethrough, Subscript, Superscript],
+                      [ForeColor, BackColor],
+                      [AlignLeft, AlignCenter, AlignRight, AlignJustify],
+                      [OrderedList, UnorderedList, Indent, Outdent],
+                      [InsertTable, AddRowBefore, AddRowAfter, AddColumnBefore, AddColumnAfter, DeleteRow, DeleteColumn, DeleteTable, MergeCells, SplitCell],
+                      [Link, Unlink, InsertImage, ViewHtml, CleanFormatting],
+                      [Undo, Redo]
+                    ]}
+                    contentStyle={{ height: '100%', fontFamily: "'Manrope', sans-serif" }}
+                    defaultContent={quotationData.scopeOfWorkHtml || '<p>Start typing your Scope of Work deliverables...</p>'}
+                    onChange={(event) => {
+                      sowContentRef.current = event.html;
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </div>
     </div>
   );
 }

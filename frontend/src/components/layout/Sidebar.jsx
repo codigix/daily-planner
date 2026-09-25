@@ -15,7 +15,8 @@ import {
   Bell, 
   Settings, 
   Menu,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 
 const iconMap = {
@@ -50,15 +51,18 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, collapsed, 
         className={`fixed top-0 left-0 z-50 h-screen transition-transform lg:transition-all duration-300 flex flex-col border-r ${
           collapsed ? 'lg:w-20' : 'lg:w-64'
         } ${
-          mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'
+          mobileOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'
         } ${
           isDark ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-700'
-        } shadow-lg lg:shadow-sm select-none`}
+        } shadow-2xl lg:shadow-sm select-none`}
       >
         {/* Brand Top Header */}
         <div className="h-16 px-4 flex items-center justify-between border-b border-slate-100/80 dark:border-slate-800 shrink-0">
           <div 
-            onClick={() => setActiveTab('dashboard')} 
+            onClick={() => {
+              setActiveTab('dashboard');
+              if (setMobileOpen) setMobileOpen(false);
+            }} 
             className="flex items-center gap-3 cursor-pointer overflow-hidden py-1"
           >
             {collapsed ? (
@@ -67,12 +71,23 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, collapsed, 
               <img src="/codigix-logo.svg" alt="Codigix Infotech" className="h-8 object-contain" />
             )}
           </div>
+
+          {/* Desktop Collapse Button */}
           <button 
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Mobile Close Drawer Button */}
+          <button
+            onClick={() => setMobileOpen && setMobileOpen(false)}
+            className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            title="Close Menu"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
 

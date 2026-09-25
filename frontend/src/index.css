@@ -16,12 +16,23 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     background-color: #f4f6fa;
     color: #1e293b;
     font-family: 'Manrope', system-ui, -apple-system, sans-serif;
     font-optical-sizing: auto;
     font-style: normal;
+    overflow-x: clip;
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -65,4 +76,240 @@
   background-color: #0f172a;
   border-color: #1e293b;
   color: #f8fafc;
+}
+
+/* ==========================================================================
+   KENDO & RICH WYSIWYG EDITOR & PREVIEW TYPOGRAPHY AND LAYOUT OVERRIDES
+   ========================================================================== */
+
+/* Editor & Preview Common Typography */
+.jodit-wysiwyg,
+.jodit-preview-content,
+.k-editor,
+.k-editor-content,
+.k-content {
+  color: #1e293b !important;
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif !important;
+  line-height: 1.6 !important;
+  font-size: 14px !important;
+}
+
+/* Headings & Subheadings */
+.jodit-wysiwyg h1,
+.jodit-preview-content h1,
+.k-editor-content h1,
+.k-content h1 {
+  font-size: 1.875rem !important; /* 30px */
+  line-height: 2.25rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
+  padding-bottom: 0.25rem !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.jodit-wysiwyg h2,
+.jodit-preview-content h2,
+.k-editor-content h2,
+.k-content h2 {
+  font-size: 1.5rem !important; /* 24px */
+  line-height: 2rem !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.jodit-wysiwyg h3,
+.jodit-preview-content h3,
+.k-editor-content h3,
+.k-content h3 {
+  font-size: 1.25rem !important; /* 20px */
+  line-height: 1.75rem !important;
+  font-weight: 700 !important;
+  color: #334155 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.jodit-wysiwyg h4,
+.jodit-preview-content h4,
+.k-editor-content h4,
+.k-content h4 {
+  font-size: 1.1rem !important; /* ~17px */
+  line-height: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  margin-top: 0.875rem !important;
+  margin-bottom: 0.375rem !important;
+}
+
+.jodit-wysiwyg h5,
+.jodit-preview-content h5,
+.k-editor-content h5,
+.k-content h5 {
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+/* Paragraphs & Spacing */
+.jodit-wysiwyg p,
+.jodit-preview-content p,
+.k-editor-content p,
+.k-content p {
+  margin-top: 0 !important;
+  margin-bottom: 0.75rem !important;
+  line-height: 1.65 !important;
+  color: #334155 !important;
+}
+
+/* Lists & Bullet Points */
+.jodit-wysiwyg ul,
+.jodit-preview-content ul,
+.k-editor-content ul,
+.k-content ul {
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+  margin-left: 1.75rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 1rem !important;
+  padding-left: 0.5rem !important;
+}
+
+.jodit-wysiwyg ol,
+.jodit-preview-content ol,
+.k-editor-content ol,
+.k-content ol {
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
+  margin-left: 1.75rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 1rem !important;
+  padding-left: 0.5rem !important;
+}
+
+.jodit-wysiwyg li,
+.jodit-preview-content li,
+.k-editor-content li,
+.k-content li {
+  margin-bottom: 0.375rem !important;
+  line-height: 1.55 !important;
+  display: list-item !important;
+}
+
+/* Tables & Grid */
+.jodit-wysiwyg table,
+.jodit-preview-content table,
+.k-editor-content table,
+.k-content table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin-top: 1rem !important;
+  margin-bottom: 1.25rem !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+}
+
+.jodit-wysiwyg th,
+.jodit-preview-content th,
+.k-editor-content th,
+.k-content th {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+  padding: 0.625rem 0.875rem !important;
+  border: 1px solid #cbd5e1 !important;
+  font-size: 0.8125rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.025em !important;
+}
+
+.jodit-wysiwyg td,
+.jodit-preview-content td,
+.k-editor-content td,
+.k-content td {
+  padding: 0.625rem 0.875rem !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+  font-size: 0.875rem !important;
+  vertical-align: top !important;
+}
+
+.jodit-wysiwyg tr:nth-child(even),
+.jodit-preview-content tr:nth-child(even),
+.k-editor-content tr:nth-child(even),
+.k-content tr:nth-child(even) {
+  background-color: #f8fafc !important;
+}
+
+/* Kendo Toolbar, Container & License Removal Styling */
+.k-licensing-banner,
+.k-license-banner,
+[class*="k-licensing"],
+[class*="k-license"],
+.k-watermark,
+div[style*="z-index: 100000"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: absolute !important;
+}
+
+.k-editor,
+.k-editor-content,
+.k-content,
+.k-editor-content iframe,
+.k-editor-content .ProseMirror {
+  background-image: none !important;
+  background-color: #ffffff !important;
+}
+
+.k-editor {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  width: 100% !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden !important;
+}
+
+.k-editor-toolbar {
+  flex-shrink: 0 !important;
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding: 0.5rem !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.25rem !important;
+  z-index: 10 !important;
+}
+
+.k-editor-content {
+  flex: 1 1 0% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  padding: 1.25rem !important;
+  background-color: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+.k-editor-content .ProseMirror {
+  min-height: 100% !important;
+  outline: none !important;
 }

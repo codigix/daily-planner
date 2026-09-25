@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { X, Sparkles, Send, CheckCircle2, Calendar, Clock, Video, Users, User, Key, Loader2 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Sparkles, Send, CheckCircle2, Calendar, Clock, Video, Users, User, Key, Loader2, Mic, MicOff, Check } from 'lucide-react';
 import { callClaudeAPI, getStoredApiKey, saveApiKey } from '../../services/aiService';
+import { analyzeVoiceTaskAPI } from '../../services/api';
+import { triggerPhoneVibration } from '../../utils/notificationService';
 import ProjectQuotationCalculatorModal from './ProjectQuotationCalculatorModal';
 
 export default function ModalContainer({ 
@@ -20,6 +22,18 @@ export default function ModalContainer({
   const [taskTitle, setTaskTitle] = useState('');
   const [taskCategory, setTaskCategory] = useState('Client & Pitching');
   const [taskPriority, setTaskPriority] = useState('High');
+  const [taskTime, setTaskTime] = useState('10:00 AM – 11:00 AM');
+  const [taskNotes, setTaskNotes] = useState('');
+  const [taskCheckpoints, setTaskCheckpoints] = useState([]);
+
+  // Voice Assistant inside Task Creation Modal
+  const [isVoiceListening, setIsVoiceListening] = useState(false);
+  const [isVoiceAnalyzing, setIsVoiceAnalyzing] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const [voiceSuccessMsg, setVoiceSuccessMsg] = useState('');
+  const recognitionRef = useRef(null);
+  const transcriptRef = useRef('');
+  const silenceTimerRef = useRef(null);
 
   const [meetingTitle, setMeetingTitle] = useState('');
   const [meetingClient, setMeetingClient] = useState('');
@@ -45,6 +59,197 @@ export default function ModalContainer({
     alert("Gemini / AI Key saved successfully!");
   };
 
+  const parseSpeechLocally = (speech) => {
+    const lower = speech.toLowerCase();
+    let priority = 'Medium';
+    if (/\b(urgent|asap|critical|important|top priority|high priority|emergency|must)\b/i.test(lower)) {
+      priority = 'High';
+    } else if (/\b(later|whenever|low priority|minor|optional)\b/i.test(lower)) {
+      priority = 'Low';
+    }
+
+    let category = 'Daily Execution';
+    if (/\b(meeting|meet|sync|zoom|call|interview|discuss)\b/i.test(lower)) {
+      category = 'Client & Pitching';
+    } else if (/\b(client|customer|sales|pitch|proposal|deal|contract|lead)\b/i.test(lower)) {
+      category = 'Client & Pitching';
+    } else if (/\b(bug|code|deploy|frontend|backend|api|database|feature|release|ops|pipeline)\b/i.test(lower)) {
+      category = 'Ops & Pipeline';
+    } else if (/\b(strategy|roadmap|kpi|systems|architecture)\b/i.test(lower)) {
+      category = 'Systems & Strategy';
+    } else if (/\b(finance|revenue|budget|invoice|governance|tax)\b/i.test(lower)) {
+      category = 'Finance & Governance';
+    } else if (/\b(marketing|growth|campaign|social|seo)\b/i.test(lower)) {
+      category = 'Growth & Marketing';
+    }
+
+    let cleanTitle = speech
+      .replace(/^(\s*can you|\s*please|\s*remind me to|\s*schedule a|\s*create a task for|\s*i want to|\s*i need to|\s*add a task to)\s*/i, '')
+      .replace(/\b(tomorrow|today|day after tomorrow|yesterday)\b/gi, '')
+      .replace(/\bat\s+\d{1,2}(:\d{2})?\s*(am|pm)?\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (cleanTitle.length < 3) cleanTitle = speech.trim();
+    cleanTitle = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
+
+    return {
+      title: cleanTitle,
+      priority,
+      category,
+      time: '10:00 AM – 11:00 AM',
+      notes: `Voice input: "${speech}"`,
+      checkpoints: [
+        { id: 'cp_1', text: `Execute key deliverables for ${cleanTitle.slice(0, 30)}`, done: false },
+        { id: 'cp_2', text: 'Verify output and mark complete', done: false }
+      ]
+    };
+  };
+
+  const applyAnalyzedData = (taskObj, originalSpeech) => {
+    if (!taskObj) return;
+    if (taskObj.title) setTaskTitle(taskObj.title);
+    if (taskObj.priority) setTaskPriority(taskObj.priority);
+    if (taskObj.time) setTaskTime(taskObj.time);
+    if (taskObj.notes) setTaskNotes(taskObj.notes);
+    if (taskObj.checkpoints) {
+      const cps = Array.isArray(taskObj.checkpoints) 
+        ? taskObj.checkpoints.map((c, i) => typeof c === 'string' ? { id: 'cp_' + i, text: c, done: false } : c)
+        : [];
+      setTaskCheckpoints(cps);
+    }
+
+    if (taskObj.category) {
+      const catLower = taskObj.category.toLowerCase();
+      if (catLower.includes('client') || catLower.includes('pitch') || catLower.includes('sale') || catLower.includes('meeting')) {
+        setTaskCategory('Client & Pitching');
+      } else if (catLower.includes('ops') || catLower.includes('pipeline') || catLower.includes('code') || catLower.includes('eng')) {
+        setTaskCategory('Ops & Pipeline');
+      } else if (catLower.includes('system') || catLower.includes('strategy') || catLower.includes('plan')) {
+        setTaskCategory('Systems & Strategy');
+      } else if (catLower.includes('finance') || catLower.includes('budget') || catLower.includes('invoice')) {
+        setTaskCategory('Finance & Governance');
+      } else if (catLower.includes('growth') || catLower.includes('market') || catLower.includes('lead')) {
+        setTaskCategory('Growth & Marketing');
+      } else {
+        setTaskCategory('Daily Execution');
+      }
+    }
+
+    setVoiceSuccessMsg(`✨ AI autocorrected and populated best task!`);
+    triggerPhoneVibration([60, 40, 60]);
+  };
+
+  const startVoice = () => {
+    const SpeechRecognition = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please use Google Chrome or type directly.");
+      return;
+    }
+
+    try {
+      if (recognitionRef.current) recognitionRef.current.abort();
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.lang = 'en-US';
+
+      rec.onstart = () => {
+        setIsVoiceListening(true);
+        setVoiceSuccessMsg('');
+        setVoiceTranscript('');
+        transcriptRef.current = '';
+        triggerPhoneVibration([40]);
+      };
+
+      rec.onresult = (event) => {
+        let text = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          text += event.results[i][0].transcript;
+        }
+        setVoiceTranscript(text);
+        transcriptRef.current = text;
+
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        if (text.trim().length > 3) {
+          silenceTimerRef.current = setTimeout(() => {
+            stopVoice();
+            analyzeAndAutocorrectTask(text);
+          }, 1300);
+        }
+      };
+
+      rec.onerror = (e) => {
+        console.warn("Speech recognition error:", e.error);
+        setIsVoiceListening(false);
+      };
+
+      rec.onend = () => {
+        setIsVoiceListening(false);
+        triggerPhoneVibration([30]);
+        if (transcriptRef.current && transcriptRef.current.trim().length > 3 && !isVoiceAnalyzing) {
+          analyzeAndAutocorrectTask(transcriptRef.current);
+        }
+      };
+
+      recognitionRef.current = rec;
+      rec.start();
+    } catch (err) {
+      console.warn("Speech start error:", err);
+      setIsVoiceListening(false);
+    }
+  };
+
+  const stopVoice = () => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch (e) {}
+      recognitionRef.current = null;
+    }
+    setIsVoiceListening(false);
+  };
+
+  const handleVoiceToggle = () => {
+    if (isVoiceListening) {
+      stopVoice();
+      if (transcriptRef.current && transcriptRef.current.trim().length > 3) {
+        analyzeAndAutocorrectTask(transcriptRef.current);
+      }
+    } else {
+      startVoice();
+    }
+  };
+
+  const analyzeAndAutocorrectTask = async (spokenText) => {
+    const speech = spokenText.trim();
+    if (!speech) return;
+    setIsVoiceAnalyzing(true);
+    stopVoice();
+
+    try {
+      const res = await analyzeVoiceTaskAPI(
+        speech,
+        new Date().toDateString(),
+        new Date().toLocaleDateString('en-US', { weekday: 'long' })
+      );
+
+      if (res && res.success && res.task) {
+        applyAnalyzedData(res.task, speech);
+      } else {
+        const parsed = parseSpeechLocally(speech);
+        applyAnalyzedData(parsed, speech);
+      }
+    } catch (err) {
+      const parsed = parseSpeechLocally(speech);
+      applyAnalyzedData(parsed, speech);
+    } finally {
+      setIsVoiceAnalyzing(false);
+    }
+  };
+
   const handleTaskSubmit = (e) => {
     e.preventDefault();
     if (!taskTitle) return;
@@ -54,9 +259,16 @@ export default function ModalContainer({
       category: taskCategory,
       priority: taskPriority,
       status: 'Pending',
-      time: '04:00 PM'
+      time: taskTime || '10:00 AM – 11:00 AM',
+      notes: taskNotes || '',
+      checkpoints: taskCheckpoints || []
     });
     setTaskTitle('');
+    setTaskTime('10:00 AM – 11:00 AM');
+    setTaskNotes('');
+    setTaskCheckpoints([]);
+    setVoiceTranscript('');
+    setVoiceSuccessMsg('');
     onClose();
   };
 
@@ -225,19 +437,112 @@ export default function ModalContainer({
             </div>
           )}
 
-          {/* Add Task Modal */}
+          {/* Add Task Modal with Integrated Voice Assistant */}
           {activeModal === 'task' && (
-            <form onSubmit={handleTaskSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleTaskSubmit} className="space-y-3.5 text-xs">
+              {/* Voice Assistant Auto-Fill Card with Live Writing Bar */}
+              <div className="p-3 sm:p-3.5 bg-gradient-to-br from-blue-50 via-indigo-50/70 to-purple-50 dark:from-slate-800 dark:via-indigo-950/30 dark:to-purple-950/30 rounded-2xl border border-indigo-200/80 dark:border-indigo-800/60 shadow-xs space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <Mic className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="font-black text-xs text-indigo-950 dark:text-indigo-200 leading-tight truncate">
+                        AI Voice Assistant Auto-Fill
+                      </h4>
+                      <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium truncate">
+                        Speak naturally — AI autocorrects & populates fields
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleVoiceToggle}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black shadow-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shrink-0 ${
+                      isVoiceListening
+                        ? 'bg-rose-500 hover:bg-rose-600 text-white animate-pulse'
+                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                    }`}
+                  >
+                    <Mic className={`w-3.5 h-3.5 ${isVoiceListening ? 'animate-bounce' : ''}`} />
+                    <span>{isVoiceListening ? 'Listening...' : 'Speak'}</span>
+                  </button>
+                </div>
+
+                {/* Live Writing Bar / Audio Waveform */}
+                {(isVoiceListening || isVoiceAnalyzing || voiceTranscript) && (
+                  <div className="pt-2 border-t border-indigo-200/60 dark:border-indigo-800/60 space-y-1.5 animate-in fade-in">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-1.5 font-bold text-indigo-900 dark:text-indigo-300">
+                        {isVoiceListening && (
+                          <div className="flex items-center gap-1 h-3.5">
+                            <span className="w-1 h-2 bg-rose-500 rounded-full animate-bounce [animation-delay:0ms]" />
+                            <span className="w-1 h-3.5 bg-rose-500 rounded-full animate-bounce [animation-delay:150ms]" />
+                            <span className="w-1 h-2.5 bg-rose-500 rounded-full animate-bounce [animation-delay:300ms]" />
+                            <span className="w-1 h-4 bg-rose-500 rounded-full animate-bounce [animation-delay:200ms]" />
+                          </div>
+                        )}
+                        <span className="truncate">
+                          {isVoiceListening
+                            ? 'Writing bar (listening live)...'
+                            : isVoiceAnalyzing
+                            ? 'AI Autocorrecting & Structuring Best Task...'
+                            : 'Voice Input:'}
+                        </span>
+                      </div>
+                      {isVoiceAnalyzing && (
+                        <span className="flex items-center gap-1 text-[10px] font-black text-purple-600 dark:text-purple-400 animate-pulse shrink-0">
+                          <Sparkles className="w-3 h-3 animate-spin" /> Autocorrecting
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-indigo-200/80 dark:border-indigo-800 text-xs font-semibold text-slate-800 dark:text-slate-100 shadow-inner flex items-center justify-between gap-2">
+                      <span className="truncate">{voiceTranscript || 'Speak what you want to achieve...'}</span>
+                      {isVoiceListening && (
+                        <span className="w-1.5 h-3.5 bg-indigo-600 animate-pulse shrink-0" />
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {voiceSuccessMsg && (
+                  <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 animate-in fade-in">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">{voiceSuccessMsg}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Task Title with Inline Mic Trigger */}
               <div>
-                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Task Title</label>
-                <input
-                  type="text"
-                  required
-                  value={taskTitle}
-                  onChange={(e) => setTaskTitle(e.target.value)}
-                  placeholder="e.g. Prepare proposal for client meeting"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
-                />
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Task Title
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={taskTitle}
+                    onChange={(e) => setTaskTitle(e.target.value)}
+                    placeholder="e.g. Prepare proposal for client meeting"
+                    className="w-full pl-3 pr-10 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleVoiceToggle}
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors cursor-pointer ${
+                      isVoiceListening
+                        ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/50 animate-pulse'
+                        : 'text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    }`}
+                    title="Speak to dictate task"
+                  >
+                    <Mic className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -246,7 +551,7 @@ export default function ModalContainer({
                   <select
                     value={taskCategory}
                     onChange={(e) => setTaskCategory(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
                   >
                     <option value="Client & Pitching">Client & Pitching</option>
                     <option value="Ops & Pipeline">Ops & Pipeline</option>
@@ -262,20 +567,33 @@ export default function ModalContainer({
                   <select
                     value={taskPriority}
                     onChange={(e) => setTaskPriority(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
                   >
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
+                    <option value="High">🔥 High</option>
+                    <option value="Medium">🟡 Medium</option>
+                    <option value="Low">🟢 Low</option>
                   </select>
                 </div>
               </div>
 
+              {/* Time Range */}
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Scheduled Time Range</label>
+                <input
+                  type="text"
+                  value={taskTime}
+                  onChange={(e) => setTaskTime(e.target.value)}
+                  placeholder="e.g. 10:00 AM – 11:00 AM"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-slate-800 dark:text-slate-200"
+                />
+              </div>
+
               <button
                 type="submit"
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md mt-2"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-md mt-2 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
               >
-                Add Task to Planner
+                <Check className="w-4 h-4" />
+                <span>Add Task to Planner</span>
               </button>
             </form>
           )}

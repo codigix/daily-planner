@@ -39,7 +39,9 @@ import {
 import { Lock, LogIn } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
+import NotificationToaster from './components/common/NotificationToaster';
 import { sendSystemNotification } from './utils/notificationService';
+import { deduplicateTasks, deduplicateTimeline } from './utils/plannerDeduplication';
 
 const normalizeTab = (rawTab) => {
   if (!rawTab) return 'dashboard';
@@ -111,8 +113,10 @@ function AppContent() {
         try {
           const pData = await getPlannerAPI();
           if (pData && Array.isArray(pData.plannerTasks)) {
-            setPlannerTasks(pData.plannerTasks);
-            if (Array.isArray(pData.scheduleTimeline)) setScheduleTimeline(pData.scheduleTimeline);
+            setPlannerTasks(deduplicateTasks(pData.plannerTasks));
+            if (Array.isArray(pData.scheduleTimeline)) {
+              setScheduleTimeline(deduplicateTimeline(pData.scheduleTimeline));
+            }
           }
         } finally {
           setPlannerLoading(false);
@@ -181,8 +185,8 @@ function AppContent() {
   const handleAddPlannerTask = async (newTask) => {
     setPlannerTasks(prev => [newTask, ...prev]);
     await createPlannerTaskAPI(newTask);
-    sendSystemNotification('New Task Added 📋', {
-      body: `"${newTask.title || 'Task'}" added to Daily Planner.`,
+    sendSystemNotification(newTask.title || 'New Task', {
+      body: newTask.time || '',
       tag: 'task-' + Date.now()
     });
   };
@@ -252,7 +256,7 @@ function AppContent() {
       />
 
       {/* Main Content Area — Require Login to Access All Sidebar Views */}
-      <main className={`p-3 sm:p-6 transition-all duration-300 ml-0 ${collapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+      <main className={`p-3 sm:p-6 pb-24 lg:pb-8 transition-all duration-300 ml-0 ${collapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <div className="max-w-7xl mx-auto">
           {!user ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 text-center">
@@ -456,6 +460,9 @@ function AppContent() {
         isInstalled={isInstalled}
         onInstall={promptInstall}
       />
+
+      {/* Premium In-App Notification Toaster */}
+      <NotificationToaster onNavigate={(tab) => setActiveTab(tab)} />
 
       {/* Floating Mobile Bottom Navigation Bar */}
       <MobileBottomNav

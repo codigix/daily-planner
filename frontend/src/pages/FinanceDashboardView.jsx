@@ -43,14 +43,16 @@ import {
   deleteSaleAPI,
   fetchPurchasesAPI,
   createPurchaseAPI,
-  deletePurchaseAPI
+  deletePurchaseAPI,
+  syncPurchasesSheetAPI,
+  syncSalesSheetAPI
 } from '../services/api';
 import DataTable from '../components/common/DataTable';
 
 export default function FinanceDashboardView({ clients = [], plannerTasks = [], onOpenAI, onNavigate }) {
   // Navigation & Filter States
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'sales', 'purchases'
-  const [selectedPeriod, setSelectedPeriod] = useState('this_month'); // 'this_month', 'last_month', 'q1', 'q2', 'q3', 'q4', '2026', '2025', 'all'
+  const [selectedPeriod, setSelectedPeriod] = useState('2026'); // 'this_month', 'last_month', 'q1', 'q2', 'q3', 'q4', '2026', '2025', 'all'
   const [loading, setLoading] = useState(true);
 
   // Financial Telemetry States
@@ -127,6 +129,33 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
   // Profit Margin (%)
   const [calcProfitMarginPct, setCalcProfitMarginPct] = useState('');
 
+  // Handle Sync Sales Sheet
+  const handleSyncSalesSheet = async () => {
+    const saved = localStorage.getItem('codigix_sales_sheet_url') || '';
+    const sheetUrl = window.prompt('Enter your Google Sheet URL for Sales/Invoices:', saved);
+    if (!sheetUrl) return;
+    
+    localStorage.setItem('codigix_sales_sheet_url', sheetUrl);
+    setLoading(true);
+    try {
+      const res = await syncSalesSheetAPI(sheetUrl);
+      if (res && res.success) {
+        alert(res.message || 'Synced successfully!');
+        loadFinanceTelemetry();
+      } else {
+        if (res.error && res.error.includes('Google Account not connected')) {
+           alert('Google Sheets Sync Error: Google Account not connected or token expired. Please connect your Google account by navigating to the backend URL: http://localhost:5001/api/google/auth in your browser.');
+        } else {
+           alert(res.error || 'Sync failed');
+        }
+      }
+    } catch (err) {
+      alert('Error syncing sheet: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Reset Calculator Function
   const handleResetCalculator = () => {
     setCalcProjectName('');
@@ -170,10 +199,10 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
       if (data && data.success) {
         setDashboardData(data);
       }
-      const salesRes = await fetchSalesAPI();
+      const salesRes = await fetchSalesAPI(selectedPeriod);
       if (salesRes && salesRes.success) setSalesList(salesRes.sales || []);
 
-      const purchasesRes = await fetchPurchasesAPI();
+      const purchasesRes = await fetchPurchasesAPI(selectedPeriod);
       if (purchasesRes && purchasesRes.success) setPurchasesList(purchasesRes.purchases || []);
     } catch (err) {
       console.error('Failed to load finance telemetry:', err);
@@ -246,9 +275,36 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
     if (!window.confirm('Delete this purchase record?')) return;
     try {
       await deletePurchaseAPI(id);
-      await loadFinanceTelemetry();
+      loadFinanceTelemetry();
     } catch (err) {
-      console.error('Failed to delete purchase:', err);
+      console.error(err);
+    }
+  };
+
+  // Handle Sync Purchases Sheet
+  const handleSyncPurchasesSheet = async () => {
+    const saved = localStorage.getItem('codigix_purchases_sheet_url') || '';
+    const sheetUrl = window.prompt('Enter your Google Sheet URL for Purchases/Expenses:', saved);
+    if (!sheetUrl) return;
+    
+    localStorage.setItem('codigix_purchases_sheet_url', sheetUrl);
+    setLoading(true);
+    try {
+      const res = await syncPurchasesSheetAPI(sheetUrl);
+      if (res && res.success) {
+        alert(res.message || 'Synced successfully!');
+        loadFinanceTelemetry();
+      } else {
+        if (res.error && res.error.includes('Google Account not connected')) {
+           alert('Google Sheets Sync Error: Google Account not connected or token expired. Please connect your Google account by navigating to the backend URL: http://localhost:5001/api/google/auth in your browser.');
+        } else {
+           alert(res.error || 'Sync failed');
+        }
+      }
+    } catch (err) {
+      alert('Error syncing sheet: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -683,13 +739,21 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
             defaultPageSize={5}
             searchable={false}
             actionButton={
-              <button
-                onClick={() => setShowSaleModal(true)}
-                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Record New Sale</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleSyncSalesSheet}
+                  className="px-3.5 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 dark:text-blue-300 text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer border border-blue-200 dark:border-blue-800"
+                >
+                  <span>Sync Google Sheet</span>
+                </button>
+                <button
+                  onClick={() => setShowSaleModal(true)}
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Record New Sale</span>
+                </button>
+              </div>
             }
           />
         </div>
@@ -703,55 +767,71 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
           <DataTable
             title="Vendor Expenses & Purchase Bills"
             columns={[
-              { key: 'purchase_no', header: 'Purchase No', sortable: true, render: (item) => <span className="font-mono text-rose-600 dark:text-rose-400 font-bold">{item.purchase_no}</span> },
-              { key: 'vendor_name', header: 'Vendor / Payee', sortable: true, render: (item) => <span className="font-bold text-slate-900 dark:text-white">{item.vendor_name}</span> },
-              { key: 'category', header: 'Category', sortable: true, render: (item) => <span className="text-slate-600 dark:text-slate-400">{item.category}</span> },
-              { key: 'purchase_date', header: 'Purchase Date', sortable: true, render: (item) => <span className="text-slate-500">{new Date(item.purchase_date).toLocaleDateString('en-IN')}</span> },
+              { key: 'purchase_no', header: 'Number', sortable: true, render: (item) => <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">{item.purchase_no}</span> },
+              { key: 'purchase_date', header: 'Date', sortable: true, render: (item) => <span className="text-slate-500 font-medium whitespace-nowrap">{new Date(item.purchase_date).toLocaleDateString('en-IN')}</span> },
+              { key: 'vendor_name', header: 'Payment To', sortable: true, render: (item) => <span className="font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">{item.vendor_name || 'N/A'}</span> },
               {
-                key: 'amount',
-                header: 'Amount (₹)',
+                key: 'received_amount',
+                header: 'Received Amount',
                 sortable: true,
                 render: (item) => (
-                  <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">
-                    ₹ {parseFloat(item.amount).toLocaleString('en-IN')}
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                    ₹ {parseFloat(item.received_amount || 0).toLocaleString('en-IN')}
+                  </span>
+                )
+              },
+              {
+                key: 'amount',
+                header: 'Expenses',
+                sortable: true,
+                render: (item) => (
+                  <span className="font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                    ₹ {parseFloat(item.amount || 0).toLocaleString('en-IN')}
+                  </span>
+                )
+              },
+              {
+                key: 'balance_amount',
+                header: 'Remaining Balance',
+                sortable: true,
+                render: (item) => (
+                  <span className="font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                    ₹ {parseFloat(item.balance_amount || 0).toLocaleString('en-IN')}
                   </span>
                 )
               },
               {
                 key: 'status',
                 header: 'Status',
-                sortable: true,
-                render: (item) => (
-                  <span className="px-2.5 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-extrabold">
-                    {item.status || 'PAID'}
-                  </span>
-                )
+                render: (item) => {
+                  const rcv = parseFloat(item.received_amount || 0);
+                  const exp = parseFloat(item.amount || 0);
+                  const bal = parseFloat(item.balance_amount || 0);
+                  const isReceived = rcv > exp;
+                  const isPositive = bal >= 0;
+                  
+                  return (
+                    <div className="flex flex-col gap-1.5 min-w-[90px]">
+                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold max-w-max ${isReceived ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
+                        {isReceived ? 'RECEIVED' : 'PAID'}
+                      </span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 max-w-max rounded border ${isPositive ? 'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20' : 'text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20'}`}>
+                        {isPositive ? 'Positive' : 'Negative'}
+                      </span>
+                    </div>
+                  );
+                }
               },
-              { key: 'payment_method', header: 'Payment Method', sortable: true, render: (item) => <span className="text-slate-600 dark:text-slate-400">{item.payment_method}</span> },
               {
                 key: 'actions',
-                header: 'Actions',
+                header: 'Last Actions',
                 align: 'right',
                 render: (item) => (
                   <div className="flex items-center justify-end gap-2">
-                    {item.bill_file_url ? (
-                      <a
-                        href={item.bill_file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-2 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs rounded-lg flex items-center gap-1 border border-blue-500/20"
-                        title={item.bill_file_name || 'View Invoice'}
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>View Bill</span>
-                      </a>
-                    ) : (
-                      <span className="text-xs text-slate-400 font-medium italic">No File</span>
-                    )}
                     <button
                       onClick={() => handleDeletePurchase(item.id)}
-                      className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
-                      title="Delete Purchase"
+                      className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer transition-colors"
+                      title="Delete Record"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -764,13 +844,21 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
             defaultPageSize={5}
             searchable={false}
             actionButton={
-              <button
-                onClick={() => setShowPurchaseModal(true)}
-                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Record New Purchase</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleSyncPurchasesSheet}
+                  className="px-3.5 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 dark:text-blue-300 text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer border border-blue-200 dark:border-blue-800"
+                >
+                  <span>Sync Google Sheet</span>
+                </button>
+                <button
+                  onClick={() => setShowPurchaseModal(true)}
+                  className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Record New Purchase</span>
+                </button>
+              </div>
             }
           />
         </div>
@@ -1691,7 +1779,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 onClick={() => {
                   setSearchQuery('');
                   setActiveTab('overview');
-                  setSelectedPeriod('this_month');
+                  setSelectedPeriod('2026');
                 }}
                 className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
               >

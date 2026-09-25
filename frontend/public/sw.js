@@ -78,3 +78,71 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
+// ── Notification Click Event for Mobile & Desktop ──
+// Handles tapping notifications on mobile lock screen / status bar, focuses PWA and signals task popup
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const data = event.notification.data || {};
+  let targetUrl = data.url || '/planner';
+  
+  if (data.type === 'nextDayPrep' || data.isPrep) {
+    targetUrl = `/planner?openNextDayPrep=1&openDay=${encodeURIComponent(data.day || '')}`;
+  } else if (data.mealId) {
+    targetUrl = `/planner?openDietMealId=${encodeURIComponent(data.mealId)}&openDay=${encodeURIComponent(data.day || '')}`;
+  } else if (data.taskId) {
+    targetUrl = `/planner?openTaskId=${encodeURIComponent(data.taskId)}`;
+  }
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // If a window is already open, focus it and broadcast message
+      for (const client of clientList) {
+        if ('focus' in client) {
+          client.focus();
+          if (client.postMessage) {
+            client.postMessage({
+              type: data.type === 'nextDayPrep' ? 'nextDayPrep' : 'NOTIFICATION_TASK_CLICKED',
+              taskId: data.taskId,
+              mealId: data.mealId,
+              day: data.day,
+              notificationType: data.type,
+              data: data,
+              action: event.action
+            });
+          }
+          return;
+        }
+      }
+
+      // If no window is currently open, open a new window directly with the task param
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+// Optional Web Push Event
+self.addEventListener('push', (event) => {
+  let payload = { title: 'Task Reminder', body: 'You have a scheduled reminder.' };
+  try {
+    if (event.data) {
+      payload = event.data.json();
+    }
+  } catch (e) {
+    payload.body = event.data ? event.data.text() : payload.body;
+  }
+
+  const options = {
+    body: payload.body,
+    icon: '/pwa-192x192.svg',
+    badge: '/pwa-192x192.svg',
+    vibrate: [300, 100, 300, 100, 300],
+    data: payload.data || {},
+    requireInteraction: true
+  };
+
+  event.waitUntil(self.registration.showNotification(payload.title, options));
+});
