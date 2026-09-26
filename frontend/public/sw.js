@@ -1,5 +1,5 @@
 // CODIGIX EXECUTIVE OS - Service Worker
-const CACHE_NAME = 'codigix-exec-os-v1';
+const CACHE_NAME = 'codigix-exec-os-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
