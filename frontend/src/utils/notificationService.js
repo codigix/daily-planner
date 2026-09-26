@@ -184,8 +184,8 @@ export const sendSystemNotification = async (title, options = {}) => {
 
     if (perm === 'granted') {
       const defaultOptions = {
-        icon: '/app-icon.jpg',
-        badge: '/app-icon.jpg',
+        icon: '/app-icon.png',
+        badge: '/app-icon.png',
         vibrate: [300, 100, 300, 100, 400],
         tag: options.tag || 'codigix-reminder-' + (options.taskId || options.mealId || Date.now()),
         renotify: true,

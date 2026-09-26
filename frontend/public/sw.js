@@ -4,10 +4,7 @@ const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/favicon.svg',
-  '/pwa-192x192.svg',
-  '/pwa-512x512.svg',
-  '/pwa-maskable-512x512.svg'
+  '/app-icon.png'
 ];
 
 // Install Event - Precache core static shell
@@ -137,8 +134,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: payload.body,
-    icon: '/app-icon.jpg',
-    badge: '/app-icon.jpg',
+    icon: '/app-icon.png',
+    badge: '/app-icon.png',
     vibrate: [300, 100, 300, 100, 300],
     data: payload.data || {},
     requireInteraction: true

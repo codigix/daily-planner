@@ -12,9 +12,15 @@
   "categories": ["productivity", "business", "utilities"],
   "icons": [
     {
-      "src": "/app-icon.jpg",
-      "sizes": "192x192 512x512",
-      "type": "image/jpeg",
+      "src": "/app-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
@@ -24,21 +30,21 @@
       "short_name": "Planner",
       "description": "Open Daily Planner",
       "url": "/#planner",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
     },
     {
       "name": "Meeting Manager",
       "short_name": "Meetings",
       "description": "View & schedule meetings",
       "url": "/#meetings",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
     },
     {
       "name": "Client Followups",
       "short_name": "Clients",
       "description": "View client followups",
       "url": "/#followups",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
     }
   ]
 }
