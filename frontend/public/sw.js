@@ -137,8 +137,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: payload.body,
-    icon: '/pwa-192x192.svg',
-    badge: '/pwa-192x192.svg',
+    icon: '/app-icon.jpg',
+    badge: '/app-icon.jpg',
     vibrate: [300, 100, 300, 100, 300],
     data: payload.data || {},
     requireInteraction: true
