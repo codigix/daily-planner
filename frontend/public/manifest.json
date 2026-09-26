@@ -9,7 +9,11 @@
   "theme_color": "#2563eb",
   "orientation": "any",
   "scope": "/",
-  "categories": ["productivity", "business", "utilities"],
+  "categories": [
+    "productivity",
+    "business",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "/app-icon.png",
@@ -30,21 +34,36 @@
       "short_name": "Planner",
       "description": "Open Daily Planner",
       "url": "/#planner",
-      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/app-icon.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Meeting Manager",
       "short_name": "Meetings",
       "description": "View & schedule meetings",
       "url": "/#meetings",
-      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/app-icon.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Client Followups",
       "short_name": "Clients",
       "description": "View client followups",
       "url": "/#followups",
-      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/app-icon.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
