@@ -12,6 +12,12 @@
   "categories": ["productivity", "business", "utilities"],
   "icons": [
     {
+      "src": "/app-icon.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
