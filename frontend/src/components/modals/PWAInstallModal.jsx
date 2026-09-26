@@ -1,23 +1,23 @@
 import React from 'react';
-import { 
-  Download, 
-  X, 
-  Check, 
-  Laptop, 
-  Smartphone, 
-  Globe, 
-  ShieldCheck, 
-  Zap, 
+import {
+  Download,
+  X,
+  Check,
+  Laptop,
+  Smartphone,
+  Globe,
+  ShieldCheck,
+  Zap,
   ExternalLink,
   Sparkles
 } from 'lucide-react';
 
-export default function PWAInstallModal({ 
-  isOpen, 
-  onClose, 
-  isInstallable, 
-  isInstalled, 
-  onInstall 
+export default function PWAInstallModal({
+  isOpen,
+  onClose,
+  isInstallable,
+  isInstalled,
+  onInstall
 }) {
   if (!isOpen) return null;
 
@@ -30,11 +30,11 @@ export default function PWAInstallModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-lg overflow-hidden bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 transition-all">
+      <div className="relative w-full max-w-lg overflow-hidden bg-white dark:bg-slate-900 rounded-md-3xl shadow-2xl border border-slate-200 dark:border-slate-800 transition-all">
         {/* Decorative Top Banner */}
         <div className="relative h-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 flex flex-col justify-end overflow-hidden">
           <div className="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <button 
+          <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors"
             title="Close"
@@ -42,7 +42,7 @@ export default function PWAInstallModal({
             <X className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 rounded-md bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg">
               <Download className="w-6 h-6 text-white animate-bounce" />
             </div>
             <div>
@@ -71,7 +71,7 @@ export default function PWAInstallModal({
               </p>
               <button
                 onClick={onClose}
-                className="mt-4 px-6 py-2.5 rounded-xl font-semibold bg-slate-800 text-white hover:bg-slate-700 transition-colors shadow-md"
+                className="mt-4 px-6 py-2.5 rounded-md font-semibold bg-slate-800 text-white hover:bg-slate-700 transition-colors shadow-md"
               >
                 Close Window
               </button>
@@ -80,8 +80,8 @@ export default function PWAInstallModal({
             <>
               {/* Feature Highlights Grid */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                <div className="p-3.5 rounded-md bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
+                  <div className="p-2 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
                     <Zap className="w-5 h-5" />
                   </div>
                   <div>
@@ -90,8 +90,8 @@ export default function PWAInstallModal({
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                <div className="p-3.5 rounded-md bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
+                  <div className="p-2 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400">
                     <Laptop className="w-5 h-5" />
                   </div>
                   <div>
@@ -100,8 +100,8 @@ export default function PWAInstallModal({
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <div className="p-3.5 rounded-md bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
+                  <div className="p-2 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
@@ -110,8 +110,8 @@ export default function PWAInstallModal({
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                <div className="p-3.5 rounded-md bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
+                  <div className="p-2 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
                     <Globe className="w-5 h-5" />
                   </div>
                   <div>
@@ -126,7 +126,7 @@ export default function PWAInstallModal({
                 <div className="pt-2">
                   <button
                     onClick={handleInstallClick}
-                    className="w-full py-3.5 px-6 rounded-2xl font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-[0.99] transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
+                    className="w-full py-3.5 px-6 rounded-md font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-[0.99] transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
                   >
                     <Download className="w-5 h-5" />
                     Install CODIGIX OS Now (1-Click)
@@ -136,7 +136,7 @@ export default function PWAInstallModal({
                   </p>
                 </div>
               ) : (
-                <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs space-y-3">
+                <div className="p-4 rounded-md bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs space-y-3">
                   <div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200">
                     <Smartphone className="w-4 h-4 text-blue-500" />
                     How to install manually on your browser:

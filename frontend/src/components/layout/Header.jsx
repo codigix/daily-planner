@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Search, 
-  Calendar as CalendarIcon, 
-  Bell, 
-  HelpCircle, 
-  ChevronDown, 
+import {
+  Search,
+  Calendar as CalendarIcon,
+  Bell,
+  HelpCircle,
+  ChevronDown,
   Sparkles,
-  Sun,
-  Moon,
   CheckCircle2,
   Clock,
   User,
@@ -16,20 +14,21 @@ import {
   Keyboard,
   Briefcase,
   Menu,
-  LogOut, 
-  LogIn, 
+  LogOut,
+  LogIn,
   UserPlus,
   Download
 } from 'lucide-react';
 import { fetchNotificationsAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { sendSystemNotification, requestNotificationPermission } from '../../utils/notificationService';
 
-export default function Header({ 
-  user: defaultUser, 
-  collapsed, 
-  activeTab, 
-  isDark, 
-  toggleTheme, 
+export default function Header({
+  user: defaultUser,
+  collapsed,
+  activeTab,
+  isDark,
+  toggleTheme,
   onOpenAI,
   onOpenModal,
   onOpenAuthModal,
@@ -59,7 +58,7 @@ export default function Header({
   // Search States
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  
+
   const headerRef = useRef(null);
 
   // Close dropdowns on outside click
@@ -82,7 +81,7 @@ export default function Header({
     month: 'long',
     year: 'numeric'
   });
-  
+
   const [selectedDate, setSelectedDate] = useState(todayFormatted);
   const [notifications, setNotifications] = useState([]);
 
@@ -111,7 +110,7 @@ export default function Header({
       .filter(t => (t.title || '').toLowerCase().includes(q) || (t.category || '').toLowerCase().includes(q))
       .slice(0, 3)
       .map(t => ({ type: 'Task', title: t.title, subtitle: t.category, tab: 'planner' }));
-      
+
     const meetingMatches = meetings
       .filter(m => (m.title || '').toLowerCase().includes(q) || (m.client || '').toLowerCase().includes(q))
       .slice(0, 3)
@@ -127,26 +126,25 @@ export default function Header({
 
   return (
     <>
-      <header 
+      <header
         ref={headerRef}
-        className={`sticky top-0 z-40 h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between transition-all duration-300 ml-0 ${
-          collapsed ? 'lg:ml-20' : 'lg:ml-64'
-        }`}
+        className={`sticky top-0 z-40 h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between transition-all duration-300 ml-0 ${collapsed ? 'lg:ml-20' : 'lg:ml-64'
+          }`}
       >
         {/* Left Header Section */}
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Mobile Menu Hamburger Toggle */}
           <button
             onClick={() => setMobileOpen && setMobileOpen(!mobileOpen)}
-            className="p-1.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden cursor-pointer"
+            className="p-1.5 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden cursor-pointer"
             title="Toggle Mobile Menu"
           >
             <Menu className="w-6 h-6" />
           </button>
 
           {/* Brand Logo & Name */}
-          <div 
-            onClick={() => onNavigate && onNavigate('dashboard')} 
+          <div
+            onClick={() => onNavigate && onNavigate('dashboard')}
             className="flex items-center gap-2 cursor-pointer lg:hidden"
           >
             <img src="/codigix-logo.svg" alt="Codigix Infotech" className="h-7 object-contain" />
@@ -160,10 +158,10 @@ export default function Header({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search tasks, meetings, clients..."
-              className="w-full pl-9 pr-8 py-2 text-sm bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all placeholder:text-slate-400"
+              className="w-full pl-9 pr-8 py-2 text-sm bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all placeholder:text-slate-400"
             />
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery('')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
@@ -173,16 +171,16 @@ export default function Header({
 
             {/* Desktop Search Results Dropdown */}
             {searchResults.length > 0 && (
-              <div className="absolute top-12 left-0 w-full bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-2 z-50 animate-in fade-in">
+              <div className="absolute top-12 left-0 w-full bg-white dark:bg-slate-800 rounded-md shadow-xl border border-slate-200 dark:border-slate-700 p-2 z-50 animate-in fade-in">
                 <div className="text-[10px] font-extrabold uppercase text-slate-400 px-3 py-1">Search Results ({searchResults.length})</div>
                 {searchResults.map((item, idx) => (
-                  <div 
+                  <div
                     key={idx}
                     onClick={() => {
                       if (onNavigate) onNavigate(item.tab);
                       setSearchQuery('');
                     }}
-                    className="px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/60 rounded-xl cursor-pointer flex items-center justify-between transition-colors"
+                    className="px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/60 rounded-md cursor-pointer flex items-center justify-between transition-colors"
                   >
                     <div>
                       <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">{item.title}</span>
@@ -207,55 +205,40 @@ export default function Header({
               setShowNotifications(false);
               setShowProfileMenu(false);
             }}
-            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden cursor-pointer"
+            className="p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden cursor-pointer"
             title="Search"
           >
             <Search className="w-5 h-5" />
           </button>
 
           {/* Live Date Pill (Desktop) */}
-          <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 bg-slate-100/90 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm transition-colors">
+          <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 bg-slate-100/90 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm transition-colors">
             <CalendarIcon className="w-4 h-4 text-blue-600" />
             <span>{selectedDate}</span>
           </div>
 
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-xl text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            title="Toggle Dark / Light Theme"
-          >
-            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
-          </button>
 
           {/* AI Assistant Quick Trigger (Desktop) */}
           <button
             onClick={onOpenAI}
-            className="hidden sm:flex px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold items-center gap-1.5 shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
+            className="hidden sm:flex px-3 py-1.5 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold items-center gap-1.5 shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>AI Assistant</span>
           </button>
 
           {/* PWA Download App Button */}
-          <button
-            onClick={() => onOpenPWAInstall && onOpenPWAInstall()}
-            className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-            title="Download App as PWA"
-          >
-            <Download className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-            <span className="hidden md:inline">{isPWAInstalled ? 'App Installed' : 'Download App'}</span>
-          </button>
+
 
           {/* Notifications Hub Dropdown Toggle */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => {
                 setShowNotifications(!showNotifications);
                 setShowProfileMenu(false);
                 setShowMobileSearch(false);
               }}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative cursor-pointer"
+              className="p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative cursor-pointer"
               title="Notifications"
             >
               <Bell className="w-5 h-5" />
@@ -268,11 +251,24 @@ export default function Header({
 
             {/* Notifications Dropdown Overlay */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-3.5 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-800 rounded-md shadow-2xl border border-slate-200 dark:border-slate-700 p-3.5 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2 mb-2">
                   <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Notifications</h4>
                   <div className="flex items-center gap-2">
-                    <button 
+                    <button
+                      onClick={async () => {
+                        await requestNotificationPermission();
+                        sendSystemNotification('Phone Alert Test', {
+                          body: 'Audio chime & push notification active on your phone!'
+                        });
+                      }}
+                      className="text-[10px] font-extrabold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 flex items-center gap-1 cursor-pointer"
+                      title="Test vibration and alert sound"
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>Test Alert</span>
+                    </button>
+                    <button
                       onClick={markAllRead}
                       className="text-[10px] font-bold text-blue-600 hover:underline"
                     >
@@ -293,15 +289,14 @@ export default function Header({
                 <div className="space-y-2 max-h-64 overflow-y-auto no-scrollbar">
                   {notifications.length > 0 ? (
                     notifications.map((n) => (
-                      <div 
-                        key={n.id} 
+                      <div
+                        key={n.id}
                         onClick={() => {
                           setShowNotifications(false);
                           if (onNavigate) onNavigate('notifications');
                         }}
-                        className={`p-2.5 rounded-xl text-xs flex gap-2.5 items-start justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all ${
-                          n.unread ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900' : 'bg-transparent'
-                        }`}
+                        className={`p-2.5 rounded-md text-xs flex gap-2.5 items-start justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all ${n.unread ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900' : 'bg-transparent'
+                          }`}
                       >
                         <div className="flex items-start gap-2 flex-1">
                           <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.severity === 'urgent' ? 'bg-rose-500' : n.severity === 'warning' ? 'bg-amber-500' : 'bg-blue-500'}`} />
@@ -324,7 +319,7 @@ export default function Header({
           {/* User Profile Avatar / Log In Button */}
           <div className="relative">
             {activeUser ? (
-              <div 
+              <div
                 onClick={() => {
                   setShowProfileMenu(!showProfileMenu);
                   setShowNotifications(false);
@@ -337,7 +332,7 @@ export default function Header({
                   src={activeUser.avatar}
                   alt={activeUser.name}
                   onError={(e) => {
-                    e.target.onerror = null; 
+                    e.target.onerror = null;
                     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUser.name)}&background=0D8ABC&color=fff`;
                   }}
                   className="w-9 h-9 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700 shadow-sm"
@@ -347,7 +342,7 @@ export default function Header({
             ) : (
               <button
                 onClick={() => onOpenAuthModal && onOpenAuthModal('login')}
-                className="px-3 sm:px-4 py-2 bg-[#E60023] hover:bg-[#CC001F] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 sm:gap-2 transition-all active:scale-95 shrink-0"
+                className="px-3 sm:px-4 py-2 bg-[#E60023] hover:bg-[#CC001F] text-white font-extrabold text-xs rounded-md shadow-md flex items-center gap-1.5 sm:gap-2 transition-all active:scale-95 shrink-0"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Log In</span>
@@ -356,8 +351,8 @@ export default function Header({
 
             {/* Profile Dropdown Overlay Menu */}
             {showProfileMenu && (
-              <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-3 z-50 animate-in fade-in slide-in-from-top-2 space-y-2">
-                <div className="p-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl space-y-0.5">
+              <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-800 rounded-md shadow-2xl border border-slate-200 dark:border-slate-700 p-3 z-50 animate-in fade-in slide-in-from-top-2 space-y-2">
+                <div className="p-2.5 bg-slate-50 dark:bg-slate-900 rounded-md space-y-0.5">
                   <span className="font-black text-xs text-slate-900 dark:text-white block truncate">{activeUser.name}</span>
                   <span className="text-[10px] font-bold text-blue-600 block">{activeUser.role} Account</span>
                   {activeUser.email && (
@@ -371,7 +366,7 @@ export default function Header({
                       setShowProfileMenu(false);
                       if (onNavigate) onNavigate('profile');
                     }}
-                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors"
+                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors"
                   >
                     <User className="w-4 h-4 text-blue-500" />
                     <span>View Profile & Account</span>
@@ -382,7 +377,7 @@ export default function Header({
                       setShowProfileMenu(false);
                       if (onOpenAI) onOpenAI();
                     }}
-                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors"
+                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors"
                   >
                     <Sparkles className="w-4 h-4 text-purple-500" />
                     <span>AI Executive Assistant</span>
@@ -393,7 +388,7 @@ export default function Header({
                       setShowProfileMenu(false);
                       if (setShowHelpModal) setShowHelpModal(true);
                     }}
-                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors"
+                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors"
                   >
                     <HelpCircle className="w-4 h-4 text-amber-500" />
                     <span>Executive Guide & Shortcuts</span>
@@ -404,7 +399,7 @@ export default function Header({
                       setShowProfileMenu(false);
                       if (onOpenPWAInstall) onOpenPWAInstall();
                     }}
-                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors"
+                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md flex items-center gap-2 text-slate-700 dark:text-slate-200 transition-colors"
                   >
                     <Download className="w-4 h-4 text-blue-500" />
                     <span>Download Desktop/Mobile App</span>
@@ -418,7 +413,7 @@ export default function Header({
                         setShowProfileMenu(false);
                         logout();
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-rose-50 text-rose-600 rounded-xl flex items-center gap-2 font-black transition-colors"
+                      className="w-full text-left px-3 py-2 hover:bg-rose-50 text-rose-600 rounded-md flex items-center gap-2 font-black transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>Log Out Account</span>
@@ -429,7 +424,7 @@ export default function Header({
                         setShowProfileMenu(false);
                         if (onOpenAuthModal) onOpenAuthModal('login');
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-blue-50 text-blue-600 rounded-xl flex items-center gap-2 font-black transition-colors"
+                      className="w-full text-left px-3 py-2 hover:bg-blue-50 text-blue-600 rounded-md flex items-center gap-2 font-black transition-colors"
                     >
                       <LogIn className="w-4 h-4" />
                       <span>Sign In / Register</span>
@@ -453,10 +448,10 @@ export default function Header({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search tasks, meetings, clients..."
-              className="w-full pl-9 pr-8 py-2 text-sm bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none text-slate-800 dark:text-slate-200"
+              className="w-full pl-9 pr-8 py-2 text-sm bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none text-slate-800 dark:text-slate-200"
               autoFocus
             />
-            <button 
+            <button
               onClick={() => {
                 setShowMobileSearch(false);
                 setSearchQuery('');
@@ -467,17 +462,17 @@ export default function Header({
             </button>
 
             {searchResults.length > 0 && (
-              <div className="mt-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-2 space-y-1 shadow-lg">
+              <div className="mt-2 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 p-2 space-y-1 shadow-lg">
                 <div className="text-[10px] font-extrabold uppercase text-slate-400 px-2 py-0.5">Results ({searchResults.length})</div>
                 {searchResults.map((item, idx) => (
-                  <div 
+                  <div
                     key={idx}
                     onClick={() => {
                       if (onNavigate) onNavigate(item.tab);
                       setShowMobileSearch(false);
                       setSearchQuery('');
                     }}
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg cursor-pointer flex justify-between items-center text-xs"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md-lg cursor-pointer flex justify-between items-center text-xs"
                   >
                     <div>
                       <span className="font-bold text-slate-800 dark:text-slate-200 block">{item.title}</span>
@@ -495,19 +490,19 @@ export default function Header({
       {/* Help / Guide Overlay Modal */}
       {showHelpModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-2xl w-full max-w-md p-6 space-y-4 animate-in fade-in">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="font-extrabold text-slate-900 dark:text-white text-base flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-blue-600" /> CODIGIX OS Executive Guide
               </h3>
-              <button onClick={() => setShowHelpModal(false)} className="p-1 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+              <button onClick={() => setShowHelpModal(false)} className="p-1 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300">
-              <div className="p-3 bg-blue-50/60 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/40">
-                <span className="font-bold text-slate-900 dark:text-white block mb-1">🤖 AI Executive Assistant:</span>
+              <div className="p-3 bg-blue-50/60 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800/40">
+                <span className="font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-purple-600" /> AI Executive Assistant:</span>
                 Click <strong>"AI Assistant"</strong> in the top header or page views to chat for schedule optimization and business insights.
               </div>
 
@@ -516,17 +511,17 @@ export default function Header({
                   <Keyboard className="w-4 h-4 text-blue-600" /> Platform Shortcuts:
                 </span>
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg"><strong>Search:</strong> Use top search bar</div>
-                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg"><strong>Theme:</strong> Sun / Moon icon</div>
-                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg"><strong>AI Assistant:</strong> Header button</div>
-                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg"><strong>Sidebar:</strong> Collapse arrow</div>
+                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-md-lg"><strong>Search:</strong> Use top search bar</div>
+                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-md-lg"><strong>Theme:</strong> Sidebar toggle</div>
+                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-md-lg"><strong>AI Assistant:</strong> Header button</div>
+                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-md-lg"><strong>Sidebar:</strong> Collapse arrow</div>
                 </div>
               </div>
             </div>
 
-            <button 
+            <button
               onClick={() => setShowHelpModal(false)}
-              className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer"
+              className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-md shadow-sm cursor-pointer"
             >
               Got it, close guide
             </button>

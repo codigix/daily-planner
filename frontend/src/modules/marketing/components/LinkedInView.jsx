@@ -35,7 +35,7 @@ export default function LinkedInView({
             <button
               onClick={handleSyncLinkedIn}
               disabled={isSyncingLinkedin}
-              className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-blue-400 font-extrabold text-xs rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-blue-400 font-extrabold text-xs rounded-md border border-slate-700 transition-all flex items-center gap-1.5 shadow-sm"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncingLinkedin ? 'animate-spin' : ''}`} />
               <span>{isSyncingLinkedin ? 'Syncing...' : 'Sync Live Telemetry'}</span>
@@ -43,7 +43,7 @@ export default function LinkedInView({
 
             <button
               onClick={handleConnectLinkedInAccount}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 active:scale-95 text-white font-black text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5"
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 active:scale-95 text-white font-black text-xs rounded-md transition-all shadow-md flex items-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5 text-blue-200" />
               <span>Connect LinkedIn Account</span>
@@ -51,7 +51,7 @@ export default function LinkedInView({
 
             <button
               onClick={() => setShowLinkedinTokenModal(true)}
-              className="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700"
+              className="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-md border border-slate-700"
             >
               🔑 Access Token
             </button>
@@ -60,27 +60,27 @@ export default function LinkedInView({
 
         {/* Performance Ribbon */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-2 text-xs">
-          <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+          <div className="bg-slate-800/60 p-3 rounded-md border border-slate-700/60">
             <span className="text-[9px] text-slate-400 font-bold uppercase block">Company Followers</span>
             <strong className="text-base font-black text-white">{(linkedinData?.metrics?.total_followers || 0).toLocaleString()}</strong>
           </div>
-          <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+          <div className="bg-slate-800/60 p-3 rounded-md border border-slate-700/60">
             <span className="text-[9px] text-slate-400 font-bold uppercase block">Total Impressions</span>
             <strong className="text-base font-black text-blue-400">{(linkedinData?.metrics?.total_impressions || 0).toLocaleString()}</strong>
           </div>
-          <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+          <div className="bg-slate-800/60 p-3 rounded-md border border-slate-700/60">
             <span className="text-[9px] text-slate-400 font-bold uppercase block">Post Clicks</span>
             <strong className="text-base font-black text-emerald-400">{(linkedinData?.metrics?.total_clicks || 0).toLocaleString()}</strong>
           </div>
-          <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+          <div className="bg-slate-800/60 p-3 rounded-md border border-slate-700/60">
             <span className="text-[9px] text-slate-400 font-bold uppercase block">Reactions / Likes</span>
             <strong className="text-base font-black text-amber-400">{(linkedinData?.metrics?.total_reactions || 0).toLocaleString()}</strong>
           </div>
-          <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+          <div className="bg-slate-800/60 p-3 rounded-md border border-slate-700/60">
             <span className="text-[9px] text-slate-400 font-bold uppercase block">Comments & Shares</span>
             <strong className="text-base font-black text-purple-400">{(linkedinData?.metrics?.total_comments || 0).toLocaleString()}</strong>
           </div>
-          <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+          <div className="bg-slate-800/60 p-3 rounded-md border border-slate-700/60">
             <span className="text-[9px] text-slate-400 font-bold uppercase block">Avg Engagement</span>
             <strong className="text-base font-black text-emerald-300">{linkedinData?.metrics?.average_engagement_rate || '0.00%'}</strong>
           </div>
@@ -95,10 +95,10 @@ export default function LinkedInView({
               <img
                 src={linkedinData.account.profile_picture}
                 alt="Profile"
-                className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
+                className="w-12 h-12 rounded-md object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
               />
             ) : (
-              <div className="w-12 h-12 rounded-xl bg-blue-600 text-white font-black text-lg flex items-center justify-center border border-blue-500 shadow-sm">
+              <div className="w-12 h-12 rounded-md bg-blue-600 text-white font-black text-lg flex items-center justify-center border border-blue-500 shadow-sm">
                 {linkedinData?.account?.first_name ? linkedinData.account.first_name.charAt(0) : 'LI'}
               </div>
             )}
@@ -110,7 +110,7 @@ export default function LinkedInView({
               <p className="text-xs text-slate-500 font-medium">URN: <span className="font-mono">{linkedinData?.account?.sub || 'urn:li:person:AQV...'}</span></p>
             </div>
           </div>
-          <span className="px-3 py-1 bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-black rounded-xl">
+          <span className="px-3 py-1 bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-black rounded-md">
             {linkedinData?.account ? 'OAuth Verified' : 'Standard Profile'}
           </span>
         </div>

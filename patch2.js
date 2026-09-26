@@ -7,7 +7,7 @@ const tableAddition = `<span>Record New Purchase</span>
               </button>
             }
           />
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden mt-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-sm overflow-hidden mt-4">
             <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
               <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
                 <tr>

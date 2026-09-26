@@ -33,9 +33,9 @@ export default function MarketingModals({
       {/* OAuth Handshake Modal */}
       {authModalPlatform && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-4 relative overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 rounded-md-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-4 relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-pink-600 to-indigo-600" />
-            
+
             <div className="flex justify-between items-start pt-2">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -47,7 +47,7 @@ export default function MarketingModals({
               <button onClick={() => setAuthModalPlatform(null)} className="text-xs font-bold text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-xl text-[11px] text-slate-500 font-medium leading-relaxed">
+            <div className="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-md text-[11px] text-slate-500 font-medium leading-relaxed">
               Authorize <strong>CODIGIX Executive OS</strong> to retrieve marketing campaign insights, profile reach, daily clicks, and leads data from your {authModalPlatform.name} Console.
             </div>
 
@@ -56,7 +56,7 @@ export default function MarketingModals({
                 href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}/api/meta/login`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold transition-all shadow-md text-center flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-extrabold transition-all shadow-md text-center flex items-center justify-center gap-1.5"
               >
                 <span>Login with Facebook OAuth v24.0</span>
                 <span>↗</span>
@@ -68,11 +68,11 @@ export default function MarketingModals({
                     alert(`${authModalPlatform.name} linked successfully! Profile reach and live campaign metrics are now synced.`);
                     setAuthModalPlatform(null);
                   }}
-                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md"
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-bold transition-all shadow-md"
                 >
                   Authorize Connection
                 </button>
-                <button onClick={() => setAuthModalPlatform(null)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-500 rounded-xl text-xs font-bold">
+                <button onClick={() => setAuthModalPlatform(null)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-500 rounded-md text-xs font-bold">
                   Cancel
                 </button>
               </div>
@@ -87,7 +87,7 @@ export default function MarketingModals({
           <div className="card-base max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-                <span>⚡ Meta Real-Time Webhook Ingestion</span>
+                <span>Meta Real-Time Webhook Ingestion</span>
               </h3>
               <button onClick={() => setShowTokenModal(false)} className="text-slate-400 hover:text-slate-600 font-extrabold text-sm">✕</button>
             </div>
@@ -96,17 +96,17 @@ export default function MarketingModals({
               Meta Token dependency has been removed. Your app ingests live <strong>Leads, Page Messages, Comments, Ad Account Spend, and WhatsApp events</strong> directly via real-time Meta Webhooks.
             </p>
 
-            <div className="space-y-3 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 text-xs">
+            <div className="space-y-3 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-md border border-slate-200/60 dark:border-slate-700/60 text-xs">
               <div>
                 <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Webhook Callback URL</label>
-                <code className="bg-white dark:bg-slate-900 px-3 py-2 rounded-xl text-brand-600 dark:text-brand-400 font-mono text-[11px] block border border-slate-200 dark:border-slate-800 select-all">
+                <code className="bg-white dark:bg-slate-900 px-3 py-2 rounded-md text-brand-600 dark:text-brand-400 font-mono text-[11px] block border border-slate-200 dark:border-slate-800 select-all">
                   {`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}/api/webhooks/meta`}
                 </code>
               </div>
 
               <div>
                 <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Verify Token</label>
-                <code className="bg-white dark:bg-slate-900 px-3 py-2 rounded-xl text-emerald-600 dark:text-emerald-400 font-mono text-[11px] block border border-slate-200 dark:border-slate-800 select-all">
+                <code className="bg-white dark:bg-slate-900 px-3 py-2 rounded-md text-emerald-600 dark:text-emerald-400 font-mono text-[11px] block border border-slate-200 dark:border-slate-800 select-all">
                   codigix_meta_webhook_secret_verify_2026
                 </code>
               </div>
@@ -115,7 +115,7 @@ export default function MarketingModals({
             <div className="flex items-center justify-end pt-2">
               <button
                 onClick={() => setShowTokenModal(false)}
-                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-md cursor-pointer"
+                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold rounded-md text-xs transition-all shadow-md cursor-pointer"
               >
                 Done
               </button>
@@ -146,12 +146,12 @@ export default function MarketingModals({
                 onChange={(e) => setInputGoogleToken(e.target.value)}
                 placeholder="ya29.a0ARW5m7G..."
                 rows={4}
-                className="w-full p-3 text-xs font-mono bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full p-3 text-xs font-mono bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none"
               />
             </div>
 
             {googleTokenSuccess && (
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-md text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                 {googleTokenSuccess}
               </div>
             )}
@@ -167,14 +167,14 @@ export default function MarketingModals({
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowGoogleTokenModal(false)}
-                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-200 transition-all"
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-md text-xs hover:bg-slate-200 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveGoogleToken}
                   disabled={!inputGoogleToken.trim()}
-                  className="px-5 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-extrabold rounded-xl text-xs transition-all shadow-md disabled:opacity-50"
+                  className="px-5 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-extrabold rounded-md text-xs transition-all shadow-md disabled:opacity-50"
                 >
                   Save & Sync Google Data
                 </button>
@@ -206,12 +206,12 @@ export default function MarketingModals({
                 onChange={(e) => setInputLinkedinToken(e.target.value)}
                 placeholder="AQV_linkedin_access_token..."
                 rows={4}
-                className="w-full p-3 text-xs font-mono bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                className="w-full p-3 text-xs font-mono bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:outline-none"
               />
             </div>
 
             {linkedinTokenSuccess && (
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-md text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                 {linkedinTokenSuccess}
               </div>
             )}
@@ -227,14 +227,14 @@ export default function MarketingModals({
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowLinkedinTokenModal(false)}
-                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-200 transition-all"
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-md text-xs hover:bg-slate-200 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveLinkedInToken}
                   disabled={!inputLinkedinToken.trim()}
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-xl text-xs transition-all shadow-md disabled:opacity-50"
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-md text-xs transition-all shadow-md disabled:opacity-50"
                 >
                   Save & Sync LinkedIn Data
                 </button>

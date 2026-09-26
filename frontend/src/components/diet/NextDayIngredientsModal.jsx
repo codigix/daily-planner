@@ -243,7 +243,7 @@ export default function NextDayIngredientsModal({
     parsedMeals.forEach(meal => {
       meal.ingredients.forEach(ing => {
         const isSoak = (ing.note && ing.note.toLowerCase().includes('soak')) ||
-                       (ing.raw && ing.raw.toLowerCase().includes('soak'));
+          (ing.raw && ing.raw.toLowerCase().includes('soak'));
         if (isSoak) {
           list.push({
             ...ing,
@@ -346,15 +346,15 @@ export default function NextDayIngredientsModal({
       />
 
       {/* Mobile Bottom Sheet Drawer / Desktop Modal */}
-      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col h-[92vh] sm:h-auto sm:max-h-[88vh] overflow-hidden z-10 animate-in slide-in-from-bottom duration-200">
-        
+      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col h-[92vh] sm:h-auto sm:max-h-[88vh] overflow-hidden z-10 animate-in slide-in-from-bottom duration-200">
+
         {/* Mobile Top Drag Indicator */}
         <div className="w-10 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
 
         {/* Minimalist Top Header */}
         <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
               <Scale className="w-4 h-4" />
             </div>
             <div className="min-w-0">
@@ -362,7 +362,7 @@ export default function NextDayIngredientsModal({
                 <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
                   Ingredients & Weights
                 </h3>
-                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
                   Prep
                 </span>
               </div>
@@ -392,11 +392,10 @@ export default function NextDayIngredientsModal({
               <button
                 key={day}
                 onClick={() => setSelectedDay(day)}
-                className={`py-1.5 px-1 rounded-xl text-center flex flex-col items-center justify-center transition-all cursor-pointer min-h-[44px] active:scale-95 ${
-                  isSelected
-                    ? 'bg-emerald-600 text-white font-black shadow-xs'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 font-bold'
-                }`}
+                className={`py-1.5 px-1 rounded-md text-center flex flex-col items-center justify-center transition-all cursor-pointer min-h-[44px] active:scale-95 ${isSelected
+                  ? 'bg-emerald-600 text-white font-black shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 font-bold'
+                  }`}
               >
                 <span className="text-[11px] font-black">{day.slice(0, 3)}</span>
                 {isTomorrow ? (
@@ -420,11 +419,10 @@ export default function NextDayIngredientsModal({
           {/* All Meals Pill */}
           <button
             onClick={() => setSelectedMealId('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition-all cursor-pointer min-h-[36px] flex items-center gap-1 active:scale-95 ${
-              selectedMealId === 'all'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
+            className={`px-3 py-1.5 rounded-md text-xs font-black shrink-0 transition-all cursor-pointer min-h-[36px] flex items-center gap-1 active:scale-95 ${selectedMealId === 'all'
+              ? 'bg-emerald-600 text-white shadow-xs'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+              }`}
           >
             <span>🍽️</span>
             <span>All ({parsedMeals.length})</span>
@@ -437,11 +435,10 @@ export default function NextDayIngredientsModal({
               <button
                 key={meal.id}
                 onClick={() => setSelectedMealId(meal.id)}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer min-h-[36px] flex items-center gap-1.5 active:scale-95 ${
-                  isSelected
-                    ? 'bg-emerald-600 text-white font-black shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
+                className={`px-2.5 py-1.5 rounded-md text-xs font-bold shrink-0 transition-all cursor-pointer min-h-[36px] flex items-center gap-1.5 active:scale-95 ${isSelected
+                  ? 'bg-emerald-600 text-white font-black shadow-xs'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
               >
                 <span>{meal.icon}</span>
                 <span className="font-extrabold">{meal.tag}</span>
@@ -458,28 +455,26 @@ export default function NextDayIngredientsModal({
 
           {/* Sub-view toggle for All Meals */}
           {selectedMealId === 'all' && (
-            <div className="flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/60 p-1.5 rounded-xl text-xs font-bold text-slate-500">
+            <div className="flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/60 p-1.5 rounded-md text-xs font-bold text-slate-500">
               <span className="px-2 font-black text-slate-700 dark:text-slate-200 text-[11px]">
                 {displayedMeals.length} Meals Scheduled
               </span>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setViewMode('meal')}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold cursor-pointer transition-all ${
-                    viewMode === 'meal'
-                      ? 'bg-emerald-600 text-white shadow-2xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                  }`}
+                  className={`px-2.5 py-1 rounded-md-lg text-[10px] font-extrabold cursor-pointer transition-all ${viewMode === 'meal'
+                    ? 'bg-emerald-600 text-white shadow-2xs'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
                 >
                   By Meal
                 </button>
                 <button
                   onClick={() => setViewMode('consolidated')}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold cursor-pointer transition-all ${
-                    viewMode === 'consolidated'
-                      ? 'bg-emerald-600 text-white shadow-2xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                  }`}
+                  className={`px-2.5 py-1 rounded-md-lg text-[10px] font-extrabold cursor-pointer transition-all ${viewMode === 'consolidated'
+                    ? 'bg-emerald-600 text-white shadow-2xs'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
                 >
                   Combined ({consolidatedIngredients.length})
                 </button>
@@ -489,21 +484,21 @@ export default function NextDayIngredientsModal({
 
           {/* Overnight Soaking Card (Minimalist Alert) */}
           {overnightSoakList.length > 0 && selectedMealId === 'all' && (
-            <div className="p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80">
+            <div className="p-2.5 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80">
               <div className="flex items-center justify-between text-xs font-black text-amber-900 dark:text-amber-200 mb-1.5">
                 <span className="flex items-center gap-1">
                   <span>🌙</span>
                   <span>Soak Tonight (8:00 PM):</span>
                 </span>
-                <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-200/60 dark:bg-amber-900/60 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-200/60 dark:bg-amber-900/60 px-1.5 py-0.5 rounded-md">
                   {overnightSoakList.length} items
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {overnightSoakList.map((ing, i) => (
-                  <div key={i} className="px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-between gap-2 text-xs">
+                  <div key={i} className="px-2.5 py-1.5 rounded-md bg-white dark:bg-slate-800 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-between gap-2 text-xs">
                     <span className="font-extrabold text-amber-950 dark:text-amber-100 truncate">{ing.name}</span>
-                    <span className="font-black text-[11px] text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-md shrink-0">
+                    <span className="font-black text-[11px] text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-md-md shrink-0">
                       {ing.quantity || 'Standard portion'}
                     </span>
                   </div>
@@ -521,11 +516,10 @@ export default function NextDayIngredientsModal({
                   <div
                     key={ing.id}
                     onClick={() => toggleCheck(ing.id)}
-                    className={`min-h-[46px] px-3 py-2 rounded-xl border flex items-center justify-between gap-3 text-xs transition-all cursor-pointer select-none active:scale-[0.99] ${
-                      isChecked
-                        ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500'
-                        : 'bg-white dark:bg-slate-850 border-slate-200/80 dark:border-slate-700/80 text-slate-800 dark:text-slate-100 hover:border-emerald-400'
-                    }`}
+                    className={`min-h-[46px] px-3 py-2 rounded-md border flex items-center justify-between gap-3 text-xs transition-all cursor-pointer select-none active:scale-[0.99] ${isChecked
+                      ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500'
+                      : 'bg-white dark:bg-slate-850 border-slate-200/80 dark:border-slate-700/80 text-slate-800 dark:text-slate-100 hover:border-emerald-400'
+                      }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       {isChecked ? (
@@ -543,7 +537,7 @@ export default function NextDayIngredientsModal({
                       </div>
                     </div>
 
-                    <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shrink-0">
+                    <span className="text-xs font-black px-2.5 py-1 rounded-md-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shrink-0">
                       {ing.quantity}
                     </span>
                   </div>
@@ -556,13 +550,13 @@ export default function NextDayIngredientsModal({
               {displayedMeals.map(meal => (
                 <div
                   key={meal.id}
-                  className="rounded-2xl bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-750 p-3 sm:p-3.5 shadow-2xs space-y-2.5"
+                  className="rounded-md bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-750 p-3 sm:p-3.5 shadow-2xs space-y-2.5"
                 >
                   {/* Clean Meal Subheader */}
                   <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-base">{meal.icon}</span>
-                      <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/60 shrink-0">
+                      <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md-md border border-emerald-200/60 dark:border-emerald-800/60 shrink-0">
                         {meal.timeFormatted}
                       </span>
                       <h4 className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-100 truncate">
@@ -584,11 +578,10 @@ export default function NextDayIngredientsModal({
                         <div
                           key={idx}
                           onClick={() => toggleCheck(checkKey)}
-                          className={`min-h-[44px] px-2.5 py-1.5 rounded-xl border flex items-center justify-between gap-2.5 text-xs transition-all cursor-pointer select-none active:scale-[0.99] ${
-                            isChecked
-                              ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 text-slate-400 dark:text-slate-500'
-                              : 'bg-slate-50/70 dark:bg-slate-800/60 border-slate-200/70 dark:border-slate-700/70 text-slate-800 dark:text-slate-100 hover:border-emerald-400'
-                          }`}
+                          className={`min-h-[44px] px-2.5 py-1.5 rounded-md border flex items-center justify-between gap-2.5 text-xs transition-all cursor-pointer select-none active:scale-[0.99] ${isChecked
+                            ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 text-slate-400 dark:text-slate-500'
+                            : 'bg-slate-50/70 dark:bg-slate-800/60 border-slate-200/70 dark:border-slate-700/70 text-slate-800 dark:text-slate-100 hover:border-emerald-400'
+                            }`}
                         >
                           <div className="flex items-center gap-2 min-w-0 flex-1">
                             {isChecked ? (
@@ -609,7 +602,7 @@ export default function NextDayIngredientsModal({
                           </div>
 
                           {ing.quantity && (
-                            <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/80 shrink-0">
+                            <span className="text-xs font-black px-2.5 py-1 rounded-md-lg bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/80 shrink-0">
                               {ing.quantity}
                             </span>
                           )}
@@ -624,13 +617,13 @@ export default function NextDayIngredientsModal({
         </div>
 
         {/* ── 4. STICKY THUMB FOOTER (Mobile Bottom Navigation Safe) ── */}
-        <div 
+        <div
           style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}
           className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-2 shrink-0 select-none"
         >
           <button
             onClick={handleCopyClipboard}
-            className="flex-1 min-h-[44px] px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer active:scale-95"
+            className="flex-1 min-h-[44px] px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer active:scale-95"
           >
             {copied ? <CheckCheck className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             <span>{copied ? 'Copied!' : activeMealObj ? 'Copy Meal Ingredients' : 'Copy All Ingredients'}</span>
@@ -638,7 +631,7 @@ export default function NextDayIngredientsModal({
 
           <button
             onClick={handleSendTestNotification}
-            className="min-h-[44px] px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-2xl text-xs font-black flex items-center justify-center gap-1 cursor-pointer active:scale-95 shrink-0"
+            className="min-h-[44px] px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-md text-xs font-black flex items-center justify-center gap-1 cursor-pointer active:scale-95 shrink-0"
             title="Send reminder to phone"
           >
             <Bell className="w-4 h-4 text-amber-500" />
@@ -647,7 +640,7 @@ export default function NextDayIngredientsModal({
 
           <button
             onClick={onClose}
-            className="min-h-[44px] px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-bold cursor-pointer active:scale-95 shrink-0"
+            className="min-h-[44px] px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-md text-xs font-bold cursor-pointer active:scale-95 shrink-0"
           >
             Done
           </button>

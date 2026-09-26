@@ -1,17 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  Calculator, 
-  X, 
-  ArrowLeft, 
-  RotateCcw, 
-  Download, 
-  Plus, 
-  Trash2, 
-  FileText, 
-  Users, 
-  Layers, 
-  Building2, 
-  TrendingUp, 
+import {
+  Calculator,
+  X,
+  ArrowLeft,
+  RotateCcw,
+  Download,
+  Plus,
+  Trash2,
+  FileText,
+  Users,
+  Layers,
+  Building2,
+  TrendingUp,
   CheckCircle2,
   Globe,
   Lock,
@@ -98,7 +98,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
   const numberToWordsINR = (num) => {
     if (!num || isNaN(num) || num <= 0) return 'Zero Rupees Only';
     const roundNum = Math.round(num);
-    
+
     const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
     const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
 
@@ -180,19 +180,19 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in overflow-y-auto">
-      <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh]">
-        
+      <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-2xl rounded-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh]">
+
         {/* ── Top Header Navigation Bar ── */}
         <div className="bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-2.5">
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+              className="p-2 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
               title="Close Calculator"
             >
               <ArrowLeft className="w-5 h-5 text-slate-700 dark:text-slate-200" />
             </button>
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/30 shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-md bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/30 shrink-0">
               <Calculator className="w-5 h-5" />
             </div>
             <div>
@@ -206,14 +206,14 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
           <div className="flex items-center gap-2">
             <button
               onClick={handleReset}
-              className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              className="px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset</span>
             </button>
             <button
               onClick={handleExport}
-              className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-indigo-500/20"
+              className="px-3.5 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-indigo-500/20"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export</span>
@@ -233,13 +233,12 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                     onClick={() => setActiveStep(st.num)}
                     className="flex flex-col items-center gap-1 cursor-pointer transition-all shrink-0 group"
                   >
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-black text-xs transition-all ${
-                      isActive 
-                        ? 'bg-indigo-600 text-white shadow-md ring-4 ring-indigo-500/20 scale-105' 
-                        : isCompleted
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-slate-200'
-                    }`}>
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-black text-xs transition-all ${isActive
+                      ? 'bg-indigo-600 text-white shadow-md ring-4 ring-indigo-500/20 scale-105'
+                      : isCompleted
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-slate-200'
+                      }`}>
                       {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : st.num}
                     </div>
                     <span className={`text-[10px] font-extrabold ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
@@ -257,11 +256,11 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
 
         {/* ── Scrollable Form Body ── */}
         <div className="p-3.5 sm:p-5 overflow-y-auto space-y-4 flex-1 text-slate-800 dark:text-slate-100 no-scrollbar">
-          
+
           {/* SECTION 1: PROJECT DETAILS */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 space-y-3.5 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-md p-4 space-y-3.5 shadow-sm">
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
-              <div className="w-7 h-7 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-md bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center shrink-0">
                 <FileText className="w-4 h-4" />
               </div>
               <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm uppercase tracking-wide">
@@ -277,7 +276,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   placeholder="Enter project name"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
@@ -288,7 +287,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   placeholder="Enter client name"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
@@ -297,7 +296,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                 <select
                   value={projectType}
                   onChange={(e) => setProjectType(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none"
                 >
                   <option value="Web Application">Web Application</option>
                   <option value="Mobile App (iOS & Android)">Mobile App (iOS & Android)</option>
@@ -315,7 +314,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     placeholder="e.g. 6"
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-center focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-semibold text-center focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
                 <div className="space-y-1">
@@ -323,7 +322,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                   <select
                     value={durationUnit}
                     onChange={(e) => setDurationUnit(e.target.value)}
-                    className="w-full px-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none"
+                    className="w-full px-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none"
                   >
                     <option value="Months">Months</option>
                     <option value="Weeks">Weeks</option>
@@ -335,10 +334,10 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
           </div>
 
           {/* SECTION 2: TEAM EFFORT & COST */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 space-y-3 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-md p-4 space-y-3 shadow-sm">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0">
                   <Users className="w-4 h-4" />
                 </div>
                 <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm uppercase tracking-wide">
@@ -347,7 +346,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
               </div>
               <button
                 onClick={handleAddRole}
-                className="px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-extrabold rounded-xl hover:bg-indigo-100 transition-all flex items-center gap-1 cursor-pointer"
+                className="px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-extrabold rounded-md hover:bg-indigo-100 transition-all flex items-center gap-1 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Role</span>
@@ -359,9 +358,9 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                 const dailyRate = (m.monthlyRate || 0) / 30;
                 const lineTotal = dailyRate * (m.days || 0);
                 return (
-                  <div key={m.id} className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-xl flex items-center justify-between gap-2 text-xs">
+                  <div key={m.id} className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-md flex items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={`w-8 h-8 rounded-xl font-black text-xs flex items-center justify-center shrink-0 ${m.color || 'bg-blue-100 text-blue-700'}`}>
+                      <div className={`w-8 h-8 rounded-md font-black text-xs flex items-center justify-center shrink-0 ${m.color || 'bg-blue-100 text-blue-700'}`}>
                         {m.code || 'DEV'}
                       </div>
                       <div className="min-w-0">
@@ -371,7 +370,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-lg">
+                      <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-md-lg">
                         <input
                           type="number"
                           value={m.days}
@@ -410,9 +409,9 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
           </div>
 
           {/* SECTION 3: DIRECT PROJECT COSTS */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 space-y-3 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-md p-4 space-y-3 shadow-sm">
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
-              <div className="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center shrink-0">
                 <Layers className="w-4 h-4" />
               </div>
               <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm uppercase tracking-wide">
@@ -431,9 +430,9 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
               ].map((item) => {
                 const Icon = item.icon;
                 return (
-                  <div key={item.key} className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-xl space-y-1.5">
+                  <div key={item.key} className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-md space-y-1.5">
                     <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                      <div className="w-5 h-5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                      <div className="w-5 h-5 rounded-md-md bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                         <Icon className="w-3 h-3" />
                       </div>
                       <span className="font-extrabold text-[11px] truncate">{item.label}</span>
@@ -448,7 +447,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                           setDirectCosts(prev => ({ ...prev, [item.key]: val }));
                         }}
                         placeholder={item.placeholder}
-                        className="w-full pl-6 pr-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full pl-6 pr-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -465,9 +464,9 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
           </div>
 
           {/* SECTION 4: OVERHEADS */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 space-y-3 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-md p-4 space-y-3 shadow-sm">
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
-              <div className="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-md bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 flex items-center justify-center shrink-0">
                 <Building2 className="w-4 h-4" />
               </div>
               <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm uppercase tracking-wide">
@@ -482,10 +481,10 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                 { key: 'marketingSales', label: 'Marketing & Sales', val: overheads.marketingSales, amt: overheadAmounts.marketingSales },
                 { key: 'miscellaneous', label: 'Miscellaneous', val: overheads.miscellaneous, amt: overheadAmounts.miscellaneous }
               ].map((item) => (
-                <div key={item.key} className="flex items-center justify-between gap-2 p-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+                <div key={item.key} className="flex items-center justify-between gap-2 p-2 bg-slate-50 dark:bg-slate-800/60 rounded-md border border-slate-200/50 dark:border-slate-700/50">
                   <span className="font-bold text-slate-700 dark:text-slate-300 text-xs">{item.label}</span>
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-md-lg">
                       <input
                         type="number"
                         value={item.val}
@@ -514,9 +513,9 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
           </div>
 
           {/* SECTION 5: PROFIT MARGIN */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 space-y-3 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-md p-4 space-y-3 shadow-sm">
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
-              <div className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <TrendingUp className="w-4 h-4" />
               </div>
               <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm uppercase tracking-wide">
@@ -526,7 +525,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
 
             <div className="flex items-center justify-between gap-3 text-xs">
               <span className="font-extrabold text-slate-700 dark:text-slate-300">Profit Margin (%)</span>
-              <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5">
+              <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1.5">
                 <input
                   type="number"
                   value={profitMargin}
@@ -546,9 +545,9 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
           </div>
 
           {/* SECTION 6: QUOTATION SUMMARY */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 space-y-3 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-md p-4 space-y-3 shadow-sm">
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
-              <div className="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center shrink-0">
                 <FileText className="w-4 h-4" />
               </div>
               <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm uppercase tracking-wide">
@@ -560,7 +559,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
               <div className="flex justify-between"><span>Total Team Cost</span><strong className="font-mono text-slate-900 dark:text-white">₹{Math.round(totalTeamCost).toLocaleString()}</strong></div>
               <div className="flex justify-between"><span>Total Direct Costs</span><strong className="font-mono text-slate-900 dark:text-white">₹{totalDirectCosts.toLocaleString()}</strong></div>
               <div className="flex justify-between"><span>Total Overheads</span><strong className="font-mono text-slate-900 dark:text-white">₹{Math.round(overheadAmounts.total).toLocaleString()}</strong></div>
-              
+
               <div className="flex justify-between pt-1.5 border-t border-slate-100 dark:border-slate-800 font-bold text-slate-800 dark:text-slate-200">
                 <span>Subtotal (Cost Price)</span>
                 <strong>₹{Math.round(subtotalCostPrice).toLocaleString()}</strong>
@@ -573,7 +572,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
             </div>
 
             {/* Final Highlight Box */}
-            <div className="p-4 bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/80 rounded-2xl text-center space-y-1 shadow-inner">
+            <div className="p-4 bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/80 rounded-md text-center space-y-1 shadow-inner">
               <span className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider">
                 FINAL QUOTATION
               </span>
@@ -601,7 +600,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
 
           <button
             onClick={() => setActiveStep(6)}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl shadow-md shrink-0 active:scale-95 transition-all text-xs cursor-pointer"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-md shadow-md shrink-0 active:scale-95 transition-all text-xs cursor-pointer"
           >
             Final ₹ {Math.round(finalQuotationTotal).toLocaleString()}
           </button>

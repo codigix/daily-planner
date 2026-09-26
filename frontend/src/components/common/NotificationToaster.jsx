@@ -140,7 +140,7 @@ function ToastItem({ toast, isPaused, onDismiss, onClick }) {
 
   return (
     <div
-      className={`pointer-events-auto relative overflow-hidden rounded-2xl bg-white/95 backdrop-blur-xl text-slate-900 border ${accentBorder} shadow-[0_12px_32px_-4px_rgba(15,23,42,0.12),0_4px_12px_-2px_rgba(15,23,42,0.06)] transition-all duration-300 animate-in slide-in-from-top-3 fade-in group cursor-pointer active:scale-[0.99]`}
+      className={`pointer-events-auto relative overflow-hidden rounded-md bg-white/95 backdrop-blur-xl text-slate-900 border ${accentBorder} shadow-[0_12px_32px_-4px_rgba(15,23,42,0.12),0_4px_12px_-2px_rgba(15,23,42,0.06)] transition-all duration-300 animate-in slide-in-from-top-3 fade-in group cursor-pointer active:scale-[0.99]`}
       onClick={onClick}
     >
       {/* Subtle Light Glow Tint */}
@@ -149,7 +149,7 @@ function ToastItem({ toast, isPaused, onDismiss, onClick }) {
       <div className="relative p-3.5 sm:p-4 flex items-center justify-between gap-3">
         {/* Left: Icon Badge & Content */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className={`p-2.5 rounded-xl ${badgeColor} border shrink-0 flex items-center justify-center shadow-xs`}>
+          <div className={`p-2.5 rounded-md ${badgeColor} border shrink-0 flex items-center justify-center shadow-xs`}>
             {iconComponent}
           </div>
 
@@ -182,7 +182,7 @@ function ToastItem({ toast, isPaused, onDismiss, onClick }) {
               e.stopPropagation();
               onDismiss();
             }}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition-all cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md-lg hover:bg-slate-100 active:bg-slate-200 transition-all cursor-pointer"
             aria-label="Dismiss notification"
           >
             <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

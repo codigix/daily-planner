@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { 
-  ArrowLeft, Plus, Trash2, Download, Printer, FileText, 
-  Building, User, Calendar, Layers, DollarSign, ShieldCheck, 
-  ChevronDown, ChevronUp, Users, CheckCircle2, Image as ImageIcon, Loader2, RefreshCw, Sparkles, FolderPlus, Layout, Palette, Check, Smartphone, Laptop, Server, Plug
+import {
+  ArrowLeft, Plus, Trash2, Download, Printer, FileText,
+  Building, User, Calendar, Layers, DollarSign, ShieldCheck,
+  ChevronDown, ChevronUp, Users, CheckCircle2, Image as ImageIcon, Loader2, RefreshCw, Sparkles, FolderPlus, Layout, Palette, Check, Smartphone, Laptop, Server, Plug, Zap, Pin
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { toJpeg } from 'html-to-image';
-import { 
-  Editor as KendoEditor, 
-  EditorTools 
+import {
+  Editor as KendoEditor,
+  EditorTools
 } from '@progress/kendo-react-editor';
 import '@progress/kendo-theme-default/dist/all.css';
 
@@ -195,7 +195,7 @@ const SAMPLE_CODIGIX_DATA = {
   ],
 
   execSummary: 'FitRack is a scalable B2B2C Health & Wellness Business Management Platform designed for Fitness Coaches, Trainers, Nutritionists, Dietitians, and Wellness Professionals.\n\nThe platform will include three connected solutions:\n• Trainer Mobile App – Client management, assessments, diet/activity plans, products, inventory, appointments, payments, follow-ups, progress and reports.\n• Client Mobile App – Personalized plans, daily tasks, diet, workout, water and product tracking, appointments, payments and progress.\n• Admin Web Panel – Business, trainer, client, subscription, module, permission, payment and platform management.',
-  
+
   ecosystemTagline: 'CONNECTED 3-TIER ECOSYSTEM',
 
   solutionCards: [
@@ -223,8 +223,8 @@ const SAMPLE_CODIGIX_DATA = {
   ],
 
   scopeOfWorkHtml: '<p>Enter your detailed scope of work here, including tables...</p>',
-    sowMode: 'advanced',
-    deliverables: [
+  sowMode: 'advanced',
+  deliverables: [
     'UI/UX Design & Prototyping',
     'Trainer Mobile Application – Android & iOS',
     'Client Mobile Application – Android & iOS',
@@ -357,13 +357,13 @@ const EMPTY_QUOTATION_STATE = {
 const NumberBadge = ({ num, color, size = 24 }) => (
   <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 inline-block align-middle">
     <circle cx={size / 2} cy={size / 2} r={(size / 2) - 0.5} fill={color} />
-    <text 
-      x={size / 2} 
-      y={(size / 2) + 0.5} 
-      fill="#ffffff" 
-      fontSize={size === 24 ? "12" : "11"} 
-      fontWeight="900" 
-      textAnchor="middle" 
+    <text
+      x={size / 2}
+      y={(size / 2) + 0.5}
+      fill="#ffffff"
+      fontSize={size === 24 ? "12" : "11"}
+      fontWeight="900"
+      textAnchor="middle"
       dominantBaseline="central"
       alignmentBaseline="central"
       style={{ fontFamily: "'Manrope', sans-serif" }}
@@ -442,7 +442,7 @@ export default function CreateQuotationView({ onNavigate }) {
     if (saved) {
       try {
         setQuotationData(JSON.parse(saved));
-      } catch (e) {}
+      } catch (e) { }
     }
   }, [user?.id, storageKey]);
 
@@ -504,7 +504,7 @@ export default function CreateQuotationView({ onNavigate }) {
           title: '',
           description: '',
           footer: '• Module Details',
-          icon: '⚡'
+          icon: <Zap className="w-4 h-4" />
         }
       ]
     }));
@@ -716,7 +716,7 @@ export default function CreateQuotationView({ onNavigate }) {
 
       for (let i = 0; i < totalPages; i++) {
         const pageEl = pageElements[i];
-        
+
         let imgData = null;
         try {
           // Primary engine: html2canvas for 100% exact Google Font 'Manrope' rasterization
@@ -798,8 +798,8 @@ export default function CreateQuotationView({ onNavigate }) {
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] max-h-[calc(100vh-100px)] w-full overflow-hidden bg-[#F1F5F9] dark:bg-[#0B1120] text-[#1E293B] dark:text-[#E2E8F0] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-      
+    <div className="flex flex-col h-[calc(100vh-100px)] max-h-[calc(100vh-100px)] w-full overflow-hidden bg-[#F1F5F9] dark:bg-[#0B1120] text-[#1E293B] dark:text-[#E2E8F0] rounded-md border border-slate-200 dark:border-slate-800 shadow-sm">
+
       {/* High-Precision SQUARE Print & Aspect Ratio CSS (210mm x 210mm [1 : 1]) with ENFORCED WEBSITE FONT 'MANROPE' */}
       <style>{`
         .proposal-page, .proposal-page * {
@@ -876,40 +876,40 @@ export default function CreateQuotationView({ onNavigate }) {
       {/* Generating Overlay Modal */}
       {isGeneratingPDF && (
         <div className="fixed inset-0 bg-[#0F172A]/80 backdrop-blur-md z-50 flex flex-col items-center justify-center text-white p-6">
-          <div className="bg-[#1E293B] border border-[#334155] p-8 rounded-2xl shadow-2xl max-w-md w-full text-center space-y-4">
-             <div className="w-14 h-14 rounded-full bg-[#E60023]/20 text-[#E60023] flex items-center justify-center mx-auto border border-[#E60023]/30">
-               <Loader2 className="w-8 h-8 animate-spin" />
-             </div>
-             <div>
-               <h3 className="text-xl font-black">Generating Square PDF</h3>
-               <p className="text-xs text-[#94A3B8] mt-1">Rendering pixel-perfect PDF with edit mode layout ({7 + (quotationData.customPages?.length || 0)} pages)...</p>
-             </div>
-             
-             {/* Progress Bar */}
-             <div className="space-y-1.5 pt-2">
-                <div className="flex justify-between text-xs font-mono font-bold text-[#CBD5E1]">
-                  <span>Progress</span>
-                  <span>{pdfProgress}%</span>
-                </div>
-                <div className="w-full h-3 bg-[#334155] rounded-full overflow-hidden p-0.5">
-                   <div 
-                     className="h-full bg-gradient-to-r from-[#E60023] to-[#F59E0B] rounded-full transition-all duration-300"
-                     style={{ width: `${pdfProgress}%` }}
-                   />
-                </div>
-             </div>
+          <div className="bg-[#1E293B] border border-[#334155] p-8 rounded-md shadow-2xl max-w-md w-full text-center space-y-4">
+            <div className="w-14 h-14 rounded-full bg-[#E60023]/20 text-[#E60023] flex items-center justify-center mx-auto border border-[#E60023]/30">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+            <div>
+              <h3 className="text-xl font-black">Generating Square PDF</h3>
+              <p className="text-xs text-[#94A3B8] mt-1">Rendering pixel-perfect PDF with edit mode layout ({7 + (quotationData.customPages?.length || 0)} pages)...</p>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="space-y-1.5 pt-2">
+              <div className="flex justify-between text-xs font-mono font-bold text-[#CBD5E1]">
+                <span>Progress</span>
+                <span>{pdfProgress}%</span>
+              </div>
+              <div className="w-full h-3 bg-[#334155] rounded-full overflow-hidden p-0.5">
+                <div
+                  className="h-full bg-gradient-to-r from-[#E60023] to-[#F59E0B] rounded-full transition-all duration-300"
+                  style={{ width: `${pdfProgress}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {/* CLEAN INTEGRATED TOP HEADER WORKFLOW BAR */}
       <div className="no-print bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2.5 flex items-center justify-between gap-3 shadow-xs shrink-0 z-30">
-        
+
         {/* Left Title & Theme Badge */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <button 
+          <button
             onClick={() => onNavigate && onNavigate('finance')}
-            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
+            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md-lg transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
             title="Back to Finance"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -917,7 +917,7 @@ export default function CreateQuotationView({ onNavigate }) {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-black text-slate-900 dark:text-white tracking-wide uppercase">QUOTATION BUILDER</span>
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50">
+              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md-md bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50">
                 {currentTheme.name}
               </span>
             </div>
@@ -925,14 +925,13 @@ export default function CreateQuotationView({ onNavigate }) {
         </div>
 
         {/* Center Compact Step Tabs (Scroll Bar Completely Removed) */}
-        <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/80 gap-1 shrink-0">
+        <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-md border border-slate-200 dark:border-slate-700/80 gap-1 shrink-0">
           <button
             onClick={() => setMainWorkflowTab('fill')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-              mainWorkflowTab === 'fill'
-                ? 'bg-red-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'fill'
+              ? 'bg-red-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
+              }`}
           >
             <FileText className="w-3.5 h-3.5" />
             <span>1. Fill</span>
@@ -940,11 +939,10 @@ export default function CreateQuotationView({ onNavigate }) {
 
           <button
             onClick={() => setMainWorkflowTab('theme')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-              mainWorkflowTab === 'theme'
-                ? 'bg-purple-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'theme'
+              ? 'bg-purple-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
+              }`}
           >
             <Palette className="w-3.5 h-3.5" />
             <span>2. Theme</span>
@@ -952,11 +950,10 @@ export default function CreateQuotationView({ onNavigate }) {
 
           <button
             onClick={() => setMainWorkflowTab('arrange')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-              mainWorkflowTab === 'arrange'
-                ? 'bg-indigo-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'arrange'
+              ? 'bg-indigo-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
+              }`}
           >
             <Layers className="w-3.5 h-3.5" />
             <span>3. Pages ({7 + (quotationData.customPages?.length || 0)})</span>
@@ -964,11 +961,10 @@ export default function CreateQuotationView({ onNavigate }) {
 
           <button
             onClick={() => setMainWorkflowTab('download')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-              mainWorkflowTab === 'download'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'download'
+              ? 'bg-emerald-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
+              }`}
           >
             <Download className="w-3.5 h-3.5" />
             <span>4. Export</span>
@@ -977,18 +973,18 @@ export default function CreateQuotationView({ onNavigate }) {
 
         {/* Right Action Buttons */}
         <div className="flex items-center gap-2 shrink-0">
-          <button 
+          <button
             onClick={handleSaveQuotation}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-md-lg text-xs font-bold border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer"
             title="Save changes to browser storage"
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
             <span>Save</span>
           </button>
-          <button 
+          <button
             onClick={handleDownloadPDF}
             disabled={isGeneratingPDF}
-            className="px-3.5 py-1.5 text-white rounded-lg text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer hover:opacity-90 disabled:opacity-50"
+            className="px-3.5 py-1.5 text-white rounded-md-lg text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer hover:opacity-90 disabled:opacity-50"
             style={{ backgroundColor: currentTheme.accentColor }}
           >
             {isGeneratingPDF ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
@@ -1006,505 +1002,505 @@ export default function CreateQuotationView({ onNavigate }) {
 
           {/* Saved Success Toast Banner */}
           {showSaveToast && (
-            <div className="mx-4 mt-3 p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+            <div className="mx-4 mt-3 p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-md text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
               <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
               <span>Form changes saved & live updated on PDF pages!</span>
             </div>
           )}
 
-        {/* TAB 1: FILL QUOTATION DATA */}
-        {mainWorkflowTab === 'fill' && (
-          <div className="space-y-4">
-            {/* Quick Action Toolbar (Load Demo Data / Clear Inputs) */}
-            <div className="px-4 pt-3 flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3 bg-slate-50/50 dark:bg-slate-900/50">
-               <button
-                 onClick={handleLoadSampleData}
-                 className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
-               >
-                 <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                 <span>Fill Sample Data</span>
-               </button>
-               <button
-                 onClick={handleClearForm}
-                 className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
-                 title="Clear inputs to start with placeholders"
-               >
-                 <RefreshCw className="w-3.5 h-3.5" />
-                 <span>Clear Inputs</span>
-               </button>
-            </div>
-
-            {/* Section Accordions */}
-            <div className="p-4 space-y-3">
-              {/* Section 1: Images & Custom Assets */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
-                <button 
-                  onClick={() => setActiveSection(activeSection === 'images' ? '' : 'images')}
-                  className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+          {/* TAB 1: FILL QUOTATION DATA */}
+          {mainWorkflowTab === 'fill' && (
+            <div className="space-y-4">
+              {/* Quick Action Toolbar (Load Demo Data / Clear Inputs) */}
+              <div className="px-4 pt-3 flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3 bg-slate-50/50 dark:bg-slate-900/50">
+                <button
+                  onClick={handleLoadSampleData}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-md-lg text-xs font-bold hover:bg-blue-100 transition-colors"
                 >
-                  <span className="flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-pink-600" /> Page Images & Assets
-                  </span>
-                  {activeSection === 'images' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Fill Sample Data</span>
                 </button>
-                
-                {activeSection === 'images' && (
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase">Logo Image URL (Optional)</label>
-                      <input 
-                        type="text" value={quotationData.logoUrl} onChange={(e) => handleInputChange('logoUrl', e.target.value)}
-                        placeholder="Leave empty to use official Codigix logo SVG"
-                        className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase">Page 2 Image URL (About Us)</label>
-                      <input 
-                        type="text" value={quotationData.page2ImageUrl} onChange={(e) => handleInputChange('page2ImageUrl', e.target.value)}
-                        placeholder="e.g. https://images.unsplash.com/photo-..."
-                        className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase">Page 3 Image URL (Executive Summary)</label>
-                      <input 
-                        type="text" value={quotationData.page3ImageUrl} onChange={(e) => handleInputChange('page3ImageUrl', e.target.value)}
-                        placeholder="e.g. https://images.unsplash.com/photo-..."
-                        className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-                      />
-                    </div>
-                  </div>
-                )}
+                <button
+                  onClick={handleClearForm}
+                  className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+                  title="Clear inputs to start with placeholders"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Clear Inputs</span>
+                </button>
               </div>
 
-              {/* Section 1: Cover & Client Details */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
-                <button 
-                  onClick={() => setActiveSection(activeSection === 'cover' ? '' : 'cover')}
-                  className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-blue-600" /> 1. Proposal Cover & Client Info
-                  </span>
-                  {activeSection === 'cover' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                
-                {activeSection === 'cover' && (
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase">Proposal Title</label>
-                      <input 
-                        type="text" value={quotationData.proposalTitle} onChange={(e) => handleInputChange('proposalTitle', e.target.value)}
-                        placeholder="e.g. FitRack Platform Proposal" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase">Proposal Subtitle / Scope</label>
-                      <input 
-                        type="text" value={quotationData.subtitle} onChange={(e) => handleInputChange('subtitle', e.target.value)}
-                        placeholder="e.g. Web & Mobile App Development Scope" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
+              {/* Section Accordions */}
+              <div className="p-4 space-y-3">
+                {/* Section 1: Images & Custom Assets */}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-md overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
+                  <button
+                    onClick={() => setActiveSection(activeSection === 'images' ? '' : 'images')}
+                    className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-pink-600" /> Page Images & Assets
+                    </span>
+                    {activeSection === 'images' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {activeSection === 'images' && (
+                    <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Proposal Date</label>
-                        <input 
-                          type="text" value={quotationData.date} onChange={(e) => handleInputChange('date', e.target.value)}
-                          placeholder="e.g. 11 Aug 2026" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Logo Image URL (Optional)</label>
+                        <input
+                          type="text" value={quotationData.logoUrl} onChange={(e) => handleInputChange('logoUrl', e.target.value)}
+                          placeholder="Leave empty to use official Codigix logo SVG"
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Client Name</label>
-                        <input 
-                          type="text" value={quotationData.clientName} onChange={(e) => handleInputChange('clientName', e.target.value)}
-                          placeholder="e.g. Mr. Santosh Manchare" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Page 2 Image URL (About Us)</label>
+                        <input
+                          type="text" value={quotationData.page2ImageUrl} onChange={(e) => handleInputChange('page2ImageUrl', e.target.value)}
+                          placeholder="e.g. https://images.unsplash.com/photo-..."
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Page 3 Image URL (Executive Summary)</label>
+                        <input
+                          type="text" value={quotationData.page3ImageUrl} onChange={(e) => handleInputChange('page3ImageUrl', e.target.value)}
+                          placeholder="e.g. https://images.unsplash.com/photo-..."
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
                         />
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              {/* Section 2: About Us */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
-                <button 
-                  onClick={() => setActiveSection(activeSection === 'about' ? '' : 'about')}
-                  className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <Building className="w-4 h-4 text-emerald-600" /> 2. About Company & Pillars
-                  </span>
-                  {activeSection === 'about' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                
-                {activeSection === 'about' && (
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase">Company Name</label>
-                      <input 
-                        type="text" value={quotationData.companyName} onChange={(e) => handleInputChange('companyName', e.target.value)}
-                        className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase">About Us Paragraph</label>
-                      <textarea 
-                        rows="4" value={quotationData.aboutText} onChange={(e) => handleInputChange('aboutText', e.target.value)}
-                        className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs leading-relaxed"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+                {/* Section 1: Cover & Client Details */}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-md overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
+                  <button
+                    onClick={() => setActiveSection(activeSection === 'cover' ? '' : 'cover')}
+                    className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-blue-600" /> 1. Proposal Cover & Client Info
+                    </span>
+                    {activeSection === 'cover' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
 
-              {/* Section 3: Executive Summary */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
-                <button 
-                  onClick={() => setActiveSection(activeSection === 'summary' ? '' : 'summary')}
-                  className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-purple-600" /> 3. Executive Summary & Solutions
-                  </span>
-                  {activeSection === 'summary' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                
-                {activeSection === 'summary' && (
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
-                    <div>
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase">Executive Summary Text</label>
-                      <textarea 
-                        rows="4" value={quotationData.execSummary} onChange={(e) => handleInputChange('execSummary', e.target.value)}
-                        className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs leading-relaxed"
-                      />
-                    </div>
-                    
-                    <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Solution Cards</label>
-                        <button onClick={addSolutionCard} className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded text-[10px] font-bold flex items-center gap-1">
-                          <Plus className="w-3 h-3" /> Add Solution
-                        </button>
+                  {activeSection === 'cover' && (
+                    <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Proposal Title</label>
+                        <input
+                          type="text" value={quotationData.proposalTitle} onChange={(e) => handleInputChange('proposalTitle', e.target.value)}
+                          placeholder="e.g. FitRack Platform Proposal" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                        />
                       </div>
-                      
-                      {quotationData.solutionCards?.map((card, index) => (
-                        <div key={index} className="p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl space-y-2 relative">
-                          <button onClick={() => removeSolutionCard(index)} className="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1">
-                            <Trash2 className="w-3.5 h-3.5" />
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Proposal Subtitle / Scope</label>
+                        <input
+                          type="text" value={quotationData.subtitle} onChange={(e) => handleInputChange('subtitle', e.target.value)}
+                          placeholder="e.g. Web & Mobile App Development Scope" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[11px] font-semibold text-slate-500 uppercase">Proposal Date</label>
+                          <input
+                            type="text" value={quotationData.date} onChange={(e) => handleInputChange('date', e.target.value)}
+                            placeholder="e.g. 11 Aug 2026" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-semibold text-slate-500 uppercase">Client Name</label>
+                          <input
+                            type="text" value={quotationData.clientName} onChange={(e) => handleInputChange('clientName', e.target.value)}
+                            placeholder="e.g. Mr. Santosh Manchare" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 2: About Us */}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-md overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
+                  <button
+                    onClick={() => setActiveSection(activeSection === 'about' ? '' : 'about')}
+                    className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Building className="w-4 h-4 text-emerald-600" /> 2. About Company & Pillars
+                    </span>
+                    {activeSection === 'about' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {activeSection === 'about' && (
+                    <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Company Name</label>
+                        <input
+                          type="text" value={quotationData.companyName} onChange={(e) => handleInputChange('companyName', e.target.value)}
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase">About Us Paragraph</label>
+                        <textarea
+                          rows="4" value={quotationData.aboutText} onChange={(e) => handleInputChange('aboutText', e.target.value)}
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs leading-relaxed"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 3: Executive Summary */}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-md overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
+                  <button
+                    onClick={() => setActiveSection(activeSection === 'summary' ? '' : 'summary')}
+                    className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-purple-600" /> 3. Executive Summary & Solutions
+                    </span>
+                    {activeSection === 'summary' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {activeSection === 'summary' && (
+                    <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Executive Summary Text</label>
+                        <textarea
+                          rows="4" value={quotationData.execSummary} onChange={(e) => handleInputChange('execSummary', e.target.value)}
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs leading-relaxed"
+                        />
+                      </div>
+
+                      <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-semibold text-slate-500 uppercase">Solution Cards</label>
+                          <button onClick={addSolutionCard} className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-md text-[10px] font-bold flex items-center gap-1">
+                            <Plus className="w-3 h-3" /> Add Solution
                           </button>
-                          
-                          <div className="grid grid-cols-2 gap-2 pr-6">
-                            <input 
-                              type="text" value={card.badge} onChange={(e) => handleSolutionCardChange(index, 'badge', e.target.value)}
-                              placeholder="Badge (e.g. SOLUTION 01)" className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
+                        </div>
+
+                        {quotationData.solutionCards?.map((card, index) => (
+                          <div key={index} className="p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-md space-y-2 relative">
+                            <button onClick={() => removeSolutionCard(index)} className="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            <div className="grid grid-cols-2 gap-2 pr-6">
+                              <input
+                                type="text" value={card.badge} onChange={(e) => handleSolutionCardChange(index, 'badge', e.target.value)}
+                                placeholder="Badge (e.g. SOLUTION 01)" className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                              />
+                              <input
+                                type="text" value={card.icon} onChange={(e) => handleSolutionCardChange(index, 'icon', e.target.value)}
+                                placeholder="Icon (e.g. 📱)" className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                              />
+                            </div>
+                            <input
+                              type="text" value={card.title} onChange={(e) => handleSolutionCardChange(index, 'title', e.target.value)}
+                              placeholder="Solution Title" className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
                             />
-                            <input 
-                              type="text" value={card.icon} onChange={(e) => handleSolutionCardChange(index, 'icon', e.target.value)}
-                              placeholder="Icon (e.g. 📱)" className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                            <textarea
+                              rows="2" value={card.description} onChange={(e) => handleSolutionCardChange(index, 'description', e.target.value)}
+                              placeholder="Solution Description..." className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                            />
+                            <input
+                              type="text" value={card.footer} onChange={(e) => handleSolutionCardChange(index, 'footer', e.target.value)}
+                              placeholder="Footer Text (e.g. • Android & iOS Apps)" className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs text-slate-500"
                             />
                           </div>
-                          <input 
-                            type="text" value={card.title} onChange={(e) => handleSolutionCardChange(index, 'title', e.target.value)}
-                            placeholder="Solution Title" className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
-                          />
-                          <textarea 
-                            rows="2" value={card.description} onChange={(e) => handleSolutionCardChange(index, 'description', e.target.value)}
-                            placeholder="Solution Description..." className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-                          />
-                          <input 
-                            type="text" value={card.footer} onChange={(e) => handleSolutionCardChange(index, 'footer', e.target.value)}
-                            placeholder="Footer Text (e.g. • Android & iOS Apps)" className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-500"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Section 4: Key Deliverables */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
-                <button 
-                  onClick={() => setActiveSection(activeSection === 'deliverables' ? '' : 'deliverables')}
-                  className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" /> 4. Key Deliverables & Scope
-                  </span>
-                  {activeSection === 'deliverables' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                
-                {activeSection === 'deliverables' && (
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
-                    <div className="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input 
-                          type="radio" 
-                          name="sowMode"
-                          checked={quotationData.sowMode === 'simple'}
-                          onChange={() => setQuotationData(prev => ({...prev, sowMode: 'simple'}))}
-                        />
-                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Simple Grid Mode</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input 
-                          type="radio" 
-                          name="sowMode"
-                          checked={quotationData.sowMode === 'advanced'}
-                          onChange={() => setQuotationData(prev => ({...prev, sowMode: 'advanced'}))}
-                        />
-                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Advanced Editor Mode</span>
-                      </label>
-                    </div>
-
-                    {quotationData.sowMode === 'advanced' ? (
-                      <div className="mt-4 flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-xl bg-blue-50/50 dark:bg-blue-900/20">
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 text-center max-w-sm">
-                          Advanced mode allows you to use a full rich-text editor with tables, lists, and deep formatting.
-                        </p>
-                        <button 
-                          onClick={() => {
-                            sowContentRef.current = quotationData.scopeOfWorkHtml;
-                            setShowSowModal(true);
-                          }}
-                          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow-sm transition-all flex items-center gap-2"
-                        >
-                          <Layout className="w-4 h-4" /> Open Full-Page Editor
-                        </button>
+                        ))}
                       </div>
-                    ) : (
-                    <div className="space-y-2">
-                    {quotationData.deliverables.map((item, index) => {
-                      const isHeading = typeof item === 'string' ? item.startsWith('## ') : item.title?.startsWith('## ');
-                      const title = typeof item === 'string' ? item : (item.title || '');
-                      const description = typeof item === 'string' ? '' : (item.description || '');
+                    </div>
+                  )}
+                </div>
 
-                      return (
-                        <div key={index} className="flex gap-2">
-                          {isHeading ? (
-                            <div className="flex-1">
-                              <input 
-                                type="text" value={title.replace('## ', '')} onChange={(e) => handleDeliverableChange(index, { title: '## ' + e.target.value, description: '' })}
-                                placeholder={`Section Heading`} className="w-full px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-400"
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex-1 space-y-1.5 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
-                              <input 
-                                type="text" value={title} onChange={(e) => handleDeliverableChange(index, { title: e.target.value, description })}
-                                placeholder={`Deliverable Title`} className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold"
-                              />
-                              <textarea 
-                                rows="2" value={description} onChange={(e) => handleDeliverableChange(index, { title, description: e.target.value })}
-                                placeholder={`Summary of deliverables...`} className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[10px]"
-                              />
-                            </div>
-                          )}
-                          <button onClick={() => removeDeliverable(index)} className="text-red-500 hover:text-red-700 p-1 self-start mt-1">
-                            <Trash2 className="w-4 h-4" />
+                {/* Section 4: Key Deliverables */}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-md overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
+                  <button
+                    onClick={() => setActiveSection(activeSection === 'deliverables' ? '' : 'deliverables')}
+                    className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" /> 4. Key Deliverables & Scope
+                    </span>
+                    {activeSection === 'deliverables' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {activeSection === 'deliverables' && (
+                    <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
+                      <div className="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="sowMode"
+                            checked={quotationData.sowMode === 'simple'}
+                            onChange={() => setQuotationData(prev => ({ ...prev, sowMode: 'simple' }))}
+                          />
+                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Simple Grid Mode</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="sowMode"
+                            checked={quotationData.sowMode === 'advanced'}
+                            onChange={() => setQuotationData(prev => ({ ...prev, sowMode: 'advanced' }))}
+                          />
+                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Advanced Editor Mode</span>
+                        </label>
+                      </div>
+
+                      {quotationData.sowMode === 'advanced' ? (
+                        <div className="mt-4 flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-md bg-blue-50/50 dark:bg-blue-900/20">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 text-center max-w-sm">
+                            Advanced mode allows you to use a full rich-text editor with tables, lists, and deep formatting.
+                          </p>
+                          <button
+                            onClick={() => {
+                              sowContentRef.current = quotationData.scopeOfWorkHtml;
+                              setShowSowModal(true);
+                            }}
+                            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-md-lg shadow-sm transition-all flex items-center gap-2"
+                          >
+                            <Layout className="w-4 h-4" /> Open Full-Page Editor
                           </button>
                         </div>
-                      )
-                    })}
-                    <div className="flex gap-2 pt-2">
-                      <button onClick={addDeliverable} className="flex-1 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
-                        + Add Item
-                      </button>
-                      <button onClick={() => setQuotationData(prev => ({ ...prev, deliverables: [...prev.deliverables, { title: '## New Heading', description: '' }] }))} className="flex-1 py-2 border border-dashed border-blue-300 dark:border-blue-700 rounded-lg text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50">
-                        + Add Heading
+                      ) : (
+                        <div className="space-y-2">
+                          {quotationData.deliverables.map((item, index) => {
+                            const isHeading = typeof item === 'string' ? item.startsWith('## ') : item.title?.startsWith('## ');
+                            const title = typeof item === 'string' ? item : (item.title || '');
+                            const description = typeof item === 'string' ? '' : (item.description || '');
+
+                            return (
+                              <div key={index} className="flex gap-2">
+                                {isHeading ? (
+                                  <div className="flex-1">
+                                    <input
+                                      type="text" value={title.replace('## ', '')} onChange={(e) => handleDeliverableChange(index, { title: '## ' + e.target.value, description: '' })}
+                                      placeholder={`Section Heading`} className="w-full px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-md-lg text-xs font-bold text-blue-700 dark:text-blue-400"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="flex-1 space-y-1.5 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg">
+                                    <input
+                                      type="text" value={title} onChange={(e) => handleDeliverableChange(index, { title: e.target.value, description })}
+                                      placeholder={`Deliverable Title`} className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs font-bold"
+                                    />
+                                    <textarea
+                                      rows="2" value={description} onChange={(e) => handleDeliverableChange(index, { title, description: e.target.value })}
+                                      placeholder={`Summary of deliverables...`} className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[10px]"
+                                    />
+                                  </div>
+                                )}
+                                <button onClick={() => removeDeliverable(index)} className="text-red-500 hover:text-red-700 p-1 self-start mt-1">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            )
+                          })}
+                          <div className="flex gap-2 pt-2">
+                            <button onClick={addDeliverable} className="flex-1 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-md-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
+                              + Add Item
+                            </button>
+                            <button onClick={() => setQuotationData(prev => ({ ...prev, deliverables: [...prev.deliverables, { title: '## New Heading', description: '' }] }))} className="flex-1 py-2 border border-dashed border-blue-300 dark:border-blue-700 rounded-md-lg text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50">
+                              + Add Heading
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 5: Team */}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-md overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
+                  <button
+                    onClick={() => setActiveSection(activeSection === 'team' ? '' : 'team')}
+                    className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-amber-600" /> 5. Team & Integrations
+                    </span>
+                    {activeSection === 'team' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {activeSection === 'team' && (
+                    <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+                      {quotationData.teamList.map((member, index) => (
+                        <div key={index} className="grid grid-cols-12 gap-2 items-center">
+                          <input
+                            type="text" value={member.role} onChange={(e) => handleTeamChange(index, 'role', e.target.value)}
+                            placeholder="Role" className="col-span-5 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                          />
+                          <input
+                            type="text" value={member.count} onChange={(e) => handleTeamChange(index, 'count', e.target.value)}
+                            placeholder="Count" className="col-span-2 px-2 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs text-center font-bold"
+                          />
+                          <input
+                            type="text" value={member.details} onChange={(e) => handleTeamChange(index, 'details', e.target.value)}
+                            placeholder="Details" className="col-span-4 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                          />
+                          <button onClick={() => removeTeamMember(index)} className="col-span-1 text-red-500 hover:text-red-700 p-1 flex justify-center">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      <button onClick={addTeamMember} className="w-full py-1.5 border border-dashed border-slate-300 dark:border-slate-700 rounded-md-lg text-xs font-bold text-slate-600 dark:text-slate-400">
+                        + Add Team Member
                       </button>
                     </div>
-                    </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              {/* Section 5: Team */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
-                <button 
-                  onClick={() => setActiveSection(activeSection === 'team' ? '' : 'team')}
-                  className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-amber-600" /> 5. Team & Integrations
-                  </span>
-                  {activeSection === 'team' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                
-                {activeSection === 'team' && (
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
-                    {quotationData.teamList.map((member, index) => (
-                      <div key={index} className="grid grid-cols-12 gap-2 items-center">
-                        <input 
-                          type="text" value={member.role} onChange={(e) => handleTeamChange(index, 'role', e.target.value)}
-                          placeholder="Role" className="col-span-5 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
-                        />
-                        <input 
-                          type="text" value={member.count} onChange={(e) => handleTeamChange(index, 'count', e.target.value)}
-                          placeholder="Count" className="col-span-2 px-2 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-center font-bold"
-                        />
-                        <input 
-                          type="text" value={member.details} onChange={(e) => handleTeamChange(index, 'details', e.target.value)}
-                          placeholder="Details" className="col-span-4 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-                        />
-                        <button onClick={() => removeTeamMember(index)} className="col-span-1 text-red-500 hover:text-red-700 p-1 flex justify-center">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                    <button onClick={addTeamMember} className="w-full py-1.5 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400">
-                      + Add Team Member
-                    </button>
-                  </div>
-                )}
-              </div>
+                {/* Section 6: Budget & Bank */}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-md overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
+                  <button
+                    onClick={() => setActiveSection(activeSection === 'budget' ? '' : 'budget')}
+                    className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-emerald-600" /> 6. Budget, Particulars & Bank
+                    </span>
+                    {activeSection === 'budget' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
 
-              {/* Section 6: Budget & Bank */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/30">
-                <button 
-                  onClick={() => setActiveSection(activeSection === 'budget' ? '' : 'budget')}
-                  className="w-full p-3.5 flex items-center justify-between font-bold text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-emerald-600" /> 6. Budget, Particulars & Bank
-                  </span>
-                  {activeSection === 'budget' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                
-                {activeSection === 'budget' && (
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-semibold text-slate-500 uppercase">Investment Blocks</label>
-                        <button onClick={() => {
-                          const current = quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }];
-                          handleInputChange('pricingOptions', [...current, { title: 'NEW INVESTMENT PHASE', cost: '', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]);
-                        }} className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-                          + Add Block
-                        </button>
-                      </div>
-                      {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, index) => (
-                        <div key={index} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2 relative group">
-                           {((quotationData.pricingOptions?.length || 1) > 1) && (
-                             <button onClick={() => {
-                               const updated = [...(quotationData.pricingOptions || [])];
-                               updated.splice(index, 1);
-                               handleInputChange('pricingOptions', updated);
-                             }} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 border border-red-200 shadow-sm hover:bg-red-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                               <Trash2 className="w-3 h-3" />
-                             </button>
-                           )}
-                           
-                           <input 
+                  {activeSection === 'budget' && (
+                    <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-semibold text-slate-500 uppercase">Investment Blocks</label>
+                          <button onClick={() => {
+                            const current = quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }];
+                            handleInputChange('pricingOptions', [...current, { title: 'NEW INVESTMENT PHASE', cost: '', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]);
+                          }} className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md-md">
+                            + Add Block
+                          </button>
+                        </div>
+                        {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, index) => (
+                          <div key={index} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md-lg border border-slate-200 dark:border-slate-700 space-y-2 relative group">
+                            {((quotationData.pricingOptions?.length || 1) > 1) && (
+                              <button onClick={() => {
+                                const updated = [...(quotationData.pricingOptions || [])];
+                                updated.splice(index, 1);
+                                handleInputChange('pricingOptions', updated);
+                              }} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 border border-red-200 shadow-sm hover:bg-red-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+
+                            <input
                               type="text" value={priceObj.title} onChange={(e) => {
                                 const updated = [...(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '', gst: quotationData.gstPercent || '', suffix: 'Applicable GST' }])];
                                 updated[index].title = e.target.value;
                                 handleInputChange('pricingOptions', updated);
                               }}
-                              placeholder="Title (e.g. TOTAL PROJECT INVESTMENT)" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-bold uppercase tracking-wider text-slate-700"
-                           />
-                           <div className="grid grid-cols-12 gap-2">
-                             <div className="col-span-5">
-                               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Cost (₹)</label>
-                               <input 
+                              placeholder="Title (e.g. TOTAL PROJECT INVESTMENT)" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[11px] font-bold uppercase tracking-wider text-slate-700"
+                            />
+                            <div className="grid grid-cols-12 gap-2">
+                              <div className="col-span-5">
+                                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Cost (₹)</label>
+                                <input
                                   type="text" value={priceObj.cost} onChange={(e) => {
                                     const updated = [...(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '', gst: quotationData.gstPercent || '', suffix: 'Applicable GST' }])];
                                     updated[index].cost = e.target.value;
                                     handleInputChange('pricingOptions', updated);
                                   }}
-                                  placeholder="7,80,000" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-bold"
-                               />
-                             </div>
-                             <div className="col-span-3">
-                               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">GST %</label>
-                               <input 
+                                  placeholder="7,80,000" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[11px] font-bold"
+                                />
+                              </div>
+                              <div className="col-span-3">
+                                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">GST %</label>
+                                <input
                                   type="text" value={priceObj.gst} onChange={(e) => {
                                     const updated = [...(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '', gst: quotationData.gstPercent || '', suffix: 'Applicable GST' }])];
                                     updated[index].gst = e.target.value;
                                     handleInputChange('pricingOptions', updated);
                                   }}
-                                  placeholder="18" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px]"
-                               />
-                             </div>
-                             <div className="col-span-4">
-                               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Suffix</label>
-                               <input 
+                                  placeholder="18" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[11px]"
+                                />
+                              </div>
+                              <div className="col-span-4">
+                                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Suffix</label>
+                                <input
                                   type="text" value={priceObj.suffix} onChange={(e) => {
                                     const updated = [...(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost || '', gst: quotationData.gstPercent || '', suffix: 'Applicable GST' }])];
                                     updated[index].suffix = e.target.value;
                                     handleInputChange('pricingOptions', updated);
                                   }}
-                                  placeholder="Applicable GST" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px]"
-                               />
-                             </div>
-                           </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase block mb-1">Particulars & Terms</label>
-                      {quotationData.particulars.map((item, index) => (
-                        <div key={index} className="flex gap-2 items-start bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                          <div className="flex-1 space-y-1.5">
-                            <input 
-                              type="text" value={item.name} onChange={(e) => handleParticularChange(index, 'name', e.target.value)}
-                              placeholder="Particular (e.g. AMC)" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold"
-                            />
-                            <textarea 
-                              rows="2" value={item.value} onChange={(e) => handleParticularChange(index, 'value', e.target.value)}
-                              placeholder="Details / Terms..." className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px]"
-                            />
+                                  placeholder="Applicable GST" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[11px]"
+                                />
+                              </div>
+                            </div>
                           </div>
-                          <button onClick={() => removeParticular(index)} className="text-red-400 hover:text-red-600 p-1 mt-0.5">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                      <button onClick={addParticular} className="w-full mt-2 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
-                        + Add Particular
-                      </button>
-                    </div>
+                        ))}
+                      </div>
 
-                    <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                      <label className="text-[11px] font-semibold text-slate-500 uppercase block">Bank Details</label>
-                      <input 
-                        type="text" value={quotationData.bankAccountName} onChange={(e) => handleInputChange('bankAccountName', e.target.value)}
-                        placeholder="Account Name" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold"
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <input 
-                          type="text" value={quotationData.bankAccountNo} onChange={(e) => handleInputChange('bankAccountNo', e.target.value)}
-                          placeholder="Account No" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
+                      <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase block mb-1">Particulars & Terms</label>
+                        {quotationData.particulars.map((item, index) => (
+                          <div key={index} className="flex gap-2 items-start bg-slate-50 dark:bg-slate-800/50 p-2 rounded-md-lg border border-slate-200 dark:border-slate-700">
+                            <div className="flex-1 space-y-1.5">
+                              <input
+                                type="text" value={item.name} onChange={(e) => handleParticularChange(index, 'name', e.target.value)}
+                                placeholder="Particular (e.g. AMC)" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs font-bold"
+                              />
+                              <textarea
+                                rows="2" value={item.value} onChange={(e) => handleParticularChange(index, 'value', e.target.value)}
+                                placeholder="Details / Terms..." className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[11px]"
+                              />
+                            </div>
+                            <button onClick={() => removeParticular(index)} className="text-red-400 hover:text-red-600 p-1 mt-0.5">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                        <button onClick={addParticular} className="w-full mt-2 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-md-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
+                          + Add Particular
+                        </button>
+                      </div>
+
+                      <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase block">Bank Details</label>
+                        <input
+                          type="text" value={quotationData.bankAccountName} onChange={(e) => handleInputChange('bankAccountName', e.target.value)}
+                          placeholder="Account Name" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs font-bold"
                         />
-                        <input 
-                          type="text" value={quotationData.bankIFSC} onChange={(e) => handleInputChange('bankIFSC', e.target.value)}
-                          placeholder="IFSC Code" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
-                        />
-                        <input 
-                          type="text" value={quotationData.bankBranch} onChange={(e) => handleInputChange('bankBranch', e.target.value)}
-                          placeholder="Branch Name" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
-                        />
-                        <input 
-                          type="text" value={quotationData.bankGST} onChange={(e) => handleInputChange('bankGST', e.target.value)}
-                          placeholder="GST Number" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
-                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text" value={quotationData.bankAccountNo} onChange={(e) => handleInputChange('bankAccountNo', e.target.value)}
+                            placeholder="Account No" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs"
+                          />
+                          <input
+                            type="text" value={quotationData.bankIFSC} onChange={(e) => handleInputChange('bankIFSC', e.target.value)}
+                            placeholder="IFSC Code" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs"
+                          />
+                          <input
+                            type="text" value={quotationData.bankBranch} onChange={(e) => handleInputChange('bankBranch', e.target.value)}
+                            placeholder="Branch Name" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs"
+                          />
+                          <input
+                            type="text" value={quotationData.bankGST} onChange={(e) => handleInputChange('bankGST', e.target.value)}
+                            placeholder="GST Number" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+
               </div>
-
             </div>
-          </div>
-        )}
+          )}
 
-        {/* TAB 2: CHOOSE THEME & COLOR PALETTE (PPT SHOWCASE) */}
-        {mainWorkflowTab === 'theme' && (
-          <div className="p-4 space-y-4">
-             <div className="bg-purple-50 dark:bg-purple-950/40 p-3.5 rounded-xl border border-purple-200 dark:border-purple-900/50">
+          {/* TAB 2: CHOOSE THEME & COLOR PALETTE (PPT SHOWCASE) */}
+          {mainWorkflowTab === 'theme' && (
+            <div className="p-4 space-y-4">
+              <div className="bg-purple-50 dark:bg-purple-950/40 p-3.5 rounded-md border border-purple-200 dark:border-purple-900/50">
                 <h3 className="text-xs font-black text-purple-900 dark:text-purple-200 uppercase tracking-wider flex items-center gap-1.5">
                   <Palette className="w-4 h-4 text-purple-600" />
                   <span>PPT Slide Themes & Layout Combinations</span>
@@ -1512,33 +1508,32 @@ export default function CreateQuotationView({ onNavigate }) {
                 <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
                   Choose a slide master theme. Each theme instantly transforms color combinations, card arrangements, and section layouts across your proposal pages!
                 </p>
-             </div>
+              </div>
 
-             <div className="space-y-4">
-               {QUOTATION_THEMES.map((t) => {
-                 const isSelected = t.id === currentThemeKey;
-                 return (
-                   <div
-                     key={t.id}
-                     onClick={() => handleSelectTheme(t.id)}
-                     className={`p-4 rounded-xl border transition-all cursor-pointer space-y-3 relative overflow-hidden group ${
-                       isSelected 
-                         ? 'border-purple-600 bg-purple-50/80 dark:bg-purple-950/40 shadow-lg ring-2 ring-purple-500/30' 
-                         : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-800 bg-white dark:bg-slate-900'
-                     }`}
-                   >
-                     {/* Theme Header Bar */}
-                     <div className="flex items-center justify-between">
+              <div className="space-y-4">
+                {QUOTATION_THEMES.map((t) => {
+                  const isSelected = t.id === currentThemeKey;
+                  return (
+                    <div
+                      key={t.id}
+                      onClick={() => handleSelectTheme(t.id)}
+                      className={`p-4 rounded-md border transition-all cursor-pointer space-y-3 relative overflow-hidden group ${isSelected
+                        ? 'border-purple-600 bg-purple-50/80 dark:bg-purple-950/40 shadow-lg ring-2 ring-purple-500/30'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-800 bg-white dark:bg-slate-900'
+                        }`}
+                    >
+                      {/* Theme Header Bar */}
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
-                           <div className={`w-4 h-4 rounded-full bg-gradient-to-tr ${t.swatchGradient} shrink-0 shadow-sm border border-white/30`} />
-                           <div>
-                              <div className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>{t.name}</span>
-                              </div>
-                              <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wide bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40">
-                                {t.layoutTag}
-                              </span>
-                           </div>
+                          <div className={`w-4 h-4 rounded-full bg-gradient-to-tr ${t.swatchGradient} shrink-0 shadow-sm border border-white/30`} />
+                          <div>
+                            <div className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2">
+                              <span>{t.name}</span>
+                            </div>
+                            <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-wide bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40">
+                              {t.layoutTag}
+                            </span>
+                          </div>
                         </div>
 
                         {isSelected ? (
@@ -1550,62 +1545,62 @@ export default function CreateQuotationView({ onNavigate }) {
                             Click to Apply
                           </span>
                         )}
-                     </div>
+                      </div>
 
-                     {/* PPT Slide Mini Thumbnail Mockup */}
-                     <div className="w-full aspect-[16/9] rounded-lg bg-slate-950 p-2.5 relative border border-slate-800 overflow-hidden shadow-inner flex flex-col justify-between group-hover:border-purple-500/40 transition-colors">
+                      {/* PPT Slide Mini Thumbnail Mockup */}
+                      <div className="w-full aspect-[16/9] rounded-md-lg bg-slate-950 p-2.5 relative border border-slate-800 overflow-hidden shadow-inner flex flex-col justify-between group-hover:border-purple-500/40 transition-colors">
                         {/* Slide Top Banner */}
-                        <div className="w-full h-4 rounded px-2 flex items-center justify-between" style={{ backgroundColor: t.primaryColor }}>
-                           <div className="w-12 h-1 bg-white/70 rounded-full"></div>
-                           <div className="w-4 h-1 rounded-full" style={{ backgroundColor: t.accentColor }}></div>
+                        <div className="w-full h-4 rounded-md px-2 flex items-center justify-between" style={{ backgroundColor: t.primaryColor }}>
+                          <div className="w-12 h-1 bg-white/70 rounded-full"></div>
+                          <div className="w-4 h-1 rounded-full" style={{ backgroundColor: t.accentColor }}></div>
                         </div>
 
                         {/* Slide Body Layout Mockup */}
                         <div className="flex-1 my-1.5 flex gap-1.5 items-stretch">
-                           {t.layoutStyle === 'modern_sidebar' && (
-                             <div className="w-2 rounded-sm" style={{ backgroundColor: t.accentColor }}></div>
-                           )}
-                           <div className="flex-1 flex flex-col justify-between py-1">
-                              <div className="space-y-1">
-                                <div className="w-3/4 h-2 bg-slate-200 dark:bg-slate-700 rounded"></div>
-                                <div className="w-1/2 h-1.5 bg-slate-300 dark:bg-slate-800 rounded"></div>
-                              </div>
-                              <div className="grid grid-cols-3 gap-1">
-                                <div className="h-4 rounded border" style={{ borderColor: t.accentColor, backgroundColor: `${t.accentColor}20` }}></div>
-                                <div className="h-4 rounded border" style={{ borderColor: t.accentColor, backgroundColor: `${t.accentColor}20` }}></div>
-                                <div className="h-4 rounded border" style={{ borderColor: t.accentColor, backgroundColor: `${t.accentColor}20` }}></div>
-                              </div>
-                           </div>
+                          {t.layoutStyle === 'modern_sidebar' && (
+                            <div className="w-2 rounded-md-sm" style={{ backgroundColor: t.accentColor }}></div>
+                          )}
+                          <div className="flex-1 flex flex-col justify-between py-1">
+                            <div className="space-y-1">
+                              <div className="w-3/4 h-2 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+                              <div className="w-1/2 h-1.5 bg-slate-300 dark:bg-slate-800 rounded-md"></div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-1">
+                              <div className="h-4 rounded-md border" style={{ borderColor: t.accentColor, backgroundColor: `${t.accentColor}20` }}></div>
+                              <div className="h-4 rounded-md border" style={{ borderColor: t.accentColor, backgroundColor: `${t.accentColor}20` }}></div>
+                              <div className="h-4 rounded-md border" style={{ borderColor: t.accentColor, backgroundColor: `${t.accentColor}20` }}></div>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Slide Footer */}
                         <div className="w-full h-1.5 rounded-full flex items-center justify-between" style={{ backgroundColor: t.accentColor }}></div>
-                     </div>
+                      </div>
 
-                     {/* Color Swatch Combination Palette */}
-                     <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px]">
+                      {/* Color Swatch Combination Palette */}
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px]">
                         <span className="font-bold text-slate-500 uppercase tracking-wider">Color Palette</span>
                         <div className="flex items-center gap-1.5">
-                           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
-                              <span className="w-2.5 h-2.5 rounded-full border border-black/20" style={{ backgroundColor: t.primaryColor }} title="Primary Color" />
-                              <span className="w-2.5 h-2.5 rounded-full border border-black/20" style={{ backgroundColor: t.accentColor }} title="Accent Color" />
-                              <span className="w-2.5 h-2.5 rounded-full border border-black/20" style={{ backgroundColor: t.barcodeColor }} title="Highlight Color" />
-                           </div>
+                          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md-md border border-slate-200 dark:border-slate-700">
+                            <span className="w-2.5 h-2.5 rounded-full border border-black/20" style={{ backgroundColor: t.primaryColor }} title="Primary Color" />
+                            <span className="w-2.5 h-2.5 rounded-full border border-black/20" style={{ backgroundColor: t.accentColor }} title="Accent Color" />
+                            <span className="w-2.5 h-2.5 rounded-full border border-black/20" style={{ backgroundColor: t.barcodeColor }} title="Highlight Color" />
+                          </div>
                         </div>
-                     </div>
+                      </div>
 
-                     <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">{t.desc}</p>
-                   </div>
-                 );
-               })}
-             </div>
-          </div>
-        )}
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">{t.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-        {/* TAB 3: MANAGE PAGES & SECTIONS (ADD / DELETE / REORDER) */}
-        {mainWorkflowTab === 'arrange' && (
-          <div className="p-4 space-y-4">
-             <div className="bg-indigo-50 dark:bg-indigo-950/40 p-3.5 rounded-xl border border-indigo-200 dark:border-indigo-900/50">
+          {/* TAB 3: MANAGE PAGES & SECTIONS (ADD / DELETE / REORDER) */}
+          {mainWorkflowTab === 'arrange' && (
+            <div className="p-4 space-y-4">
+              <div className="bg-indigo-50 dark:bg-indigo-950/40 p-3.5 rounded-md border border-indigo-200 dark:border-indigo-900/50">
                 <h3 className="text-xs font-black text-indigo-900 dark:text-indigo-200 uppercase tracking-wider flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-indigo-600" />
                   <span>Proposal Page & Section Manager</span>
@@ -1613,56 +1608,56 @@ export default function CreateQuotationView({ onNavigate }) {
                 <p className="text-xs text-indigo-700 dark:text-indigo-300 mt-1">
                   Add new custom section pages, reorder slide pages, or delete unwanted sections from your proposal PDF!
                 </p>
-             </div>
+              </div>
 
-             {/* Standard Pages List */}
-             <div className="space-y-2">
+              {/* Standard Pages List */}
+              <div className="space-y-2">
                 <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Standard Proposal Pages</span>
                 <div className="space-y-1.5">
-                   {[
-                     { num: 1, title: 'Cover Page' },
-                     { num: 2, title: 'About Company & Pillars' },
-                     { num: 3, title: 'Executive Summary & Solutions' },
-                     { num: 4, title: 'Scope of Work & Deliverables' },
-                     { num: 5, title: 'Team Distribution & Integrations' },
-                     { num: 6, title: 'Budget, Particulars & Bank' },
-                     { num: 7, title: 'Terms, Notes & Thank You' }
-                   ].map((p) => (
-                     <div key={p.num} className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-200">
-                        <span className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px]">{p.num}</span>
-                          <span>{p.title}</span>
-                        </span>
-                        <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">Required</span>
-                     </div>
-                   ))}
+                  {[
+                    { num: 1, title: 'Cover Page' },
+                    { num: 2, title: 'About Company & Pillars' },
+                    { num: 3, title: 'Executive Summary & Solutions' },
+                    { num: 4, title: 'Scope of Work & Deliverables' },
+                    { num: 5, title: 'Team Distribution & Integrations' },
+                    { num: 6, title: 'Budget, Particulars & Bank' },
+                    { num: 7, title: 'Terms, Notes & Thank You' }
+                  ].map((p) => (
+                    <div key={p.num} className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-md-lg flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-200">
+                      <span className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px]">{p.num}</span>
+                        <span>{p.title}</span>
+                      </span>
+                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">Required</span>
+                    </div>
+                  ))}
                 </div>
-             </div>
+              </div>
 
-             {/* Custom Pages List */}
-             <div className="space-y-3 pt-2">
+              {/* Custom Pages List */}
+              <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
-                   <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Custom Section Pages ({quotationData.customPages?.length || 0})</span>
-                   <button 
-                     onClick={addCustomPage}
-                     className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer"
-                   >
-                     <Plus className="w-3.5 h-3.5" /> <span>Add Page</span>
-                   </button>
+                  <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Custom Section Pages ({quotationData.customPages?.length || 0})</span>
+                  <button
+                    onClick={addCustomPage}
+                    className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md-lg text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> <span>Add Page</span>
+                  </button>
                 </div>
 
                 {quotationData.customPages && quotationData.customPages.map((cp, cpIdx) => (
-                  <div key={cp.id || cpIdx} className="p-3.5 border border-indigo-200 dark:border-indigo-800 rounded-xl bg-indigo-50/40 dark:bg-indigo-950/30 space-y-3">
+                  <div key={cp.id || cpIdx} className="p-3.5 border border-indigo-200 dark:border-indigo-800 rounded-md bg-indigo-50/40 dark:bg-indigo-950/30 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase">Custom Page #{cpIdx + 8}</span>
                       <div className="flex items-center gap-1">
-                        <button onClick={() => moveCustomPageUp(cpIdx)} disabled={cpIdx === 0} className="p-1 hover:bg-indigo-100 rounded text-slate-600 disabled:opacity-30">
+                        <button onClick={() => moveCustomPageUp(cpIdx)} disabled={cpIdx === 0} className="p-1 hover:bg-indigo-100 rounded-md text-slate-600 disabled:opacity-30">
                           <ChevronUp className="w-3.5 h-3.5" />
                         </button>
-                        <button onClick={() => moveCustomPageDown(cpIdx)} disabled={cpIdx >= quotationData.customPages.length - 1} className="p-1 hover:bg-indigo-100 rounded text-slate-600 disabled:opacity-30">
+                        <button onClick={() => moveCustomPageDown(cpIdx)} disabled={cpIdx >= quotationData.customPages.length - 1} className="p-1 hover:bg-indigo-100 rounded-md text-slate-600 disabled:opacity-30">
                           <ChevronDown className="w-3.5 h-3.5" />
                         </button>
-                        <button onClick={() => removeCustomPage(cpIdx)} className="p-1 text-red-500 hover:bg-red-50 rounded flex items-center gap-1 text-xs font-bold ml-1">
+                        <button onClick={() => removeCustomPage(cpIdx)} className="p-1 text-red-500 hover:bg-red-50 rounded-md flex items-center gap-1 text-xs font-bold ml-1">
                           <Trash2 className="w-3.5 h-3.5" /> Delete Page
                         </button>
                       </div>
@@ -1670,37 +1665,37 @@ export default function CreateQuotationView({ onNavigate }) {
 
                     <div>
                       <label className="text-[10px] font-semibold text-slate-500 uppercase">Section Title</label>
-                      <input 
+                      <input
                         type="text" value={cp.title} onChange={(e) => handleCustomPageChange(cpIdx, 'title', e.target.value)} placeholder="e.g. Past Projects & Portfolio"
-                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
+                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
                       />
                     </div>
 
                     <div>
                       <label className="text-[10px] font-semibold text-slate-500 uppercase">Section Subtitle</label>
-                      <input 
+                      <input
                         type="text" value={cp.subtitle} onChange={(e) => handleCustomPageChange(cpIdx, 'subtitle', e.target.value)} placeholder="e.g. Proven Track Record"
-                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
                       />
                     </div>
 
                     <div>
                       <label className="text-[10px] font-semibold text-slate-500 uppercase">Content Paragraph</label>
-                      <textarea 
+                      <textarea
                         rows="2" value={cp.content} onChange={(e) => handleCustomPageChange(cpIdx, 'content', e.target.value)} placeholder="Custom section details..."
-                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs leading-relaxed"
+                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs leading-relaxed"
                       />
                     </div>
                   </div>
                 ))}
-             </div>
-          </div>
-        )}
+              </div>
+            </div>
+          )}
 
-        {/* TAB 4: EXPORT & DOWNLOAD PDF */}
-        {mainWorkflowTab === 'download' && (
-          <div className="p-4 space-y-4">
-             <div className="bg-emerald-50 dark:bg-emerald-950/40 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/50">
+          {/* TAB 4: EXPORT & DOWNLOAD PDF */}
+          {mainWorkflowTab === 'download' && (
+            <div className="p-4 space-y-4">
+              <div className="bg-emerald-50 dark:bg-emerald-950/40 p-3.5 rounded-md border border-emerald-200 dark:border-emerald-900/50">
                 <h3 className="text-xs font-black text-emerald-900 dark:text-emerald-200 uppercase tracking-wider flex items-center gap-1.5">
                   <Download className="w-4 h-4 text-emerald-600" />
                   <span>Export Proposal PDF</span>
@@ -1708,36 +1703,36 @@ export default function CreateQuotationView({ onNavigate }) {
                 <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1">
                   Ready to download! Generates a high-precision square PDF rendered in the exact selected theme.
                 </p>
-             </div>
+              </div>
 
-             {/* Proposal Summary Card */}
-             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+              {/* Proposal Summary Card */}
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
                 <div className="flex justify-between">
-                   <span className="text-slate-500">Proposal Title:</span>
-                   <span className="font-bold text-slate-800 dark:text-slate-200">{quotationData.proposalTitle}</span>
+                  <span className="text-slate-500">Proposal Title:</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{quotationData.proposalTitle}</span>
                 </div>
                 <div className="flex justify-between">
-                   <span className="text-slate-500">Client Name:</span>
-                   <span className="font-bold text-slate-800 dark:text-slate-200">{quotationData.clientName}</span>
+                  <span className="text-slate-500">Client Name:</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{quotationData.clientName}</span>
                 </div>
                 <div className="flex justify-between">
-                   <span className="text-slate-500">Total Investment:</span>
-                   <span className="font-bold text-emerald-600">₹{quotationData.totalCost}/-</span>
+                  <span className="text-slate-500">Total Investment:</span>
+                  <span className="font-bold text-emerald-600">₹{quotationData.totalCost}/-</span>
                 </div>
                 <div className="flex justify-between">
-                   <span className="text-slate-500">Active Theme:</span>
-                   <span className="font-bold text-purple-600">{currentTheme.name} ({currentTheme.layoutTag})</span>
+                  <span className="text-slate-500">Active Theme:</span>
+                  <span className="font-bold text-purple-600">{currentTheme.name} ({currentTheme.layoutTag})</span>
                 </div>
                 <div className="flex justify-between">
-                   <span className="text-slate-500">Total PDF Pages:</span>
-                   <span className="font-bold text-slate-800 dark:text-slate-200">{7 + (quotationData.customPages?.length || 0)} Square Pages</span>
+                  <span className="text-slate-500">Total PDF Pages:</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{7 + (quotationData.customPages?.length || 0)} Square Pages</span>
                 </div>
-             </div>
+              </div>
 
-             <div className="space-y-2 pt-2">
+              <div className="space-y-2 pt-2">
                 <button
                   onClick={handleSaveQuotation}
-                  className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-md text-xs font-bold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                   <span>Save Proposal to Storage</span>
@@ -1746,7 +1741,7 @@ export default function CreateQuotationView({ onNavigate }) {
                 <button
                   onClick={handleDownloadPDF}
                   disabled={isGeneratingPDF}
-                  className="w-full py-3 text-white rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all hover:opacity-90"
+                  className="w-full py-3 text-white rounded-md text-xs font-black shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all hover:opacity-90"
                   style={{ backgroundColor: currentTheme.accentColor }}
                 >
                   {isGeneratingPDF ? (
@@ -1761,28 +1756,28 @@ export default function CreateQuotationView({ onNavigate }) {
                     </>
                   )}
                 </button>
-             </div>
-          </div>
-        )}
-      </div>
-
-      {/* RIGHT PANEL - LIVE PREVIEW & PRINTABLE DOCUMENT */}
-      <div className="w-full lg:w-8/12 flex flex-col h-full bg-slate-200 dark:bg-[#080d1a] relative min-h-0 overflow-hidden">
-        
-        {/* Toolbar (Hidden when printing) */}
-        <div className="no-print sticky top-0 z-20 bg-white/80 dark:bg-[#0B1120]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 py-2.5 flex items-center justify-between gap-4 shrink-0">
-           <div className="flex items-center gap-2">
-             <FileText className="w-4 h-4 text-red-600" />
-             <span className="text-xs font-black text-slate-700 dark:text-slate-300 tracking-wider">LIVE PROPOSAL CANVAS PREVIEW ({7 + (quotationData.customPages?.length || 0)} PAGES)</span>
-           </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Multi-Page Document Container */}
-        <div className="print-area flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-8 space-y-8 flex flex-col items-center min-h-0">
-           
-           {/* ================= PAGE 1: COVER PAGE (LAYOUT ADAPTIVE) ================= */}
-           <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
-              
+        {/* RIGHT PANEL - LIVE PREVIEW & PRINTABLE DOCUMENT */}
+        <div className="w-full lg:w-8/12 flex flex-col h-full bg-slate-200 dark:bg-[#080d1a] relative min-h-0 overflow-hidden">
+
+          {/* Toolbar (Hidden when printing) */}
+          <div className="no-print sticky top-0 z-20 bg-white/80 dark:bg-[#0B1120]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 py-2.5 flex items-center justify-between gap-4 shrink-0">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-red-600" />
+              <span className="text-xs font-black text-slate-700 dark:text-slate-300 tracking-wider">LIVE PROPOSAL CANVAS PREVIEW ({7 + (quotationData.customPages?.length || 0)} PAGES)</span>
+            </div>
+          </div>
+
+          {/* Multi-Page Document Container */}
+          <div className="print-area flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-8 space-y-8 flex flex-col items-center min-h-0">
+
+            {/* ================= PAGE 1: COVER PAGE (LAYOUT ADAPTIVE) ================= */}
+            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+
               {currentTheme.layoutStyle === 'modern_sidebar' && (
                 <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-b from-[#0F172A] via-[#047857] to-[#10B981] z-10"></div>
               )}
@@ -1793,31 +1788,31 @@ export default function CreateQuotationView({ onNavigate }) {
                     <div>
                       <img src={quotationData.logoUrl || '/codigix-logo.svg'} alt="Codigix Logo" className="h-10 object-contain" />
                     </div>
-                    <div className="text-right text-xs text-[#B45309] font-bold flex items-center gap-2 bg-[#FDF8F0] px-3 py-1.5 rounded border border-[#D97706]/30">
+                    <div className="text-right text-xs text-[#B45309] font-bold flex items-center gap-2 bg-[#FDF8F0] px-3 py-1.5 rounded-md border border-[#D97706]/30">
                       🏆 <span>EXECUTIVE PROPOSAL</span>
                     </div>
                   </div>
 
                   <div className="text-center space-y-4 py-8">
-                     <div className="text-xs uppercase tracking-widest font-black text-[#D97706]">CONFIDENTIAL FINANCIAL PROPOSAL</div>
-                     <h1 className="text-4xl sm:text-5xl font-black text-[#0F172A] tracking-tight leading-tight">
-                       {quotationData.proposalTitle}
-                     </h1>
-                     <div className="w-24 h-0.5 bg-[#D97706] mx-auto"></div>
-                     <p className="text-xl font-bold text-[#B45309]">
-                       {quotationData.subtitle}
-                     </p>
+                    <div className="text-xs uppercase tracking-widest font-black text-[#D97706]">CONFIDENTIAL FINANCIAL PROPOSAL</div>
+                    <h1 className="text-4xl sm:text-5xl font-black text-[#0F172A] tracking-tight leading-tight">
+                      {quotationData.proposalTitle}
+                    </h1>
+                    <div className="w-24 h-0.5 bg-[#D97706] mx-auto"></div>
+                    <p className="text-xl font-bold text-[#B45309]">
+                      {quotationData.subtitle}
+                    </p>
                   </div>
 
-                  <div className="bg-[#0F172A] text-white p-5 rounded-lg border-t-2 border-[#D97706] grid grid-cols-2 text-center">
-                     <div>
-                       <div className="text-[10px] uppercase font-bold text-[#FBBF24]">PREPARED FOR</div>
-                       <div className="text-base font-black mt-0.5">{quotationData.clientName}</div>
-                     </div>
-                     <div>
-                       <div className="text-[10px] uppercase font-bold text-[#FBBF24]">PREPARED BY</div>
-                       <div className="text-base font-black mt-0.5">{quotationData.companyName}</div>
-                     </div>
+                  <div className="bg-[#0F172A] text-white p-5 rounded-md-lg border-t-2 border-[#D97706] grid grid-cols-2 text-center">
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-[#FBBF24]">PREPARED FOR</div>
+                      <div className="text-base font-black mt-0.5">{quotationData.clientName}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-[#FBBF24]">PREPARED BY</div>
+                      <div className="text-base font-black mt-0.5">{quotationData.companyName}</div>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -1833,26 +1828,26 @@ export default function CreateQuotationView({ onNavigate }) {
                   </div>
 
                   <div className={`px-10 py-8 text-center space-y-3 flex-1 flex flex-col justify-center items-center ${currentTheme.layoutStyle === 'modern_sidebar' ? 'items-start text-left pl-14' : ''}`}>
-                     {currentTheme.layoutStyle === 'cyber_bento' ? (
-                       <div className="bg-[#7C3AED]/5 border border-[#7C3AED]/20 p-8 rounded-2xl w-full text-center space-y-3 backdrop-blur-sm shadow-sm">
-                          <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#7C3AED] text-white">PROJECT ARCHITECTURE PROPOSAL</span>
-                          <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight" style={{ color: currentTheme.primaryColor }}>
-                            {quotationData.proposalTitle}
-                          </h1>
-                          <p className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: currentTheme.primaryColor }}>
-                            {quotationData.subtitle}
-                          </p>
-                       </div>
-                     ) : (
-                       <>
-                         <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight" style={{ color: currentTheme.primaryColor }}>
-                           {quotationData.proposalTitle}
-                         </h1>
-                         <p className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: currentTheme.primaryColor }}>
-                           {quotationData.subtitle}
-                         </p>
-                       </>
-                     )}
+                    {currentTheme.layoutStyle === 'cyber_bento' ? (
+                      <div className="bg-[#7C3AED]/5 border border-[#7C3AED]/20 p-8 rounded-md w-full text-center space-y-3 backdrop-blur-sm shadow-sm">
+                        <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#7C3AED] text-white">PROJECT ARCHITECTURE PROPOSAL</span>
+                        <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight" style={{ color: currentTheme.primaryColor }}>
+                          {quotationData.proposalTitle}
+                        </h1>
+                        <p className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: currentTheme.primaryColor }}>
+                          {quotationData.subtitle}
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight" style={{ color: currentTheme.primaryColor }}>
+                          {quotationData.proposalTitle}
+                        </h1>
+                        <p className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: currentTheme.primaryColor }}>
+                          {quotationData.subtitle}
+                        </p>
+                      </>
+                    )}
                   </div>
 
                   <div className="shrink-0 w-full">
@@ -1862,24 +1857,24 @@ export default function CreateQuotationView({ onNavigate }) {
                     </div>
 
                     <div className={`${currentTheme.bannerBg} ${currentTheme.bannerText} p-6 grid grid-cols-2 text-center items-center w-full shadow-inner`}>
-                       <div>
-                         <div className="text-xs uppercase font-medium tracking-wider opacity-90">Prepared for:</div>
-                         <div className="text-lg sm:text-xl font-bold mt-0.5">{quotationData.clientName}</div>
-                       </div>
-                       <div>
-                         <div className="text-xs uppercase font-medium tracking-wider opacity-90">Prepared by:</div>
-                         <div className="text-lg sm:text-xl font-bold mt-0.5">{quotationData.companyName}</div>
-                       </div>
+                      <div>
+                        <div className="text-xs uppercase font-medium tracking-wider opacity-90">Prepared for:</div>
+                        <div className="text-lg sm:text-xl font-bold mt-0.5">{quotationData.clientName}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs uppercase font-medium tracking-wider opacity-90">Prepared by:</div>
+                        <div className="text-lg sm:text-xl font-bold mt-0.5">{quotationData.companyName}</div>
+                      </div>
                     </div>
                   </div>
                 </>
               )}
-           </div>
+            </div>
 
 
-           {/* ================= PAGE 2: ABOUT US (LAYOUT ADAPTIVE) ================= */}
-           <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
-              
+            {/* ================= PAGE 2: ABOUT US (LAYOUT ADAPTIVE) ================= */}
+            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+
               {/* Header section (Logo & Date) */}
               <div className="p-8 pb-4 flex justify-between items-start shrink-0 border-b border-[#F1F5F9]">
                 <div>
@@ -1893,176 +1888,176 @@ export default function CreateQuotationView({ onNavigate }) {
 
               {/* Body Content */}
               <div className="p-8 flex-1 flex flex-col justify-between space-y-5">
-                 
-                 {/* Title & Headline */}
-                 <div className="space-y-2">
-                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${currentTheme.pillBg}`}>
-                      <Building className="w-3.5 h-3.5" style={{ color: currentTheme.accentColor }} />
-                      <span>About The Company</span>
+
+                {/* Title & Headline */}
+                <div className="space-y-2">
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${currentTheme.pillBg}`}>
+                    <Building className="w-3.5 h-3.5" style={{ color: currentTheme.accentColor }} />
+                    <span>About The Company</span>
+                  </div>
+                  <h2 className="text-3xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
+                    {quotationData.companyName}
+                  </h2>
+                  <div className="w-16 h-1 rounded-full" style={{ backgroundColor: currentTheme.accentColor }}></div>
+                </div>
+
+                {/* LAYOUT ADAPTIVE ARRANGEMENT FOR PAGE 2 */}
+                {currentTheme.layoutStyle === 'modern_sidebar' ? (
+                  /* EXECUTIVE EMERALD: Top Stat Ribbon + Reversed Image/Text Row */
+                  <div className="space-y-4 flex-1 flex flex-col justify-between">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="p-3 rounded-md text-center text-white font-bold text-xs" style={{ backgroundColor: currentTheme.primaryColor }}>
+                        <div className="text-xl font-black">{quotationData.statYear}</div>
+                        <div className="text-[9px] uppercase tracking-wider opacity-80">Established</div>
+                      </div>
+                      <div className="p-3 rounded-md text-center text-white font-bold text-xs" style={{ backgroundColor: currentTheme.accentColor }}>
+                        <div className="text-xl font-black">{quotationData.statTeam}+</div>
+                        <div className="text-[9px] uppercase tracking-wider opacity-90">Experts</div>
+                      </div>
+                      <div className="p-3 rounded-md text-center text-white font-bold text-xs bg-[#0F172A]">
+                        <div className="text-xl font-black">{quotationData.statClients}+</div>
+                        <div className="text-[9px] uppercase tracking-wider opacity-80">Clients</div>
+                      </div>
                     </div>
-                    <h2 className="text-3xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
-                      {quotationData.companyName}
-                    </h2>
-                    <div className="w-16 h-1 rounded-full" style={{ backgroundColor: currentTheme.accentColor }}></div>
-                 </div>
 
-                 {/* LAYOUT ADAPTIVE ARRANGEMENT FOR PAGE 2 */}
-                 {currentTheme.layoutStyle === 'modern_sidebar' ? (
-                   /* EXECUTIVE EMERALD: Top Stat Ribbon + Reversed Image/Text Row */
-                   <div className="space-y-4 flex-1 flex flex-col justify-between">
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="p-3 rounded-xl text-center text-white font-bold text-xs" style={{ backgroundColor: currentTheme.primaryColor }}>
-                           <div className="text-xl font-black">{quotationData.statYear}</div>
-                           <div className="text-[9px] uppercase tracking-wider opacity-80">Established</div>
-                        </div>
-                        <div className="p-3 rounded-xl text-center text-white font-bold text-xs" style={{ backgroundColor: currentTheme.accentColor }}>
-                           <div className="text-xl font-black">{quotationData.statTeam}+</div>
-                           <div className="text-[9px] uppercase tracking-wider opacity-90">Experts</div>
-                        </div>
-                        <div className="p-3 rounded-xl text-center text-white font-bold text-xs bg-[#0F172A]">
-                           <div className="text-xl font-black">{quotationData.statClients}+</div>
-                           <div className="text-[9px] uppercase tracking-wider opacity-80">Clients</div>
-                        </div>
+                    <div className="grid grid-cols-12 gap-5 items-center flex-1">
+                      <div className="col-span-5 h-[210px] rounded-md overflow-hidden shadow-md border relative">
+                        <img src={quotationData.page2ImageUrl || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80'} alt="Team" className="w-full h-full object-cover" />
                       </div>
-
-                      <div className="grid grid-cols-12 gap-5 items-center flex-1">
-                         <div className="col-span-5 h-[210px] rounded-2xl overflow-hidden shadow-md border relative">
-                            <img src={quotationData.page2ImageUrl || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80'} alt="Team" className="w-full h-full object-cover" />
-                         </div>
-                         <div className="col-span-7 space-y-3">
-                            <p className="text-xs text-[#334155] leading-relaxed p-3.5 bg-[#F8FAFC] rounded-xl border">
-                              {quotationData.aboutText}
-                            </p>
-                            <div className="space-y-1.5">
-                              {(quotationData.valueBadges?.filter(Boolean) || []).slice(0, 3).map((badge, idx) => (
-                                <div key={idx} className="flex items-center gap-2 text-xs font-bold text-[#047857]">
-                                  <span className="w-4 h-4 rounded-full bg-[#10B981] text-white flex items-center justify-center text-[9px]">✓</span>
-                                  <span>{badge}</span>
-                                </div>
-                              ))}
+                      <div className="col-span-7 space-y-3">
+                        <p className="text-xs text-[#334155] leading-relaxed p-3.5 bg-[#F8FAFC] rounded-md border">
+                          {quotationData.aboutText}
+                        </p>
+                        <div className="space-y-1.5">
+                          {(quotationData.valueBadges?.filter(Boolean) || []).slice(0, 3).map((badge, idx) => (
+                            <div key={idx} className="flex items-center gap-2 text-xs font-bold text-[#047857]">
+                              <span className="w-4 h-4 rounded-full bg-[#10B981] text-white flex items-center justify-center text-[9px]">✓</span>
+                              <span>{badge}</span>
                             </div>
-                         </div>
+                          ))}
+                        </div>
                       </div>
-                   </div>
-                 ) : currentTheme.layoutStyle === 'cyber_bento' ? (
-                   /* CYBER VIOLET: Bento-Box Tile Matrix */
-                   <div className="space-y-4 flex-1 flex flex-col justify-between">
-                      <div className="grid grid-cols-3 gap-3">
-                         <div className="p-3 rounded-xl text-center bg-[#7C3AED]/10 border border-[#7C3AED]/30 text-[#6D28D9]">
-                            <div className="text-xl font-black">{quotationData.statYear}</div>
-                            <div className="text-[9px] font-bold uppercase">Year Founded</div>
-                         </div>
-                         <div className="p-3 rounded-xl text-center bg-[#7C3AED] text-white">
-                            <div className="text-xl font-black">{quotationData.statTeam}+</div>
-                            <div className="text-[9px] font-bold uppercase">Tech Engineers</div>
-                         </div>
-                         <div className="p-3 rounded-xl text-center bg-[#1E1B4B] text-white">
-                            <div className="text-xl font-black">{quotationData.statClients}+</div>
-                            <div className="text-[9px] font-bold uppercase">Global Projects</div>
-                         </div>
+                    </div>
+                  </div>
+                ) : currentTheme.layoutStyle === 'cyber_bento' ? (
+                  /* CYBER VIOLET: Bento-Box Tile Matrix */
+                  <div className="space-y-4 flex-1 flex flex-col justify-between">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="p-3 rounded-md text-center bg-[#7C3AED]/10 border border-[#7C3AED]/30 text-[#6D28D9]">
+                        <div className="text-xl font-black">{quotationData.statYear}</div>
+                        <div className="text-[9px] font-bold uppercase">Year Founded</div>
                       </div>
+                      <div className="p-3 rounded-md text-center bg-[#7C3AED] text-white">
+                        <div className="text-xl font-black">{quotationData.statTeam}+</div>
+                        <div className="text-[9px] font-bold uppercase">Tech Engineers</div>
+                      </div>
+                      <div className="p-3 rounded-md text-center bg-[#1E1B4B] text-white">
+                        <div className="text-xl font-black">{quotationData.statClients}+</div>
+                        <div className="text-[9px] font-bold uppercase">Global Projects</div>
+                      </div>
+                    </div>
 
-                      <div className="grid grid-cols-2 gap-4 flex-1">
-                         <div className="bg-[#F8FAFC] p-4 rounded-2xl border border-[#DDD6FE] flex flex-col justify-between">
-                            <p className="text-xs text-[#334155] leading-relaxed">
-                              {quotationData.aboutText}
-                            </p>
-                            <div className="space-y-1.5 pt-2">
-                               {(quotationData.valueBadges?.filter(Boolean) || []).slice(0, 2).map((badge, idx) => (
-                                 <div key={idx} className="flex items-center gap-1.5 text-[11px] font-bold text-[#6D28D9]">
-                                   <span className="w-3.5 h-3.5 rounded bg-[#7C3AED] text-white flex items-center justify-center text-[9px]">✓</span>
-                                   <span>{badge}</span>
-                                 </div>
-                               ))}
+                    <div className="grid grid-cols-2 gap-4 flex-1">
+                      <div className="bg-[#F8FAFC] p-4 rounded-md border border-[#DDD6FE] flex flex-col justify-between">
+                        <p className="text-xs text-[#334155] leading-relaxed">
+                          {quotationData.aboutText}
+                        </p>
+                        <div className="space-y-1.5 pt-2">
+                          {(quotationData.valueBadges?.filter(Boolean) || []).slice(0, 2).map((badge, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5 text-[11px] font-bold text-[#6D28D9]">
+                              <span className="w-3.5 h-3.5 rounded-md bg-[#7C3AED] text-white flex items-center justify-center text-[9px]">✓</span>
+                              <span>{badge}</span>
                             </div>
-                         </div>
-
-                         <div className="rounded-2xl overflow-hidden shadow border relative bg-slate-900">
-                            <img src={quotationData.page2ImageUrl || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80'} alt="Team" className="w-full h-full object-cover opacity-85" />
-                            <div className="absolute inset-x-2 bottom-2 bg-[#1E1B4B]/90 backdrop-blur-md p-2 rounded-xl text-center text-white text-[10px] font-bold">
-                               <span className="text-[#7C3AED] uppercase block text-[9px]">{quotationData.ourFocusTag}</span>
-                               {quotationData.ourFocusTitle}
-                            </div>
-                         </div>
+                          ))}
+                        </div>
                       </div>
-                   </div>
-                 ) : (
-                   /* CLASSIC SPLIT & LUXURY FRAMED LAYOUTS */
-                   <>
-                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center flex-1">
-                        <div className="md:col-span-7 space-y-4">
-                           <p className="text-xs text-[#334155] leading-relaxed font-normal bg-[#F8FAFC] p-4 rounded-xl border border-[#E2E8F0]">
-                             {quotationData.aboutText}
-                           </p>
 
-                           <div className="space-y-2 pt-1">
-                              {(quotationData.valueBadges?.filter(Boolean) || []).map((badge, idx) => (
-                                <div key={idx} className="flex items-center gap-2 text-xs font-semibold" style={{ color: currentTheme.primaryColor }}>
-                                  <span className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: idx % 2 === 1 ? currentTheme.accentColor : currentTheme.primaryColor }}>✓</span>
-                                  <span>{badge}</span>
-                                </div>
-                              ))}
-                           </div>
+                      <div className="rounded-md overflow-hidden shadow border relative bg-slate-900">
+                        <img src={quotationData.page2ImageUrl || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80'} alt="Team" className="w-full h-full object-cover opacity-85" />
+                        <div className="absolute inset-x-2 bottom-2 bg-[#1E1B4B]/90 backdrop-blur-md p-2 rounded-md text-center text-white text-[10px] font-bold">
+                          <span className="text-[#7C3AED] uppercase block text-[9px]">{quotationData.ourFocusTag}</span>
+                          {quotationData.ourFocusTitle}
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* CLASSIC SPLIT & LUXURY FRAMED LAYOUTS */
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center flex-1">
+                      <div className="md:col-span-7 space-y-4">
+                        <p className="text-xs text-[#334155] leading-relaxed font-normal bg-[#F8FAFC] p-4 rounded-md border border-[#E2E8F0]">
+                          {quotationData.aboutText}
+                        </p>
 
-                        <div className="md:col-span-5 h-full flex flex-col justify-center">
-                           <div className="w-full h-[240px] rounded-2xl overflow-hidden shadow-lg border border-[#CBD5E1] relative bg-[#F8FAFC]">
-                              <img 
-                                src={quotationData.page2ImageUrl || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80'} 
-                                alt="Codigix Team Working" 
-                                className="w-full h-full object-cover object-center"
-                              />
-                              <div className="absolute bottom-3 left-3 right-3 bg-[#0F172A]/90 backdrop-blur-md text-white p-2.5 rounded-xl border border-white/20 text-center">
-                                 <div className="text-[10px] uppercase tracking-widest font-bold" style={{ color: currentTheme.accentColor }}>{quotationData.ourFocusTag}</div>
-                                 <div className="text-xs font-bold mt-0.5">{quotationData.ourFocusTitle}</div>
-                              </div>
-                           </div>
+                        <div className="space-y-2 pt-1">
+                          {(quotationData.valueBadges?.filter(Boolean) || []).map((badge, idx) => (
+                            <div key={idx} className="flex items-center gap-2 text-xs font-semibold" style={{ color: currentTheme.primaryColor }}>
+                              <span className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: idx % 2 === 1 ? currentTheme.accentColor : currentTheme.primaryColor }}>✓</span>
+                              <span>{badge}</span>
+                            </div>
+                          ))}
                         </div>
-                     </div>
+                      </div>
 
-                     <div className="grid grid-cols-3 gap-4 pt-2">
-                        <div className="text-white p-4 rounded-xl text-center shadow-md space-y-0.5 border" style={{ backgroundColor: currentTheme.primaryColor, borderColor: currentTheme.primaryColor }}>
-                          <div className="text-2xl font-black text-white">{quotationData.statYear}</div>
-                          <div className="text-[10px] font-semibold text-[#CBD5E1] uppercase tracking-wider">Established</div>
+                      <div className="md:col-span-5 h-full flex flex-col justify-center">
+                        <div className="w-full h-[240px] rounded-md overflow-hidden shadow-lg border border-[#CBD5E1] relative bg-[#F8FAFC]">
+                          <img
+                            src={quotationData.page2ImageUrl || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80'}
+                            alt="Codigix Team Working"
+                            className="w-full h-full object-cover object-center"
+                          />
+                          <div className="absolute bottom-3 left-3 right-3 bg-[#0F172A]/90 backdrop-blur-md text-white p-2.5 rounded-md border border-white/20 text-center">
+                            <div className="text-[10px] uppercase tracking-widest font-bold" style={{ color: currentTheme.accentColor }}>{quotationData.ourFocusTag}</div>
+                            <div className="text-xs font-bold mt-0.5">{quotationData.ourFocusTitle}</div>
+                          </div>
                         </div>
-                        <div className="text-white p-4 rounded-xl text-center shadow-md space-y-0.5 border" style={{ backgroundColor: currentTheme.accentColor, borderColor: currentTheme.accentColor }}>
-                          <div className="text-2xl font-black text-white">{quotationData.statTeam}+</div>
-                          <div className="text-[10px] font-semibold text-white/90 uppercase tracking-wider">In-House Experts</div>
-                        </div>
-                        <div className="bg-[#0F172A] text-white p-4 rounded-xl text-center shadow-md space-y-0.5 border border-[#0F172A]">
-                          <div className="text-2xl font-black text-white">{quotationData.statClients}+</div>
-                          <div className="text-[10px] font-semibold text-[#CBD5E1] uppercase tracking-wider">Delighted Clients</div>
-                        </div>
-                     </div>
-                   </>
-                 )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 pt-2">
+                      <div className="text-white p-4 rounded-md text-center shadow-md space-y-0.5 border" style={{ backgroundColor: currentTheme.primaryColor, borderColor: currentTheme.primaryColor }}>
+                        <div className="text-2xl font-black text-white">{quotationData.statYear}</div>
+                        <div className="text-[10px] font-semibold text-[#CBD5E1] uppercase tracking-wider">Established</div>
+                      </div>
+                      <div className="text-white p-4 rounded-md text-center shadow-md space-y-0.5 border" style={{ backgroundColor: currentTheme.accentColor, borderColor: currentTheme.accentColor }}>
+                        <div className="text-2xl font-black text-white">{quotationData.statTeam}+</div>
+                        <div className="text-[10px] font-semibold text-white/90 uppercase tracking-wider">In-House Experts</div>
+                      </div>
+                      <div className="bg-[#0F172A] text-white p-4 rounded-md text-center shadow-md space-y-0.5 border border-[#0F172A]">
+                        <div className="text-2xl font-black text-white">{quotationData.statClients}+</div>
+                        <div className="text-[10px] font-semibold text-[#CBD5E1] uppercase tracking-wider">Delighted Clients</div>
+                      </div>
+                    </div>
+                  </>
+                )}
 
               </div>
 
               {/* Theme Footer Bar */}
               <div className="h-7 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
-           </div>
+            </div>
 
 
-           {/* ================= PAGE 3: EXECUTIVE SUMMARY (LAYOUT ADAPTIVE, MULTI-PAGE) ================= */}
-           {(() => {
-             const cards = (quotationData.solutionCards || []).filter(c => c && (c.title?.trim() || c.description?.trim()));
-             
-             // First page has title and intro, so it fits max 2 cards comfortably.
-             // Subsequent pages don't have title/intro, so they can fit 3 cards.
-             const chunks = [];
-             if (cards.length > 0) {
-               chunks.push(cards.slice(0, 2));
-               for (let i = 2; i < cards.length; i += 3) {
-                 chunks.push(cards.slice(i, i + 3));
-               }
-             } else {
-               chunks.push([]);
-             }
+            {/* ================= PAGE 3: EXECUTIVE SUMMARY (LAYOUT ADAPTIVE, MULTI-PAGE) ================= */}
+            {(() => {
+              const cards = (quotationData.solutionCards || []).filter(c => c && (c.title?.trim() || c.description?.trim()));
 
-             return chunks.map((chunk, pageIndex) => (
-               <div key={`page3-chunk-${pageIndex}`} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
-                  
+              // First page has title and intro, so it fits max 2 cards comfortably.
+              // Subsequent pages don't have title/intro, so they can fit 3 cards.
+              const chunks = [];
+              if (cards.length > 0) {
+                chunks.push(cards.slice(0, 2));
+                for (let i = 2; i < cards.length; i += 3) {
+                  chunks.push(cards.slice(i, i + 3));
+                }
+              } else {
+                chunks.push([]);
+              }
+
+              return chunks.map((chunk, pageIndex) => (
+                <div key={`page3-chunk-${pageIndex}`} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+
                   {/* Header section (Logo & Date) */}
                   <div className="p-8 pb-4 flex justify-between items-start shrink-0 border-b border-[#F1F5F9]">
                     <div>
@@ -2076,390 +2071,390 @@ export default function CreateQuotationView({ onNavigate }) {
 
                   {/* Body Content */}
                   <div className="p-8 flex-1 flex flex-col space-y-5">
-                     
-                     {/* Title & Intro Section (Only on the first chunk page) */}
-                     {pageIndex === 0 && (
-                       <>
-                         <div className="space-y-1">
-                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${currentTheme.pillAccentBg}`}>
-                              <Layers className="w-3.5 h-3.5" style={{ color: currentTheme.accentColor }} />
-                              <span>Project Overview</span>
-                            </div>
-                            <h2 className="text-3xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
-                              Executive Summary
-                            </h2>
-                            {quotationData.subtitle && (
-                              <p className="text-xs font-semibold text-[#64748B]">
-                                {quotationData.subtitle} Scope
-                              </p>
-                            )}
-                         </div>
 
-                         {quotationData.execSummary && (
-                           <div className="bg-[#F8FAFC] p-4 rounded-r-xl space-y-1.5 shadow-sm shrink-0" style={{ borderLeft: `4px solid ${currentTheme.primaryColor}` }}>
-                              <p className="text-xs text-[#334155] leading-relaxed font-normal whitespace-pre-wrap">
-                                {quotationData.execSummary}
-                              </p>
-                           </div>
-                         )}
-                       </>
-                     )}
-
-                     {/* LAYOUT ADAPTIVE SOLUTION CARDS FOR THIS CHUNK (Only when cards exist) */}
-                     {chunk.length > 0 && (
-                       currentTheme.layoutStyle === 'modern_sidebar' ? (
-                         /* EXECUTIVE EMERALD: Stacked Horizontal Solution Rows */
-                         <div className="space-y-3 flex-1 flex flex-col justify-start pt-2">
-                            {chunk.map((card, idx) => (
-                              <div key={idx} className="p-3.5 bg-slate-50 border border-[#A7F3D0] rounded-xl flex items-center justify-between gap-4 shadow-sm">
-                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-[#047857] text-white flex items-center justify-center text-lg font-bold shrink-0">
-                                      {card.icon || '📱'}
-                                    </div>
-                                    <div>
-                                       <span className="text-[9px] font-black text-[#047857] uppercase tracking-wider">{card.badge || `SOLUTION`}</span>
-                                       <h3 className="text-xs font-black text-[#0F172A]">{card.title}</h3>
-                                       <p className="text-[10px] text-[#475569] leading-snug">{card.description}</p>
-                                    </div>
-                                 </div>
-                                 {card.footer && <span className="px-2.5 py-1 rounded bg-[#10B981]/15 text-[#047857] text-[10px] font-bold shrink-0">{card.footer}</span>}
-                              </div>
-                            ))}
-                         </div>
-                       ) : currentTheme.layoutStyle === 'cyber_bento' ? (
-                         /* CYBER VIOLET: Bento Grid (1 Feature Card + 2 Stacked Cards) */
-                         <div className="grid grid-cols-12 gap-3 flex-1 items-start pt-2">
-                            {chunk[0] && (
-                              <div className="col-span-5 bg-[#1E1B4B] text-white p-4 rounded-2xl flex flex-col shadow border border-[#7C3AED]/30 h-full">
-                                 <div className="space-y-2 flex-1">
-                                    <span className="px-2 py-0.5 rounded text-[9px] font-black bg-[#7C3AED] uppercase">FEATURE SOLUTION</span>
-                                    <h3 className="text-base font-black text-white">{chunk[0].title}</h3>
-                                    <p className="text-[11px] text-[#DDD6FE] leading-relaxed">{chunk[0].description}</p>
-                                 </div>
-                                 {chunk[0].footer && <div className="text-[10px] font-bold text-[#7C3AED] mt-4">{chunk[0].footer}</div>}
-                              </div>
-                            )}
-
-                            <div className="col-span-7 space-y-3 flex flex-col justify-start">
-                               {chunk.slice(1, 3).map((card, idx) => (
-                                 <div key={idx} className="p-3.5 bg-white border-2 border-[#DDD6FE] rounded-xl flex flex-col shadow-sm">
-                                    <div>
-                                       <span className="text-[9px] font-black text-[#7C3AED] uppercase">{card.badge || `SOLUTION`}</span>
-                                       <h4 className="text-xs font-black text-[#1E1B4B]">{card.title}</h4>
-                                       <p className="text-[10px] text-slate-600">{card.description}</p>
-                                    </div>
-                                    {card.footer && <span className="text-[9px] font-bold text-[#6D28D9] pt-1">{card.footer}</span>}
-                                 </div>
-                               ))}
-                             </div>
+                    {/* Title & Intro Section (Only on the first chunk page) */}
+                    {pageIndex === 0 && (
+                      <>
+                        <div className="space-y-1">
+                          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${currentTheme.pillAccentBg}`}>
+                            <Layers className="w-3.5 h-3.5" style={{ color: currentTheme.accentColor }} />
+                            <span>Project Overview</span>
                           </div>
-                       ) : (
-                         /* EXECUTIVE STACKED HORIZONTAL SOLUTION CARDS */
-                         <div className="space-y-3.5 flex-1 flex flex-col justify-start pt-2">
-                            {chunk.map((card, idx) => (
-                              <div key={idx} className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between gap-4 shadow-xs transition-all hover:border-slate-300">
-                                 <div className="flex items-center gap-3.5">
-                                    <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center shrink-0 shadow-xs leading-none" style={{ backgroundColor: idx % 2 !== 0 ? currentTheme.accentColor : currentTheme.primaryColor }}>
-                                      {card.icon === '💻' ? <Laptop className="w-5 h-5 text-white" /> : <Smartphone className="w-5 h-5 text-white" />}
-                                    </div>
-                                    <div className="space-y-0.5">
-                                       <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: currentTheme.accentColor }}>{card.badge || `SOLUTION`}</span>
-                                       <h3 className="text-sm font-black text-[#0F172A] leading-tight">{card.title}</h3>
-                                       <p className="text-xs text-[#475569] leading-snug font-medium">{card.description}</p>
-                                    </div>
-                                 </div>
-                                 {card.footer && (
-                                   <span className="px-3 py-1 rounded-full text-xs font-bold shrink-0 border" style={{ color: currentTheme.primaryColor, backgroundColor: `${currentTheme.primaryColor}10`, borderColor: `${currentTheme.primaryColor}30` }}>
-                                     {card.footer}
-                                   </span>
-                                 )}
+                          <h2 className="text-3xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
+                            Executive Summary
+                          </h2>
+                          {quotationData.subtitle && (
+                            <p className="text-xs font-semibold text-[#64748B]">
+                              {quotationData.subtitle} Scope
+                            </p>
+                          )}
+                        </div>
+
+                        {quotationData.execSummary && (
+                          <div className="bg-[#F8FAFC] p-4 rounded-md-r-xl space-y-1.5 shadow-sm shrink-0" style={{ borderLeft: `4px solid ${currentTheme.primaryColor}` }}>
+                            <p className="text-xs text-[#334155] leading-relaxed font-normal whitespace-pre-wrap">
+                              {quotationData.execSummary}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* LAYOUT ADAPTIVE SOLUTION CARDS FOR THIS CHUNK (Only when cards exist) */}
+                    {chunk.length > 0 && (
+                      currentTheme.layoutStyle === 'modern_sidebar' ? (
+                        /* EXECUTIVE EMERALD: Stacked Horizontal Solution Rows */
+                        <div className="space-y-3 flex-1 flex flex-col justify-start pt-2">
+                          {chunk.map((card, idx) => (
+                            <div key={idx} className="p-3.5 bg-slate-50 border border-[#A7F3D0] rounded-md flex items-center justify-between gap-4 shadow-sm">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-md bg-[#047857] text-white flex items-center justify-center text-lg font-bold shrink-0">
+                                  {card.icon || '📱'}
+                                </div>
+                                <div>
+                                  <span className="text-[9px] font-black text-[#047857] uppercase tracking-wider">{card.badge || `SOLUTION`}</span>
+                                  <h3 className="text-xs font-black text-[#0F172A]">{card.title}</h3>
+                                  <p className="text-[10px] text-[#475569] leading-snug">{card.description}</p>
+                                </div>
+                              </div>
+                              {card.footer && <span className="px-2.5 py-1 rounded-md bg-[#10B981]/15 text-[#047857] text-[10px] font-bold shrink-0">{card.footer}</span>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : currentTheme.layoutStyle === 'cyber_bento' ? (
+                        /* CYBER VIOLET: Bento Grid (1 Feature Card + 2 Stacked Cards) */
+                        <div className="grid grid-cols-12 gap-3 flex-1 items-start pt-2">
+                          {chunk[0] && (
+                            <div className="col-span-5 bg-[#1E1B4B] text-white p-4 rounded-md flex flex-col shadow border border-[#7C3AED]/30 h-full">
+                              <div className="space-y-2 flex-1">
+                                <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-[#7C3AED] uppercase">FEATURE SOLUTION</span>
+                                <h3 className="text-base font-black text-white">{chunk[0].title}</h3>
+                                <p className="text-[11px] text-[#DDD6FE] leading-relaxed">{chunk[0].description}</p>
+                              </div>
+                              {chunk[0].footer && <div className="text-[10px] font-bold text-[#7C3AED] mt-4">{chunk[0].footer}</div>}
+                            </div>
+                          )}
+
+                          <div className="col-span-7 space-y-3 flex flex-col justify-start">
+                            {chunk.slice(1, 3).map((card, idx) => (
+                              <div key={idx} className="p-3.5 bg-white border-2 border-[#DDD6FE] rounded-md flex flex-col shadow-sm">
+                                <div>
+                                  <span className="text-[9px] font-black text-[#7C3AED] uppercase">{card.badge || `SOLUTION`}</span>
+                                  <h4 className="text-xs font-black text-[#1E1B4B]">{card.title}</h4>
+                                  <p className="text-[10px] text-slate-600">{card.description}</p>
+                                </div>
+                                {card.footer && <span className="text-[9px] font-bold text-[#6D28D9] pt-1">{card.footer}</span>}
                               </div>
                             ))}
-                         </div>
-                       )
-                     )}
+                          </div>
+                        </div>
+                      ) : (
+                        /* EXECUTIVE STACKED HORIZONTAL SOLUTION CARDS */
+                        <div className="space-y-3.5 flex-1 flex flex-col justify-start pt-2">
+                          {chunk.map((card, idx) => (
+                            <div key={idx} className="p-4 rounded-md bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between gap-4 shadow-xs transition-all hover:border-slate-300">
+                              <div className="flex items-center gap-3.5">
+                                <div className="w-10 h-10 rounded-md text-white flex items-center justify-center shrink-0 shadow-xs leading-none" style={{ backgroundColor: idx % 2 !== 0 ? currentTheme.accentColor : currentTheme.primaryColor }}>
+                                  {card.icon === '💻' ? <Laptop className="w-5 h-5 text-white" /> : <Smartphone className="w-5 h-5 text-white" />}
+                                </div>
+                                <div className="space-y-0.5">
+                                  <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: currentTheme.accentColor }}>{card.badge || `SOLUTION`}</span>
+                                  <h3 className="text-sm font-black text-[#0F172A] leading-tight">{card.title}</h3>
+                                  <p className="text-xs text-[#475569] leading-snug font-medium">{card.description}</p>
+                                </div>
+                              </div>
+                              {card.footer && (
+                                <span className="px-3 py-1 rounded-full text-xs font-bold shrink-0 border" style={{ color: currentTheme.primaryColor, backgroundColor: `${currentTheme.primaryColor}10`, borderColor: `${currentTheme.primaryColor}30` }}>
+                                  {card.footer}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    )}
 
-                     {/* Bottom Barcode Accent - Pinned to bottom using mt-auto */}
-                     <div className="flex justify-between items-center pt-2 mt-auto shrink-0 border-t border-slate-100">
-                       <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
-                       {quotationData.ecosystemTagline && (
-                         <span className="text-[10px] font-bold text-[#64748B]">
-                           {quotationData.ecosystemTagline}
-                         </span>
-                       )}
-                       <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
-                     </div>
+                    {/* Bottom Barcode Accent - Pinned to bottom using mt-auto */}
+                    <div className="flex justify-between items-center pt-2 mt-auto shrink-0 border-t border-slate-100">
+                      <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
+                      {quotationData.ecosystemTagline && (
+                        <span className="text-[10px] font-bold text-[#64748B]">
+                          {quotationData.ecosystemTagline}
+                        </span>
+                      )}
+                      <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
+                    </div>
 
                   </div>
 
                   {/* Theme Footer Bar */}
                   <div className="h-7 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
-               </div>
-             ));
-           })()}
+                </div>
+              ));
+            })()}
 
-           {/* ================= PAGE 4+: SCOPE OF WORK (LAYOUT ADAPTIVE & DYNAMIC PAGINATION) ================= */}
-           {quotationData.sowMode === 'advanced' ? (
+            {/* ================= PAGE 4+: SCOPE OF WORK (LAYOUT ADAPTIVE & DYNAMIC PAGINATION) ================= */}
+            {quotationData.sowMode === 'advanced' ? (
               /* ADVANCED SOW: HTML WYSIWYG Content Output */
-              <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
-                  <div className="p-8 space-y-4 flex-1">
-                     <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
-                       <div>
-                         <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Scope of Work</h2>
-                         <p className="text-xs text-slate-500 font-semibold">Detailed Specification & Deliverables</p>
-                       </div>
-                       <RedBarcodePattern color={currentTheme.barcodeColor} />
-                     </div>
-                     <div 
-                        className="jodit-preview-content prose max-w-none text-sm"
-                        dangerouslySetInnerHTML={{ __html: quotationData.scopeOfWorkHtml }}
-                     />
+              <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+                <div className="p-8 space-y-4 flex-1">
+                  <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
+                    <div>
+                      <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Scope of Work</h2>
+                      <p className="text-xs text-slate-500 font-semibold">Detailed Specification & Deliverables</p>
+                    </div>
+                    <RedBarcodePattern color={currentTheme.barcodeColor} />
                   </div>
-                  {/* Page Footer */}
-                  <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center z-10 shrink-0">
-                    <span className="text-[10px] font-bold text-slate-400">Page 4</span>
-                    <img src={quotationData.logoUrl || "/codigix-logo.svg"} alt="Logo" className="h-4 object-contain opacity-50 grayscale" />
-                  </div>
+                  <div
+                    className="jodit-preview-content prose max-w-none text-sm"
+                    dangerouslySetInnerHTML={{ __html: quotationData.scopeOfWorkHtml }}
+                  />
+                </div>
+                {/* Page Footer */}
+                <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center z-10 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400">Page 4</span>
+                  <img src={quotationData.logoUrl || "/codigix-logo.svg"} alt="Logo" className="h-4 object-contain opacity-50 grayscale" />
+                </div>
               </div>
-           ) : (() => {
-             const rawItems = (quotationData.deliverables?.filter(Boolean) || []);
-             
-             const MAX_ITEMS_PER_PAGE = 12; 
-             const chunks = [];
-             let currentChunk = [];
-             let currentCount = 0;
-             let deliverableCount = 0;
+            ) : (() => {
+              const rawItems = (quotationData.deliverables?.filter(Boolean) || []);
 
-             for (let i = 0; i < rawItems.length; i++) {
-               const item = rawItems[i];
-               const isHeading = typeof item === 'string' ? item.startsWith('## ') : item.title?.startsWith('## ');
-               
-               // Headings take 2 weight because they are col-span-2. Regular items take 1.
-               const itemWeight = isHeading ? 2 : 1;
+              const MAX_ITEMS_PER_PAGE = 12;
+              const chunks = [];
+              let currentChunk = [];
+              let currentCount = 0;
+              let deliverableCount = 0;
 
-               // Break to new page if weight exceeds max OR if adding a heading near the very bottom
-               if (currentCount + itemWeight > MAX_ITEMS_PER_PAGE || (currentCount >= MAX_ITEMS_PER_PAGE - 2 && isHeading)) {
-                 chunks.push(currentChunk);
-                 currentChunk = [];
-                 currentCount = 0;
-               }
-               
-               currentChunk.push(item);
-               currentCount += itemWeight;
-             }
-             if (currentChunk.length > 0) chunks.push(currentChunk);
+              for (let i = 0; i < rawItems.length; i++) {
+                const item = rawItems[i];
+                const isHeading = typeof item === 'string' ? item.startsWith('## ') : item.title?.startsWith('## ');
 
-             return chunks.map((chunk, chunkIdx) => (
-               <div key={`sow-page-${chunkIdx}`} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+                // Headings take 2 weight because they are col-span-2. Regular items take 1.
+                const itemWeight = isHeading ? 2 : 1;
+
+                // Break to new page if weight exceeds max OR if adding a heading near the very bottom
+                if (currentCount + itemWeight > MAX_ITEMS_PER_PAGE || (currentCount >= MAX_ITEMS_PER_PAGE - 2 && isHeading)) {
+                  chunks.push(currentChunk);
+                  currentChunk = [];
+                  currentCount = 0;
+                }
+
+                currentChunk.push(item);
+                currentCount += itemWeight;
+              }
+              if (currentChunk.length > 0) chunks.push(currentChunk);
+
+              return chunks.map((chunk, chunkIdx) => (
+                <div key={`sow-page-${chunkIdx}`} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
                   <div className="p-8 space-y-6 flex-1">
-                     <div>
-                       <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>{chunkIdx === 0 ? 'Scope of Work' : 'Scope of Work (Continued)'}</h2>
-                       <h3 className="text-lg font-bold mt-0.5 inline-block pb-0.5" style={{ color: currentTheme.primaryColor, borderBottom: `2px solid ${currentTheme.primaryColor}` }}>Key Deliverables</h3>
-                     </div>
+                    <div>
+                      <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>{chunkIdx === 0 ? 'Scope of Work' : 'Scope of Work (Continued)'}</h2>
+                      <h3 className="text-lg font-bold mt-0.5 inline-block pb-0.5" style={{ color: currentTheme.primaryColor, borderBottom: `2px solid ${currentTheme.primaryColor}` }}>Key Deliverables</h3>
+                    </div>
 
-                     <div className={currentTheme.layoutStyle === 'cyber_bento' ? "grid grid-cols-2 gap-4 pt-2 content-start" : "grid grid-cols-2 gap-x-8 gap-y-4 pt-2 content-start"}>
-                       {chunk.map((item, idx) => {
-                         const isHeading = typeof item === 'string' ? item.startsWith('## ') : item.title?.startsWith('## ');
-                         const title = typeof item === 'string' ? item : (item.title || '');
-                         const description = typeof item === 'string' ? '' : (item.description || '');
-                         const text = isHeading ? title.replace('## ', '') : title;
+                    <div className={currentTheme.layoutStyle === 'cyber_bento' ? "grid grid-cols-2 gap-4 pt-2 content-start" : "grid grid-cols-2 gap-x-8 gap-y-4 pt-2 content-start"}>
+                      {chunk.map((item, idx) => {
+                        const isHeading = typeof item === 'string' ? item.startsWith('## ') : item.title?.startsWith('## ');
+                        const title = typeof item === 'string' ? item : (item.title || '');
+                        const description = typeof item === 'string' ? '' : (item.description || '');
+                        const text = isHeading ? title.replace('## ', '') : title;
 
-                         if (!isHeading) deliverableCount++;
-                         
-                         if (isHeading) {
-                           return (
-                             <div key={idx} className="col-span-2 pt-3 pb-1 mb-1 border-b" style={{ borderColor: `${currentTheme.primaryColor}30` }}>
-                               <h4 className="text-[13px] font-black uppercase tracking-wider" style={{ color: currentTheme.primaryColor }}>{text}</h4>
-                             </div>
-                           );
-                         }
+                        if (!isHeading) deliverableCount++;
 
-                         // Render normal item
-                         if (currentTheme.layoutStyle === 'cyber_bento') {
-                           return (
-                             <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-[#DDD6FE] flex gap-3.5 shadow-xs h-fit items-start">
-                                <div className="mt-0.5"><NumberBadge num={deliverableCount} color="#7C3AED" size={24} /></div>
-                                <div className="flex-1">
-                                  <span className="text-xs font-bold text-[#1E1B4B] block leading-snug">{text}</span>
-                                  {description && <span className="text-[10px] text-slate-500 block mt-1 leading-snug">{description}</span>}
-                                </div>
-                             </div>
-                           );
-                         } else {
-                           return (
-                             <div key={idx} className="flex gap-3 h-fit items-start">
-                                <div className="mt-0.5"><NumberBadge num={deliverableCount} color={currentTheme.primaryColor} size={24} /></div>
-                                <div className="flex-1">
-                                  <span className="text-xs font-bold text-[#0F172A] block leading-snug">{text}</span>
-                                  {description && <span className="text-[10px] text-slate-500 block mt-0.5 leading-snug">{description}</span>}
-                                </div>
-                             </div>
-                           );
-                         }
-                       })}
-                     </div>
+                        if (isHeading) {
+                          return (
+                            <div key={idx} className="col-span-2 pt-3 pb-1 mb-1 border-b" style={{ borderColor: `${currentTheme.primaryColor}30` }}>
+                              <h4 className="text-[13px] font-black uppercase tracking-wider" style={{ color: currentTheme.primaryColor }}>{text}</h4>
+                            </div>
+                          );
+                        }
+
+                        // Render normal item
+                        if (currentTheme.layoutStyle === 'cyber_bento') {
+                          return (
+                            <div key={idx} className="p-4 rounded-md bg-slate-50 border border-[#DDD6FE] flex gap-3.5 shadow-xs h-fit items-start">
+                              <div className="mt-0.5"><NumberBadge num={deliverableCount} color="#7C3AED" size={24} /></div>
+                              <div className="flex-1">
+                                <span className="text-xs font-bold text-[#1E1B4B] block leading-snug">{text}</span>
+                                {description && <span className="text-[10px] text-slate-500 block mt-1 leading-snug">{description}</span>}
+                              </div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div key={idx} className="flex gap-3 h-fit items-start">
+                              <div className="mt-0.5"><NumberBadge num={deliverableCount} color={currentTheme.primaryColor} size={24} /></div>
+                              <div className="flex-1">
+                                <span className="text-xs font-bold text-[#0F172A] block leading-snug">{text}</span>
+                                {description && <span className="text-[10px] text-slate-500 block mt-0.5 leading-snug">{description}</span>}
+                              </div>
+                            </div>
+                          );
+                        }
+                      })}
+                    </div>
                   </div>
 
                   {/* Theme Footer Bar */}
                   <div className="h-8 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
-               </div>
-             ));
-           })()}
+                </div>
+              ));
+            })()}
 
-           {/* ================= PAGE 5: TEAM & INTEGRATIONS (LAYOUT ADAPTIVE) ================= */}
-           <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+            {/* ================= PAGE 5: TEAM & INTEGRATIONS (LAYOUT ADAPTIVE) ================= */}
+            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
               <div className="p-8 space-y-6 flex-1 relative">
-                 
-                 {/* Header Title Row */}
-                 <div className="flex justify-between items-center pb-1">
-                    <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Team Distribution</h2>
-                    <RedBarcodePattern color={currentTheme.barcodeColor} />
-                 </div>
 
-                 {/* Team Distribution Table */}
-                 <div className="space-y-3">
-                    <div className="border rounded-xl overflow-hidden shadow-xs border-[#E2E8F0]">
-                      <table className="w-full text-xs text-left">
-                        <thead className="text-white" style={{ backgroundColor: currentTheme.primaryColor }}>
-                          <tr>
-                            <th className="py-3 px-4 font-extrabold uppercase tracking-wider text-[11px] w-4/12 border-r border-white/20">Role / Team</th>
-                            <th className="py-3 px-3 font-extrabold uppercase tracking-wider text-[11px] text-center w-2/12 border-r border-white/20">Count</th>
-                            <th className="py-3 px-4 font-extrabold uppercase tracking-wider text-[11px] w-6/12">Key Responsibilities</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#E2E8F0] bg-white">
-                          {(quotationData.teamList?.filter(t => t && t.role) || []).map((t, idx) => (
-                            <tr key={idx} className="text-[#1E293B] hover:bg-slate-50/80 transition-colors">
-                              <td className="py-3 px-4 font-black border-r border-[#E2E8F0] text-xs" style={{ color: currentTheme.primaryColor }}>{t.role}</td>
-                              <td className="py-3 px-3 text-center font-black border-r border-[#E2E8F0] text-xs">
-                                <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 font-extrabold text-[#0F172A]">{t.count}</span>
-                              </td>
-                              <td className="py-3 px-4 text-xs font-semibold text-[#475569]">{t.details}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                 </div>
+                {/* Header Title Row */}
+                <div className="flex justify-between items-center pb-1">
+                  <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Team Distribution</h2>
+                  <RedBarcodePattern color={currentTheme.barcodeColor} />
+                </div>
 
-                 {/* Third-Party Integrations */}
-                 <div className="space-y-3 pt-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>Third-Party Integration Costing (Client Side)</h3>
-                      <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-full">Prerequisites</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-3.5 pt-2">
-                       {(quotationData.integrations?.filter(Boolean) || []).map((item, idx) => (
-                         <div key={idx} className="flex items-center gap-3">
-                            <div className="w-5 h-5 rounded-full text-white flex items-center justify-center shrink-0 shadow-xs leading-none" style={{ backgroundColor: currentTheme.primaryColor }}>
-                               <Check className="w-3 h-3 text-white stroke-[3]" />
-                            </div>
-                            <span className="text-xs font-bold text-[#0F172A] leading-snug">{item}</span>
-                         </div>
-                       ))}
-                    </div>
-                 </div>
-
-                 <div className="absolute bottom-4 right-6">
-                   <RedBarcodePattern color={currentTheme.barcodeColor} />
-                 </div>
-              </div>
-
-              {/* Theme Footer Bar */}
-              <div className="h-8 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
-           </div>
-
-           {/* ================= PAGE 6: BUDGET & TIMELINE (LAYOUT ADAPTIVE) ================= */}
-           <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
-              <div className="p-8 space-y-6 flex-1 relative">
-                 
-                 <div className="absolute top-6 right-8">
-                   <RedBarcodePattern color={currentTheme.barcodeColor} />
-                 </div>
-
-                 <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Budget & Timeline</h2>
-
-                 {/* DYNAMIC INVESTMENT BANNERS */}
-                 <div className="space-y-3">
-                   {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, idx) => (
-                     <div key={idx} className="p-4 rounded-xl shadow-xs flex items-center justify-between text-white" style={{ backgroundColor: currentTheme.primaryColor }}>
-                        <div>
-                           <div className="text-[10px] uppercase font-extrabold tracking-widest opacity-80">{priceObj.title}</div>
-                           <div className="text-2xl sm:text-3xl font-black">Cost: ₹{priceObj.cost}/-</div>
-                        </div>
-                        {priceObj.gst && (
-                          <div className="text-right text-xs font-black bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/20 shrink-0">
-                             +{priceObj.gst}% {priceObj.suffix}
-                          </div>
-                        )}
-                     </div>
-                   ))}
-                 </div>
-
-                 {/* Particulars Table */}
-                 <div className="border border-[#E2E8F0] rounded-xl overflow-hidden shadow-xs">
+                {/* Team Distribution Table */}
+                <div className="space-y-3">
+                  <div className="border rounded-md overflow-hidden shadow-xs border-[#E2E8F0]">
                     <table className="w-full text-xs text-left">
                       <thead className="text-white" style={{ backgroundColor: currentTheme.primaryColor }}>
                         <tr>
-                          <th className="py-2.5 px-4 font-extrabold uppercase tracking-wider text-[11px] w-4/12 border-r border-white/20">Particulars</th>
-                          <th className="py-2.5 px-4 font-extrabold uppercase tracking-wider text-[11px] w-8/12">Details / Terms</th>
+                          <th className="py-3 px-4 font-extrabold uppercase tracking-wider text-[11px] w-4/12 border-r border-white/20">Role / Team</th>
+                          <th className="py-3 px-3 font-extrabold uppercase tracking-wider text-[11px] text-center w-2/12 border-r border-white/20">Count</th>
+                          <th className="py-3 px-4 font-extrabold uppercase tracking-wider text-[11px] w-6/12">Key Responsibilities</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E2E8F0] bg-white text-[#1E293B]">
-                        {(quotationData.particulars.filter(p => p.name || p.value).length > 0 ? quotationData.particulars.filter(p => p.name || p.value) : []).map((p, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                            <td className="py-2.5 px-4 font-black border-r border-[#E2E8F0] bg-[#F8FAFC] text-xs" style={{ color: currentTheme.primaryColor }}>{p.name}</td>
-                            <td className="py-2.5 px-4 whitespace-pre-wrap font-semibold text-xs text-[#334155] leading-snug">{p.value}</td>
+                      <tbody className="divide-y divide-[#E2E8F0] bg-white">
+                        {(quotationData.teamList?.filter(t => t && t.role) || []).map((t, idx) => (
+                          <tr key={idx} className="text-[#1E293B] hover:bg-slate-50/80 transition-colors">
+                            <td className="py-3 px-4 font-black border-r border-[#E2E8F0] text-xs" style={{ color: currentTheme.primaryColor }}>{t.role}</td>
+                            <td className="py-3 px-3 text-center font-black border-r border-[#E2E8F0] text-xs">
+                              <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 font-extrabold text-[#0F172A]">{t.count}</span>
+                            </td>
+                            <td className="py-3 px-4 text-xs font-semibold text-[#475569]">{t.details}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                 </div>
+                  </div>
+                </div>
 
-                 {/* Full-Width Bank Details Card */}
-                 <div className="border border-[#E2E8F0] rounded-xl overflow-hidden shadow-xs bg-[#F8FAFC]">
-                    <div className="text-white py-2 px-4 font-black text-xs uppercase tracking-wider flex items-center justify-between" style={{ backgroundColor: currentTheme.primaryColor }}>
-                      <span>🏦 Bank Wire Transfer & Account Details</span>
-                      <span className="text-[10px] opacity-80 font-bold">Official Payment Channel</span>
-                    </div>
-                    <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-2 text-xs font-semibold text-[#1E293B]">
-                       <div className="flex items-center gap-2">
-                         <span className="font-bold text-[#64748B] w-28 shrink-0">Account Name:</span>
-                         <span className="font-extrabold text-[#0F172A]">{quotationData.bankAccountName}</span>
-                       </div>
-                       <div className="flex items-center gap-2">
-                         <span className="font-bold text-[#64748B] w-28 shrink-0">Account No:</span>
-                         <span className="font-extrabold text-[#0F172A] font-mono">{quotationData.bankAccountNo}</span>
-                       </div>
-                       <div className="flex items-center gap-2">
-                         <span className="font-bold text-[#64748B] w-28 shrink-0">IFSC Code:</span>
-                         <span className="font-extrabold text-[#0F172A] font-mono">{quotationData.bankIFSC}</span>
-                       </div>
-                       <div className="flex items-center gap-2">
-                         <span className="font-bold text-[#64748B] w-28 shrink-0">Branch Name:</span>
-                         <span className="font-bold text-[#334155]">{quotationData.bankBranch}</span>
-                       </div>
-                       <div className="flex items-center gap-2 col-span-2 pt-1 border-t border-[#E2E8F0]">
-                         <span className="font-bold text-[#64748B] w-28 shrink-0">GST Registration:</span>
-                         <span className="font-mono font-extrabold text-[#2563EB]">{quotationData.bankGST}</span>
-                       </div>
-                    </div>
-                 </div>
+                {/* Third-Party Integrations */}
+                <div className="space-y-3 pt-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>Third-Party Integration Costing (Client Side)</h3>
+                    <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-full">Prerequisites</span>
+                  </div>
 
-                 <div className="absolute bottom-4 right-6">
-                   <RedBarcodePattern color={currentTheme.barcodeColor} />
-                 </div>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-3.5 pt-2">
+                    {(quotationData.integrations?.filter(Boolean) || []).map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full text-white flex items-center justify-center shrink-0 shadow-xs leading-none" style={{ backgroundColor: currentTheme.primaryColor }}>
+                          <Check className="w-3 h-3 text-white stroke-[3]" />
+                        </div>
+                        <span className="text-xs font-bold text-[#0F172A] leading-snug">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="absolute bottom-4 right-6">
+                  <RedBarcodePattern color={currentTheme.barcodeColor} />
+                </div>
               </div>
 
               {/* Theme Footer Bar */}
               <div className="h-8 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
-           </div>
+            </div>
+
+            {/* ================= PAGE 6: BUDGET & TIMELINE (LAYOUT ADAPTIVE) ================= */}
+            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+              <div className="p-8 space-y-6 flex-1 relative">
+
+                <div className="absolute top-6 right-8">
+                  <RedBarcodePattern color={currentTheme.barcodeColor} />
+                </div>
+
+                <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Budget & Timeline</h2>
+
+                {/* DYNAMIC INVESTMENT BANNERS */}
+                <div className="space-y-3">
+                  {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, idx) => (
+                    <div key={idx} className="p-4 rounded-md shadow-xs flex items-center justify-between text-white" style={{ backgroundColor: currentTheme.primaryColor }}>
+                      <div>
+                        <div className="text-[10px] uppercase font-extrabold tracking-widest opacity-80">{priceObj.title}</div>
+                        <div className="text-2xl sm:text-3xl font-black">Cost: ₹{priceObj.cost}/-</div>
+                      </div>
+                      {priceObj.gst && (
+                        <div className="text-right text-xs font-black bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-md border border-white/20 shrink-0">
+                          +{priceObj.gst}% {priceObj.suffix}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Particulars Table */}
+                <div className="border border-[#E2E8F0] rounded-md overflow-hidden shadow-xs">
+                  <table className="w-full text-xs text-left">
+                    <thead className="text-white" style={{ backgroundColor: currentTheme.primaryColor }}>
+                      <tr>
+                        <th className="py-2.5 px-4 font-extrabold uppercase tracking-wider text-[11px] w-4/12 border-r border-white/20">Particulars</th>
+                        <th className="py-2.5 px-4 font-extrabold uppercase tracking-wider text-[11px] w-8/12">Details / Terms</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E2E8F0] bg-white text-[#1E293B]">
+                      {(quotationData.particulars.filter(p => p.name || p.value).length > 0 ? quotationData.particulars.filter(p => p.name || p.value) : []).map((p, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-4 font-black border-r border-[#E2E8F0] bg-[#F8FAFC] text-xs" style={{ color: currentTheme.primaryColor }}>{p.name}</td>
+                          <td className="py-2.5 px-4 whitespace-pre-wrap font-semibold text-xs text-[#334155] leading-snug">{p.value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Full-Width Bank Details Card */}
+                <div className="border border-[#E2E8F0] rounded-md overflow-hidden shadow-xs bg-[#F8FAFC]">
+                  <div className="text-white py-2 px-4 font-black text-xs uppercase tracking-wider flex items-center justify-between" style={{ backgroundColor: currentTheme.primaryColor }}>
+                    <span>🏦 Bank Wire Transfer & Account Details</span>
+                    <span className="text-[10px] opacity-80 font-bold">Official Payment Channel</span>
+                  </div>
+                  <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-2 text-xs font-semibold text-[#1E293B]">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[#64748B] w-28 shrink-0">Account Name:</span>
+                      <span className="font-extrabold text-[#0F172A]">{quotationData.bankAccountName}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[#64748B] w-28 shrink-0">Account No:</span>
+                      <span className="font-extrabold text-[#0F172A] font-mono">{quotationData.bankAccountNo}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[#64748B] w-28 shrink-0">IFSC Code:</span>
+                      <span className="font-extrabold text-[#0F172A] font-mono">{quotationData.bankIFSC}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[#64748B] w-28 shrink-0">Branch Name:</span>
+                      <span className="font-bold text-[#334155]">{quotationData.bankBranch}</span>
+                    </div>
+                    <div className="flex items-center gap-2 col-span-2 pt-1 border-t border-[#E2E8F0]">
+                      <span className="font-bold text-[#64748B] w-28 shrink-0">GST Registration:</span>
+                      <span className="font-mono font-extrabold text-[#2563EB]">{quotationData.bankGST}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="absolute bottom-4 right-6">
+                  <RedBarcodePattern color={currentTheme.barcodeColor} />
+                </div>
+              </div>
+
+              {/* Theme Footer Bar */}
+              <div className="h-8 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
+            </div>
 
 
-           {/* ================= PAGE 7: TERMS & THANK YOU (SQUARE 1:1) ================= */}
-<div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
-              
+            {/* ================= PAGE 7: TERMS & THANK YOU (SQUARE 1:1) ================= */}
+            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+
               {/* Background Office Watermark Image */}
               {quotationData.page7BgImageUrl && (
                 <div className="absolute inset-0 z-0 pointer-events-none opacity-10">
@@ -2469,91 +2464,91 @@ export default function CreateQuotationView({ onNavigate }) {
 
               {/* Top / Notes Section */}
               <div className="p-8 space-y-4 flex-1 relative z-10">
-                 {/* Section Title Header */}
-                 <div className="space-y-1">
-                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${currentTheme.pillAccentBg}`}>
-                      <FileText className="w-3.5 h-3.5" style={{ color: currentTheme.accentColor }} />
-                      <span>Commercial Guidelines</span>
-                    </div>
-                    <h2 className="text-2xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
-                      Terms & Conditions
-                    </h2>
-                 </div>
+                {/* Section Title Header */}
+                <div className="space-y-1">
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${currentTheme.pillAccentBg}`}>
+                    <FileText className="w-3.5 h-3.5" style={{ color: currentTheme.accentColor }} />
+                    <span>Commercial Guidelines</span>
+                  </div>
+                  <h2 className="text-2xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
+                    Terms & Conditions
+                  </h2>
+                </div>
 
-                 {/* Notes & Terms Section */}
-                 <div className="space-y-3 pt-2">
-                    <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2" style={{ color: currentTheme.accentColor }}>
-                      <span>📌 Important Notes & Guidelines</span>
-                    </h3>
-                    <div className="space-y-3 pt-1">
-                       {(quotationData.notesList?.filter(Boolean) || []).map((note, idx) => (
-                         <div key={idx} className="flex items-center gap-3">
-                           <NumberBadge num={idx + 1} color={currentTheme.accentColor} size={22} />
-                           <span className="text-xs font-bold text-[#1E293B] leading-snug">{note}</span>
-                         </div>
-                       ))}
-                    </div>
-                 </div>
+                {/* Notes & Terms Section */}
+                <div className="space-y-3 pt-2">
+                  <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2" style={{ color: currentTheme.accentColor }}>
+                    <span className="flex items-center gap-1"><Pin className="w-4 h-4 text-rose-500" /> Important Notes & Guidelines</span>
+                  </h3>
+                  <div className="space-y-3 pt-1">
+                    {(quotationData.notesList?.filter(Boolean) || []).map((note, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <NumberBadge num={idx + 1} color={currentTheme.accentColor} size={22} />
+                        <span className="text-xs font-bold text-[#1E293B] leading-snug">{note}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Fixed Bottom Section (Thank You Note + Company Info + Theme Banner) */}
               <div className="relative z-10 shrink-0 w-full">
-                 {/* Sleek Accent Line Separator */}
-                 <div className="px-8 pb-4">
-                    <div className="h-1 w-full rounded-full" style={{ backgroundColor: currentTheme.accentColor }}></div>
-                 </div>
+                {/* Sleek Accent Line Separator */}
+                <div className="px-8 pb-4">
+                  <div className="h-1 w-full rounded-full" style={{ backgroundColor: currentTheme.accentColor }}></div>
+                </div>
 
-                 {/* Thank You & Corporate Contact Card Container */}
-                 <div className="px-8 pb-6 flex items-center justify-between gap-6">
-                    
-                    {/* Left: Thank You Hero Title & Subtitle */}
-                    <div className="flex-1 flex flex-col justify-center space-y-1.5">
-                       <div className="text-4xl sm:text-5xl font-black tracking-tight" style={{ color: currentTheme.accentColor }}>
-                         Thank You!
-                       </div>
-                       <p className="text-xs font-semibold text-[#475569]">
-                         We appreciate the opportunity to present this proposal and look forward to collaborating with you.
-                       </p>
-                       <div className="w-16 h-1 rounded-full mt-2" style={{ backgroundColor: currentTheme.primaryColor }}></div>
+                {/* Thank You & Corporate Contact Card Container */}
+                <div className="px-8 pb-6 flex items-center justify-between gap-6">
+
+                  {/* Left: Thank You Hero Title & Subtitle */}
+                  <div className="flex-1 flex flex-col justify-center space-y-1.5">
+                    <div className="text-4xl sm:text-5xl font-black tracking-tight" style={{ color: currentTheme.accentColor }}>
+                      Thank You!
                     </div>
+                    <p className="text-xs font-semibold text-[#475569]">
+                      We appreciate the opportunity to present this proposal and look forward to collaborating with you.
+                    </p>
+                    <div className="w-16 h-1 rounded-full mt-2" style={{ backgroundColor: currentTheme.primaryColor }}></div>
+                  </div>
 
-                    {/* Right: Corporate Contact Details Card */}
-                    <div className="w-7/12 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] shadow-xs space-y-2 shrink-0">
-                       <div className="font-extrabold text-sm border-b border-[#E2E8F0] pb-1.5" style={{ color: currentTheme.primaryColor }}>
-                         {quotationData.companyName}
-                       </div>
-                       <div className="grid grid-cols-1 gap-1 text-xs text-[#334155] font-semibold">
-                          <div className="flex items-center gap-2">
-                             <span className="font-bold text-[#64748B] w-16">Contact:</span>
-                             <span>{quotationData.companyPhone}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                             <span className="font-bold text-[#64748B] w-16">Email:</span>
-                             <span className="text-[#2563EB]">{quotationData.companyEmail}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                             <span className="font-bold text-[#64748B] w-16">Website:</span>
-                             <span>{quotationData.companyWebsite}</span>
-                          </div>
-                          <div className="flex items-start gap-2 pt-0.5">
-                             <span className="font-bold text-[#64748B] w-16 shrink-0">Address:</span>
-                             <span className="text-[11px] leading-tight">{quotationData.companyAddress}</span>
-                          </div>
-                       </div>
+                  {/* Right: Corporate Contact Details Card */}
+                  <div className="w-7/12 p-4 rounded-md bg-[#F8FAFC] border border-[#E2E8F0] shadow-xs space-y-2 shrink-0">
+                    <div className="font-extrabold text-sm border-b border-[#E2E8F0] pb-1.5" style={{ color: currentTheme.primaryColor }}>
+                      {quotationData.companyName}
                     </div>
+                    <div className="grid grid-cols-1 gap-1 text-xs text-[#334155] font-semibold">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-[#64748B] w-16">Contact:</span>
+                        <span>{quotationData.companyPhone}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-[#64748B] w-16">Email:</span>
+                        <span className="text-[#2563EB]">{quotationData.companyEmail}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-[#64748B] w-16">Website:</span>
+                        <span>{quotationData.companyWebsite}</span>
+                      </div>
+                      <div className="flex items-start gap-2 pt-0.5">
+                        <span className="font-bold text-[#64748B] w-16 shrink-0">Address:</span>
+                        <span className="text-[11px] leading-tight">{quotationData.companyAddress}</span>
+                      </div>
+                    </div>
+                  </div>
 
-                 </div>
+                </div>
 
-                 {/* Theme Bottom Banner */}
-                 <div className="h-8 w-full" style={{ backgroundColor: currentTheme.accentColor }}></div>
+                {/* Theme Bottom Banner */}
+                <div className="h-8 w-full" style={{ backgroundColor: currentTheme.accentColor }}></div>
               </div>
-           </div>
+            </div>
 
 
-           {/* ================= PAGES 8+: DYNAMIC CUSTOM PAGES / SLIDES ================= */}
-           {quotationData.customPages && quotationData.customPages.map((cp, cpIdx) => (
-             <div key={cp.id || cpIdx} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
-                
+            {/* ================= PAGES 8+: DYNAMIC CUSTOM PAGES / SLIDES ================= */}
+            {quotationData.customPages && quotationData.customPages.map((cp, cpIdx) => (
+              <div key={cp.id || cpIdx} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+
                 {/* Header section (Logo & Date) */}
                 <div className="p-8 pb-4 flex justify-between items-start shrink-0 border-b border-[#F1F5F9]">
                   <div>
@@ -2567,121 +2562,121 @@ export default function CreateQuotationView({ onNavigate }) {
 
                 {/* Body Content */}
                 <div className="p-8 flex-1 flex flex-col justify-between space-y-6">
-                   
-                   {/* Title Section */}
-                   <div className="space-y-2">
-                      <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${currentTheme.pillBg}`}>
-                        <FolderPlus className="w-3.5 h-3.5" style={{ color: currentTheme.accentColor }} />
-                        <span>Additional Section #{cpIdx + 1}</span>
+
+                  {/* Title Section */}
+                  <div className="space-y-2">
+                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${currentTheme.pillBg}`}>
+                      <FolderPlus className="w-3.5 h-3.5" style={{ color: currentTheme.accentColor }} />
+                      <span>Additional Section #{cpIdx + 1}</span>
+                    </div>
+                    <h2 className="text-3xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
+                      {cp.title || `Custom Section ${cpIdx + 1}`}
+                    </h2>
+                    {cp.subtitle && (
+                      <p className="text-xs font-semibold text-[#64748B]">{cp.subtitle}</p>
+                    )}
+                    <div className="w-16 h-1 rounded-full" style={{ backgroundColor: currentTheme.accentColor }}></div>
+                  </div>
+
+                  {/* Custom Section Content & Items */}
+                  <div className="space-y-4 flex-1">
+                    {cp.content && (
+                      <p className="text-xs text-[#334155] leading-relaxed font-normal bg-[#F8FAFC] p-4 rounded-md border border-[#E2E8F0] whitespace-pre-wrap">
+                        {cp.content}
+                      </p>
+                    )}
+
+                    {cp.items && cp.items.filter(Boolean).length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 pt-2">
+                        {cp.items.filter(Boolean).map((item, itemIdx) => (
+                          <div key={itemIdx} className="flex items-center gap-3">
+                            <NumberBadge num={itemIdx + 1} color={currentTheme.primaryColor} size={24} />
+                            <span className="text-xs font-bold text-[#0F172A] leading-snug">{item}</span>
+                          </div>
+                        ))}
                       </div>
-                      <h2 className="text-3xl font-black tracking-tight" style={{ color: currentTheme.primaryColor }}>
-                        {cp.title || `Custom Section ${cpIdx + 1}`}
-                      </h2>
-                      {cp.subtitle && (
-                        <p className="text-xs font-semibold text-[#64748B]">{cp.subtitle}</p>
-                      )}
-                      <div className="w-16 h-1 rounded-full" style={{ backgroundColor: currentTheme.accentColor }}></div>
-                   </div>
+                    )}
+                  </div>
 
-                   {/* Custom Section Content & Items */}
-                   <div className="space-y-4 flex-1">
-                      {cp.content && (
-                        <p className="text-xs text-[#334155] leading-relaxed font-normal bg-[#F8FAFC] p-4 rounded-xl border border-[#E2E8F0] whitespace-pre-wrap">
-                          {cp.content}
-                        </p>
-                      )}
-
-                      {cp.items && cp.items.filter(Boolean).length > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 pt-2">
-                           {cp.items.filter(Boolean).map((item, itemIdx) => (
-                             <div key={itemIdx} className="flex items-center gap-3">
-                               <NumberBadge num={itemIdx + 1} color={currentTheme.primaryColor} size={24} />
-                               <span className="text-xs font-bold text-[#0F172A] leading-snug">{item}</span>
-                             </div>
-                           ))}
-                        </div>
-                      )}
-                   </div>
-
-                   <div className="flex justify-between items-center pt-2">
-                     <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
-                     <span className="text-[10px] font-bold text-[#64748B]">CODIGIX CUSTOM SECTION SLIDE</span>
-                     <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
-                   </div>
+                  <div className="flex justify-between items-center pt-2">
+                    <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
+                    <span className="text-[10px] font-bold text-[#64748B]">CODIGIX CUSTOM SECTION SLIDE</span>
+                    <RedHorizontalBarcodePattern color={currentTheme.barcodeColor} />
+                  </div>
 
                 </div>
 
                 {/* Theme Footer Bar */}
                 <div className="h-7 w-full shrink-0" style={{ backgroundColor: currentTheme.accentColor }}></div>
-             </div>
-           ))}
-
-         </div>
-       </div>
-     
-      {/* SOW Full Page Modal */}
-      {showSowModal && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex flex-col overflow-hidden">
-          <div className="flex-1 bg-white dark:bg-slate-900 w-full h-full flex flex-col overflow-hidden">
-            
-            {/* Modal Header */}
-            <div className="px-6 py-3.5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0 z-20 shadow-xs">
-              <div>
-                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">Advanced Scope of Work Editor</h2>
-                <p className="text-xs text-slate-500">Add tables, headings, lists, formatting, and rich text deliverables.</p>
               </div>
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => setShowSowModal(false)}
-                  className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    setQuotationData(prev => ({ ...prev, scopeOfWorkHtml: sowContentRef.current }));
-                    setShowSowModal(false);
-                  }}
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-lg shadow-md transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Check className="w-4 h-4" /> Save Content
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Body & Editor Viewport */}
-            <div className="flex-1 p-3 sm:p-5 overflow-hidden flex flex-col bg-slate-100 dark:bg-slate-950 text-slate-900">
-              <div className="max-w-[1250px] w-full mx-auto h-full flex flex-col space-y-2.5 flex-1 min-h-0">
-                <div className="flex items-center justify-between text-xs text-slate-600 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shrink-0 shadow-2xs">
-                  <span className="font-semibold">💡 Tip: Use the <strong>Format (Paragraph/Heading)</strong> dropdown for Headings & Subheadings. Use the <strong>Table</strong> tools for grid deliverables and <strong>Lists</strong> for structured scope items.</span>
-                </div>
-                
-                <div className="flex-1 min-h-0 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                  <KendoEditor
-                    tools={[
-                      [FormatBlock, FontSize, FontName],
-                      [Bold, Italic, Underline, Strikethrough, Subscript, Superscript],
-                      [ForeColor, BackColor],
-                      [AlignLeft, AlignCenter, AlignRight, AlignJustify],
-                      [OrderedList, UnorderedList, Indent, Outdent],
-                      [InsertTable, AddRowBefore, AddRowAfter, AddColumnBefore, AddColumnAfter, DeleteRow, DeleteColumn, DeleteTable, MergeCells, SplitCell],
-                      [Link, Unlink, InsertImage, ViewHtml, CleanFormatting],
-                      [Undo, Redo]
-                    ]}
-                    contentStyle={{ height: '100%', fontFamily: "'Manrope', sans-serif" }}
-                    defaultContent={quotationData.scopeOfWorkHtml || '<p>Start typing your Scope of Work deliverables...</p>'}
-                    onChange={(event) => {
-                      sowContentRef.current = event.html;
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
+            ))}
 
           </div>
         </div>
-      )}
-    </div>
+
+        {/* SOW Full Page Modal */}
+        {showSowModal && (
+          <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex flex-col overflow-hidden">
+            <div className="flex-1 bg-white dark:bg-slate-900 w-full h-full flex flex-col overflow-hidden">
+
+              {/* Modal Header */}
+              <div className="px-6 py-3.5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0 z-20 shadow-xs">
+                <div>
+                  <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">Advanced Scope of Work Editor</h2>
+                  <p className="text-xs text-slate-500">Add tables, headings, lists, formatting, and rich text deliverables.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowSowModal(false)}
+                    className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md-lg transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setQuotationData(prev => ({ ...prev, scopeOfWorkHtml: sowContentRef.current }));
+                      setShowSowModal(false);
+                    }}
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-md-lg shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <Check className="w-4 h-4" /> Save Content
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body & Editor Viewport */}
+              <div className="flex-1 p-3 sm:p-5 overflow-hidden flex flex-col bg-slate-100 dark:bg-slate-950 text-slate-900">
+                <div className="max-w-[1250px] w-full mx-auto h-full flex flex-col space-y-2.5 flex-1 min-h-0">
+                  <div className="flex items-center justify-between text-xs text-slate-600 bg-white dark:bg-slate-900 px-4 py-2 rounded-md-lg border border-slate-200 dark:border-slate-800 shrink-0 shadow-2xs">
+                    <span className="font-semibold">💡 Tip: Use the <strong>Format (Paragraph/Heading)</strong> dropdown for Headings & Subheadings. Use the <strong>Table</strong> tools for grid deliverables and <strong>Lists</strong> for structured scope items.</span>
+                  </div>
+
+                  <div className="flex-1 min-h-0 bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    <KendoEditor
+                      tools={[
+                        [FormatBlock, FontSize, FontName],
+                        [Bold, Italic, Underline, Strikethrough, Subscript, Superscript],
+                        [ForeColor, BackColor],
+                        [AlignLeft, AlignCenter, AlignRight, AlignJustify],
+                        [OrderedList, UnorderedList, Indent, Outdent],
+                        [InsertTable, AddRowBefore, AddRowAfter, AddColumnBefore, AddColumnAfter, DeleteRow, DeleteColumn, DeleteTable, MergeCells, SplitCell],
+                        [Link, Unlink, InsertImage, ViewHtml, CleanFormatting],
+                        [Undo, Redo]
+                      ]}
+                      contentStyle={{ height: '100%', fontFamily: "'Manrope', sans-serif" }}
+                      defaultContent={quotationData.scopeOfWorkHtml || '<p>Start typing your Scope of Work deliverables...</p>'}
+                      onChange={(event) => {
+                        sowContentRef.current = event.html;
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

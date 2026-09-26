@@ -5,12 +5,12 @@ import { analyzeVoiceTaskAPI } from '../../services/api';
 import { triggerPhoneVibration } from '../../utils/notificationService';
 import ProjectQuotationCalculatorModal from './ProjectQuotationCalculatorModal';
 
-export default function ModalContainer({ 
-  activeModal, 
-  onClose, 
-  onAddPlannerTask, 
-  onAddMeeting, 
-  onAddClient 
+export default function ModalContainer({
+  activeModal,
+  onClose,
+  onAddPlannerTask,
+  onAddMeeting,
+  onAddClient
 }) {
   if (!activeModal) return null;
 
@@ -25,6 +25,18 @@ export default function ModalContainer({
   const [taskTime, setTaskTime] = useState('10:00 AM – 11:00 AM');
   const [taskNotes, setTaskNotes] = useState('');
   const [taskCheckpoints, setTaskCheckpoints] = useState([]);
+
+  React.useEffect(() => {
+    if (activeModal === 'diet_task') {
+      setTaskCategory('Health & Nutrition');
+      setTaskTitle('');
+      setTaskTime('07:00 AM – 08:00 AM');
+    } else if (activeModal === 'task') {
+      setTaskCategory('Client & Pitching');
+      setTaskTitle('');
+      setTaskTime('10:00 AM – 11:00 AM');
+    }
+  }, [activeModal]);
 
   // Voice Assistant inside Task Creation Modal
   const [isVoiceListening, setIsVoiceListening] = useState(false);
@@ -113,7 +125,7 @@ export default function ModalContainer({
     if (taskObj.time) setTaskTime(taskObj.time);
     if (taskObj.notes) setTaskNotes(taskObj.notes);
     if (taskObj.checkpoints) {
-      const cps = Array.isArray(taskObj.checkpoints) 
+      const cps = Array.isArray(taskObj.checkpoints)
         ? taskObj.checkpoints.map((c, i) => typeof c === 'string' ? { id: 'cp_' + i, text: c, done: false } : c)
         : [];
       setTaskCheckpoints(cps);
@@ -206,7 +218,7 @@ export default function ModalContainer({
       silenceTimerRef.current = null;
     }
     if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch (e) {}
+      try { recognitionRef.current.stop(); } catch (e) { }
       recognitionRef.current = null;
     }
     setIsVoiceListening(false);
@@ -339,27 +351,28 @@ export default function ModalContainer({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-2xl w-full max-w-lg overflow-hidden">
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h3 className="font-extrabold text-slate-900 dark:text-white text-base flex items-center gap-2">
             {activeModal === 'ai' && <><Sparkles className="w-5 h-5 text-purple-600" /> AI Executive Assistant (Gemini AI)</>}
             {activeModal === 'task' && <><Calendar className="w-5 h-5 text-blue-600" /> Add New Task</>}
+            {activeModal === 'diet_task' && <><Calendar className="w-5 h-5 text-emerald-600" /> Add Diet / Wellness Plan</>}
             {activeModal === 'meeting' && <><Video className="w-5 h-5 text-blue-600" /> Schedule Meeting</>}
             {activeModal === 'client' && <><Users className="w-5 h-5 text-blue-600" /> Add Client Follow-up</>}
           </h3>
-          
+
           <div className="flex items-center gap-2">
             {activeModal === 'ai' && (
-              <button 
+              <button
                 onClick={() => setShowKeyInput(!showKeyInput)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-purple-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="p-1.5 rounded-md text-slate-400 hover:text-purple-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                 title="Configure Claude API Key"
               >
                 <Key className="w-4 h-4" />
               </button>
             )}
-            <button onClick={onClose} className="p-1 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <button onClick={onClose} className="p-1 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -371,7 +384,7 @@ export default function ModalContainer({
           {activeModal === 'ai' && (
             <div className="space-y-4">
               {showKeyInput && (
-                <div className="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-xl border border-purple-200 dark:border-purple-800 space-y-2 text-xs">
+                <div className="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-md border border-purple-200 dark:border-purple-800 space-y-2 text-xs">
                   <span className="font-bold text-purple-900 dark:text-purple-200 block">Configure Anthropic Claude API Key:</span>
                   <div className="flex gap-2">
                     <input
@@ -379,11 +392,11 @@ export default function ModalContainer({
                       value={apiKeyInput}
                       onChange={(e) => setApiKeyInput(e.target.value)}
                       placeholder="sk-ant-api03-..."
-                      className="flex-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                      className="flex-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
                     />
                     <button
                       onClick={handleSaveApiKey}
-                      className="px-3 py-1.5 bg-purple-600 text-white font-bold rounded-lg"
+                      className="px-3 py-1.5 bg-purple-600 text-white font-bold rounded-md-lg"
                     >
                       Save Key
                     </button>
@@ -391,19 +404,18 @@ export default function ModalContainer({
                 </div>
               )}
 
-              <div className="h-64 overflow-y-auto space-y-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
+              <div className="h-64 overflow-y-auto space-y-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-md border border-slate-100 dark:border-slate-700">
                 {aiChat.map((msg, i) => (
                   <div key={i} className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     {msg.role === 'assistant' && (
-                      <div className="w-7 h-7 rounded-xl bg-purple-600 text-white flex items-center justify-center text-xs shrink-0">
+                      <div className="w-7 h-7 rounded-md bg-purple-600 text-white flex items-center justify-center text-xs shrink-0">
                         <Sparkles className="w-4 h-4" />
                       </div>
                     )}
-                    <div className={`p-3 rounded-2xl text-xs max-w-[80%] leading-relaxed ${
-                      msg.role === 'user'
-                        ? 'bg-purple-600 text-white font-medium rounded-br-none'
-                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm rounded-bl-none'
-                    }`}>
+                    <div className={`p-3 rounded-md text-xs max-w-[80%] leading-relaxed ${msg.role === 'user'
+                      ? 'bg-purple-600 text-white font-medium rounded-md-br-none'
+                      : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm rounded-md-bl-none'
+                      }`}>
                       {msg.text}
                     </div>
                   </div>
@@ -424,12 +436,12 @@ export default function ModalContainer({
                   onChange={(e) => setAiPrompt(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAiSend()}
                   placeholder="Ask Gemini AI to optimize schedule, draft emails..."
-                  className="flex-1 px-4 py-2.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-4 py-2.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
                 <button
                   onClick={handleAiSend}
                   disabled={isAiLoading}
-                  className="p-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl shadow-md"
+                  className="p-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-md shadow-md"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -438,20 +450,32 @@ export default function ModalContainer({
           )}
 
           {/* Add Task Modal with Integrated Voice Assistant */}
-          {activeModal === 'task' && (
+          {(activeModal === 'task' || activeModal === 'diet_task') && (
             <form onSubmit={handleTaskSubmit} className="space-y-3.5 text-xs">
               {/* Voice Assistant Auto-Fill Card with Live Writing Bar */}
-              <div className="p-3 sm:p-3.5 bg-gradient-to-br from-blue-50 via-indigo-50/70 to-purple-50 dark:from-slate-800 dark:via-indigo-950/30 dark:to-purple-950/30 rounded-2xl border border-indigo-200/80 dark:border-indigo-800/60 shadow-xs space-y-2">
+              <div className={`p-3 sm:p-3.5 rounded-md border shadow-xs space-y-2 ${
+                activeModal === 'diet_task' 
+                  ? 'bg-gradient-to-br from-emerald-50 via-teal-50/70 to-emerald-50 dark:from-slate-800 dark:via-teal-950/30 dark:to-emerald-950/30 border-emerald-200/80 dark:border-emerald-800/60'
+                  : 'bg-gradient-to-br from-blue-50 via-indigo-50/70 to-purple-50 dark:from-slate-800 dark:via-indigo-950/30 dark:to-purple-950/30 border-indigo-200/80 dark:border-indigo-800/60'
+              }`}>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <div className={`w-7 h-7 rounded-md text-white flex items-center justify-center shrink-0 shadow-xs ${
+                      activeModal === 'diet_task'
+                        ? 'bg-gradient-to-tr from-emerald-600 to-teal-600'
+                        : 'bg-gradient-to-tr from-blue-600 to-indigo-600'
+                    }`}>
                       <Mic className="w-3.5 h-3.5" />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-black text-xs text-indigo-950 dark:text-indigo-200 leading-tight truncate">
+                      <h4 className={`font-black text-xs leading-tight truncate ${
+                        activeModal === 'diet_task' ? 'text-emerald-950 dark:text-emerald-200' : 'text-indigo-950 dark:text-indigo-200'
+                      }`}>
                         AI Voice Assistant Auto-Fill
                       </h4>
-                      <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium truncate">
+                      <p className={`text-[10px] font-medium truncate ${
+                        activeModal === 'diet_task' ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'
+                      }`}>
                         Speak naturally — AI autocorrects & populates fields
                       </p>
                     </div>
@@ -460,11 +484,12 @@ export default function ModalContainer({
                   <button
                     type="button"
                     onClick={handleVoiceToggle}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-black shadow-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shrink-0 ${
-                      isVoiceListening
-                        ? 'bg-rose-500 hover:bg-rose-600 text-white animate-pulse'
+                    className={`px-3 py-1.5 rounded-md text-xs font-black shadow-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shrink-0 ${isVoiceListening
+                      ? 'bg-rose-500 hover:bg-rose-600 text-white animate-pulse'
+                      : activeModal === 'diet_task'
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                         : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                    }`}
+                      }`}
                   >
                     <Mic className={`w-3.5 h-3.5 ${isVoiceListening ? 'animate-bounce' : ''}`} />
                     <span>{isVoiceListening ? 'Listening...' : 'Speak'}</span>
@@ -473,9 +498,13 @@ export default function ModalContainer({
 
                 {/* Live Writing Bar / Audio Waveform */}
                 {(isVoiceListening || isVoiceAnalyzing || voiceTranscript) && (
-                  <div className="pt-2 border-t border-indigo-200/60 dark:border-indigo-800/60 space-y-1.5 animate-in fade-in">
+                  <div className={`pt-2 border-t space-y-1.5 animate-in fade-in ${
+                    activeModal === 'diet_task' ? 'border-emerald-200/60 dark:border-emerald-800/60' : 'border-indigo-200/60 dark:border-indigo-800/60'
+                  }`}>
                     <div className="flex items-center justify-between text-[11px]">
-                      <div className="flex items-center gap-1.5 font-bold text-indigo-900 dark:text-indigo-300">
+                      <div className={`flex items-center gap-1.5 font-bold ${
+                        activeModal === 'diet_task' ? 'text-emerald-900 dark:text-emerald-300' : 'text-indigo-900 dark:text-indigo-300'
+                      }`}>
                         {isVoiceListening && (
                           <div className="flex items-center gap-1 h-3.5">
                             <span className="w-1 h-2 bg-rose-500 rounded-full animate-bounce [animation-delay:0ms]" />
@@ -488,8 +517,8 @@ export default function ModalContainer({
                           {isVoiceListening
                             ? 'Writing bar (listening live)...'
                             : isVoiceAnalyzing
-                            ? 'AI Autocorrecting & Structuring Best Task...'
-                            : 'Voice Input:'}
+                              ? 'AI Autocorrecting & Structuring Best Task...'
+                              : 'Voice Input:'}
                         </span>
                       </div>
                       {isVoiceAnalyzing && (
@@ -499,17 +528,23 @@ export default function ModalContainer({
                       )}
                     </div>
 
-                    <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-indigo-200/80 dark:border-indigo-800 text-xs font-semibold text-slate-800 dark:text-slate-100 shadow-inner flex items-center justify-between gap-2">
+                    <div className={`p-2.5 rounded-md text-xs font-semibold shadow-inner flex items-center justify-between gap-2 ${
+                      activeModal === 'diet_task'
+                        ? 'bg-white dark:bg-slate-900 border border-emerald-200/80 dark:border-emerald-800 text-slate-800 dark:text-slate-100'
+                        : 'bg-white dark:bg-slate-900 border border-indigo-200/80 dark:border-indigo-800 text-slate-800 dark:text-slate-100'
+                    }`}>
                       <span className="truncate">{voiceTranscript || 'Speak what you want to achieve...'}</span>
                       {isVoiceListening && (
-                        <span className="w-1.5 h-3.5 bg-indigo-600 animate-pulse shrink-0" />
+                        <span className={`w-1.5 h-3.5 animate-pulse shrink-0 ${
+                          activeModal === 'diet_task' ? 'bg-emerald-600' : 'bg-indigo-600'
+                        }`} />
                       )}
                     </div>
                   </div>
                 )}
 
                 {voiceSuccessMsg && (
-                  <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 animate-in fade-in">
+                  <div className="p-2 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 animate-in fade-in">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                     <span className="truncate">{voiceSuccessMsg}</span>
                   </div>
@@ -528,16 +563,15 @@ export default function ModalContainer({
                     value={taskTitle}
                     onChange={(e) => setTaskTitle(e.target.value)}
                     placeholder="e.g. Prepare proposal for client meeting"
-                    className="w-full pl-3 pr-10 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full pl-3 pr-10 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   />
                   <button
                     type="button"
                     onClick={handleVoiceToggle}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors cursor-pointer ${
-                      isVoiceListening
-                        ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/50 animate-pulse'
-                        : 'text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-700'
-                    }`}
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md-lg transition-colors cursor-pointer ${isVoiceListening
+                      ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/50 animate-pulse'
+                      : 'text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-700'
+                      }`}
                     title="Speak to dictate task"
                   >
                     <Mic className="w-4 h-4" />
@@ -551,7 +585,7 @@ export default function ModalContainer({
                   <select
                     value={taskCategory}
                     onChange={(e) => setTaskCategory(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
                   >
                     <option value="Client & Pitching">Client & Pitching</option>
                     <option value="Ops & Pipeline">Ops & Pipeline</option>
@@ -559,6 +593,7 @@ export default function ModalContainer({
                     <option value="Finance & Governance">Finance & Governance</option>
                     <option value="Daily Execution">Daily Execution</option>
                     <option value="Growth & Marketing">Growth & Marketing</option>
+                    <option value="Health & Nutrition">Health & Nutrition</option>
                   </select>
                 </div>
 
@@ -567,11 +602,11 @@ export default function ModalContainer({
                   <select
                     value={taskPriority}
                     onChange={(e) => setTaskPriority(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
                   >
-                    <option value="High">🔥 High</option>
-                    <option value="Medium">🟡 Medium</option>
-                    <option value="Low">🟢 Low</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
                   </select>
                 </div>
               </div>
@@ -584,16 +619,18 @@ export default function ModalContainer({
                   value={taskTime}
                   onChange={(e) => setTaskTime(e.target.value)}
                   placeholder="e.g. 10:00 AM – 11:00 AM"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-slate-800 dark:text-slate-200"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md font-medium text-slate-800 dark:text-slate-200"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-md mt-2 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                className={`w-full py-2.5 text-white font-black text-xs rounded-md shadow-md mt-2 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all ${
+                  activeModal === 'diet_task' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'
+                }`}
               >
                 <Check className="w-4 h-4" />
-                <span>Add Task to Planner</span>
+                <span>{activeModal === 'diet_task' ? 'Add Plan to Diet Hub' : 'Add Task to Planner'}</span>
               </button>
             </form>
           )}
@@ -609,7 +646,7 @@ export default function ModalContainer({
                   value={meetingTitle}
                   onChange={(e) => setMeetingTitle(e.target.value)}
                   placeholder="e.g. ERP Module Sprint Review"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
                 />
               </div>
 
@@ -621,7 +658,7 @@ export default function ModalContainer({
                     value={meetingClient}
                     onChange={(e) => setMeetingClient(e.target.value)}
                     placeholder="e.g. ABC Pvt Ltd"
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
                   />
                 </div>
 
@@ -630,7 +667,7 @@ export default function ModalContainer({
                   <select
                     value={meetingType}
                     onChange={(e) => setMeetingType(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
                   >
                     <option value="Client">Client</option>
                     <option value="Internal">Internal</option>
@@ -641,7 +678,7 @@ export default function ModalContainer({
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md mt-2"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-md shadow-md mt-2"
               >
                 Schedule Meeting
               </button>
@@ -659,7 +696,7 @@ export default function ModalContainer({
                   value={clientCompany}
                   onChange={(e) => setClientCompany(e.target.value)}
                   placeholder="e.g. Acme Tech Corp"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
                 />
               </div>
 
@@ -671,7 +708,7 @@ export default function ModalContainer({
                     value={clientContact}
                     onChange={(e) => setClientContact(e.target.value)}
                     placeholder="Mr. John Doe"
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
                   />
                 </div>
 
@@ -682,14 +719,14 @@ export default function ModalContainer({
                     value={clientValue}
                     onChange={(e) => setClientValue(e.target.value)}
                     placeholder="15,00,000"
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md mt-2"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-md shadow-md mt-2"
               >
                 Add Follow-up Entry
               </button>

@@ -103,8 +103,8 @@ export default function DataTable({
   };
 
   return (
-    <div className={`space-y-3.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs ${className}`}>
-      
+    <div className={`space-y-3.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-md p-4 shadow-xs ${className}`}>
+
       {/* Header Bar: Title, Search Input & Options */}
       {(title || searchable || actionButton) && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -126,7 +126,7 @@ export default function DataTable({
                   value={searchQuery}
                   onChange={handleSearchChange}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium text-slate-800 dark:text-slate-200"
+                  className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium text-slate-800 dark:text-slate-200"
                 />
               </div>
             )}
@@ -136,7 +136,7 @@ export default function DataTable({
       )}
 
       {/* Main Table View */}
-      <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+      <div className="overflow-x-auto rounded-md border border-slate-100 dark:border-slate-800">
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 uppercase font-extrabold text-[10px] tracking-wider border-b border-slate-200/80 dark:border-slate-800 select-none">
             <tr>
@@ -172,7 +172,7 @@ export default function DataTable({
                 <tr key={rIdx} className="animate-pulse">
                   {columns.map((_, cIdx) => (
                     <td key={cIdx} className="p-3">
-                      <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4" />
+                      <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md-md w-3/4" />
                     </td>
                   ))}
                 </tr>
@@ -199,7 +199,7 @@ export default function DataTable({
               <tr>
                 <td colSpan={columns.length} className="py-12 text-center">
                   <div className="flex flex-col items-center justify-center space-y-2">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center">
                       <Inbox className="w-6 h-6" />
                     </div>
                     <p className="text-xs font-bold text-slate-500 dark:text-slate-400">{emptyMessage}</p>
@@ -219,7 +219,7 @@ export default function DataTable({
           <select
             value={pageSize}
             onChange={handlePageSizeChange}
-            className="px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 font-bold focus:outline-none cursor-pointer"
+            className="px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs text-slate-700 dark:text-slate-200 font-bold focus:outline-none cursor-pointer"
           >
             {[5, 10, 25, 50].map(sz => (
               <option key={sz} value={sz}>{sz}</option>
@@ -235,7 +235,7 @@ export default function DataTable({
           <button
             onClick={() => setCurrentPage(1)}
             disabled={safeCurrentPage === 1 || loading}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+            className="p-1.5 rounded-md-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
             title="First Page"
           >
             <ChevronsLeft className="w-4 h-4" />
@@ -243,7 +243,7 @@ export default function DataTable({
           <button
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={safeCurrentPage === 1 || loading}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+            className="p-1.5 rounded-md-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
             title="Previous Page"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -256,7 +256,7 @@ export default function DataTable({
           <button
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={safeCurrentPage === totalPages || loading}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+            className="p-1.5 rounded-md-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
             title="Next Page"
           >
             <ChevronRight className="w-4 h-4" />
@@ -264,7 +264,7 @@ export default function DataTable({
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={safeCurrentPage === totalPages || loading}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+            className="p-1.5 rounded-md-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
             title="Last Page"
           >
             <ChevronsRight className="w-4 h-4" />

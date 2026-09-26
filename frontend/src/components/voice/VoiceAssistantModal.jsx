@@ -16,7 +16,8 @@ import {
   Zap,
   Edit3,
   Flame,
-  Check
+  Check,
+  Tag
 } from 'lucide-react';
 import { triggerPhoneVibration } from '../../utils/notificationService';
 import { analyzeVoiceTaskAPI } from '../../services/api';
@@ -255,7 +256,7 @@ export default function VoiceAssistantModal({
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
-      } catch (e) {}
+      } catch (e) { }
       recognitionRef.current = null;
     }
     setIsListening(false);
@@ -328,15 +329,15 @@ export default function VoiceAssistantModal({
       <div className="fixed inset-0" onClick={onClose} aria-label="Close voice assistant" />
 
       {/* Drawer on Mobile / Modal on Desktop */}
-      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden z-10 animate-in slide-in-from-bottom duration-200">
-        
+      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden z-10 animate-in slide-in-from-bottom duration-200">
+
         {/* Mobile Drag Indicator */}
         <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
 
         {/* Header Bar */}
         <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">
+            <div className="w-8 h-8 rounded-md bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
@@ -367,7 +368,7 @@ export default function VoiceAssistantModal({
 
           {/* ── 1. ACTIVE LISTENING & MICROPHONE SECTION ── */}
           <div className="flex flex-col items-center justify-center py-2 text-center space-y-3">
-            
+
             {/* Glowing Microphone Button */}
             <div className="relative">
               {isListening && (
@@ -379,11 +380,10 @@ export default function VoiceAssistantModal({
 
               <button
                 onClick={handleToggleListen}
-                className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center shadow-2xl transition-all cursor-pointer active:scale-95 border-4 ${
-                  isListening
-                    ? 'bg-rose-500 text-white border-rose-300 dark:border-rose-400 shadow-rose-500/40 animate-pulse'
-                    : 'bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white border-white dark:border-slate-800 shadow-indigo-500/30 hover:scale-105'
-                }`}
+                className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center shadow-2xl transition-all cursor-pointer active:scale-95 border-4 ${isListening
+                  ? 'bg-rose-500 text-white border-rose-300 dark:border-rose-400 shadow-rose-500/40 animate-pulse'
+                  : 'bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white border-white dark:border-slate-800 shadow-indigo-500/30 hover:scale-105'
+                  }`}
                 title={isListening ? 'Tap to finish listening & analyze' : 'Tap to start speaking'}
               >
                 {isListening ? (
@@ -426,45 +426,49 @@ export default function VoiceAssistantModal({
             </div>
           </div>
 
-          {/* ── 2. TRANSCRIPTION BOX ── */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 px-1">
-              <span>Spoken Transcript:</span>
-              {transcript && (
-                <button
-                  onClick={() => {
-                    setTranscript('');
-                    setAnalyzedTask(null);
-                  }}
-                  className="text-slate-400 hover:text-rose-500 text-[10px] cursor-pointer"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+          {/* ── 2. TRANSCRIPTION CHATBOX ── */}
+          <div className="space-y-3">
+            {transcript && (
+              <div className="flex justify-end animate-in fade-in slide-in-from-right-4">
+                <div className="max-w-[85%] bg-blue-600 text-white p-3 rounded-md-2xl rounded-md-tr-sm shadow-md space-y-1">
+                  <p className="text-xs font-semibold leading-relaxed">"{transcript}"</p>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => {
+                        setTranscript('');
+                        setAnalyzedTask(null);
+                      }}
+                      className="text-[9px] font-bold text-blue-200 hover:text-white transition-colors cursor-pointer"
+                    >
+                      Clear & Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="relative">
               <textarea
                 value={transcript}
                 onChange={(e) => setTranscript(e.target.value)}
-                placeholder="Spoken words will appear here live... (You can also type here)"
+                placeholder="Type your task/diet plan here, or tap the mic to speak..."
                 rows={2}
-                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
+                className="w-full p-3 pr-12 rounded-md-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none shadow-inner"
               />
 
               {!isListening && transcript.trim().length > 2 && !analyzedTask && !isAnalyzing && (
                 <button
                   onClick={() => handleAnalyzeSpeech(transcript)}
-                  className="absolute bottom-2.5 right-2.5 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[11px] font-black shadow-sm flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                  className="absolute bottom-2.5 right-2.5 p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md-lg font-black shadow-md flex items-center justify-center cursor-pointer transition-all active:scale-95"
+                  title="Analyze text"
                 >
-                  <Sparkles className="w-3 h-3" />
-                  <span>Analyze</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               )}
             </div>
 
             {errorMsg && (
-              <div className="text-[11px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5 px-1">
+              <div className="text-[11px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5 px-1 justify-center bg-rose-50 dark:bg-rose-950/40 py-2 rounded-md border border-rose-200 dark:border-rose-800/60">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>{errorMsg}</span>
               </div>
@@ -473,21 +477,20 @@ export default function VoiceAssistantModal({
 
           {/* ── 3. AI STRUCTURED TASK PREVIEW CARD ── */}
           {analyzedTask && (
-            <div className="rounded-2xl bg-gradient-to-br from-indigo-50/70 via-purple-50/40 to-blue-50/60 dark:from-slate-850 dark:via-slate-850 dark:to-indigo-950/30 border border-indigo-200/80 dark:border-slate-700/80 p-3.5 sm:p-4 shadow-sm space-y-3 animate-in fade-in zoom-in-95">
-              
+            <div className="rounded-md bg-gradient-to-br from-indigo-50/70 via-purple-50/40 to-blue-50/60 dark:from-slate-850 dark:via-slate-850 dark:to-indigo-950/30 border border-indigo-200/80 dark:border-slate-700/80 p-3.5 sm:p-4 shadow-sm space-y-3 animate-in fade-in zoom-in-95">
+
               <div className="flex items-center justify-between gap-2 border-b border-indigo-100 dark:border-slate-800 pb-2.5">
                 <span className="text-[10px] font-black text-indigo-700 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-indigo-600" />
                   AI Structured Task
                 </span>
 
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
-                  analyzedTask.priority === 'High'
-                    ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
-                    : analyzedTask.priority === 'Low'
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md-md ${analyzedTask.priority === 'High'
+                  ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+                  : analyzedTask.priority === 'Low'
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                }`}>
+                  }`}>
                   {analyzedTask.priority} Priority
                 </span>
               </div>
@@ -501,13 +504,13 @@ export default function VoiceAssistantModal({
                   type="text"
                   value={analyzedTask.title}
                   onChange={(e) => setAnalyzedTask({ ...analyzedTask, title: e.target.value })}
-                  className="w-full p-2.5 bg-white dark:bg-slate-900 border border-indigo-200/60 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-2.5 bg-white dark:bg-slate-900 border border-indigo-200/60 dark:border-slate-700 rounded-md text-xs sm:text-sm font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
               {/* Metadata Badges: Date, Time & Category */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                <div className="p-2 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-slate-800 space-y-0.5">
+                <div className="p-2 bg-white dark:bg-slate-900 rounded-md border border-indigo-100 dark:border-slate-800 space-y-0.5">
                   <span className="text-[9px] font-extrabold text-slate-400 flex items-center gap-1">
                     <Clock className="w-2.5 h-2.5 text-indigo-500" /> Time
                   </span>
@@ -519,25 +522,42 @@ export default function VoiceAssistantModal({
                   />
                 </div>
 
-                <div className="p-2 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-slate-800 space-y-0.5">
+                <div className="p-2 bg-white dark:bg-slate-900 rounded-md border border-indigo-100 dark:border-slate-800 space-y-0.5">
                   <span className="text-[9px] font-extrabold text-slate-400 flex items-center gap-1">
                     <Calendar className="w-2.5 h-2.5 text-indigo-500" /> Target Date
                   </span>
-                  <div className="text-[11px] font-black text-slate-800 dark:text-slate-100 truncate">
-                    {analyzedTask.targetDay} ({analyzedTask.date ? new Date(analyzedTask.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Today'})
-                  </div>
+                  <input
+                    type="date"
+                    value={analyzedTask.date ? new Date(analyzedTask.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                    onChange={(e) => {
+                      if (!e.target.value) return;
+                      const d = new Date(e.target.value + 'T12:00:00');
+                      setAnalyzedTask({
+                        ...analyzedTask,
+                        date: d.toDateString(),
+                        targetDay: d.toLocaleDateString('en-US', { weekday: 'long' })
+                      });
+                    }}
+                    className="w-full text-[11px] font-black text-slate-800 dark:text-slate-100 bg-transparent focus:outline-none cursor-pointer"
+                  />
                 </div>
 
-                <div className="col-span-2 sm:col-span-1 p-2 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-slate-800 space-y-0.5">
+                <div className="col-span-2 sm:col-span-1 p-2 bg-white dark:bg-slate-900 rounded-md border border-indigo-100 dark:border-slate-800 space-y-0.5">
                   <span className="text-[9px] font-extrabold text-slate-400 flex items-center gap-1">
-                    🏷️ Category
+                    <Tag className="w-2.5 h-2.5 text-indigo-500" /> Category
                   </span>
-                  <input
-                    type="text"
+                  <select
                     value={analyzedTask.category}
                     onChange={(e) => setAnalyzedTask({ ...analyzedTask, category: e.target.value })}
-                    className="w-full text-[11px] font-black text-slate-800 dark:text-slate-100 bg-transparent focus:outline-none truncate"
-                  />
+                    className="w-full text-[11px] font-black text-slate-800 dark:text-slate-100 bg-transparent focus:outline-none cursor-pointer"
+                  >
+                    <option value="Tasks & Execution">Tasks & Execution</option>
+                    <option value="Meetings">Meetings</option>
+                    <option value="Sales & Clients">Sales & Clients</option>
+                    <option value="Health">Diet & Health</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Strategy & Business Growth">Strategy</option>
+                  </select>
                 </div>
               </div>
 
@@ -550,7 +570,7 @@ export default function VoiceAssistantModal({
                   </span>
                   <div className="space-y-1">
                     {analyzedTask.checkpoints.map((cp, idx) => (
-                      <div key={idx} className="flex items-center gap-2 p-1.5 bg-white dark:bg-slate-900 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-800">
+                      <div key={idx} className="flex items-center gap-2 p-1.5 bg-white dark:bg-slate-900 rounded-md-lg text-xs font-semibold text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-800">
                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
                         <span className="truncate flex-1">{typeof cp === 'string' ? cp : cp.text}</span>
                       </div>
@@ -561,33 +581,11 @@ export default function VoiceAssistantModal({
             </div>
           )}
 
-          {/* ── 4. SAMPLE VOICE COMMANDS HINT ── */}
-          {!analyzedTask && (
-            <div className="space-y-1.5 pt-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block px-1">
-                Try saying something like:
-              </span>
-              <div className="space-y-1">
-                {SAMPLE_VOICE_COMMANDS.map((cmd, i) => (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      setTranscript(cmd);
-                      handleAnalyzeSpeech(cmd);
-                    }}
-                    className="w-full p-2 text-left bg-slate-50 dark:bg-slate-850 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl text-[11px] font-medium text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-800 transition-colors flex items-center justify-between gap-2 cursor-pointer active:scale-[0.99]"
-                  >
-                    <span className="truncate">"{cmd}"</span>
-                    <ArrowRight className="w-3 h-3 text-slate-400 shrink-0" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
 
         {/* ── STICKY THUMB ACTION BAR ── */}
-        <div 
+        <div
           style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}
           className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-2 shrink-0 select-none"
         >
@@ -595,7 +593,7 @@ export default function VoiceAssistantModal({
             <>
               <button
                 onClick={handleConfirmCreateTask}
-                className="flex-1 min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer active:scale-95"
+                className="flex-1 min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer active:scale-95"
               >
                 <Check className="w-4 h-4" />
                 <span>Create Best Task Now</span>
@@ -606,7 +604,7 @@ export default function VoiceAssistantModal({
                   setAnalyzedTask(null);
                   startListening();
                 }}
-                className="min-h-[44px] px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-2xl text-xs font-black flex items-center justify-center gap-1 cursor-pointer active:scale-95 shrink-0"
+                className="min-h-[44px] px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-md text-xs font-black flex items-center justify-center gap-1 cursor-pointer active:scale-95 shrink-0"
                 title="Speak again"
               >
                 <Mic className="w-3.5 h-3.5 text-indigo-500" />
@@ -617,11 +615,10 @@ export default function VoiceAssistantModal({
             <>
               <button
                 onClick={handleToggleListen}
-                className={`flex-1 min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95 ${
-                  isListening
-                    ? 'bg-rose-600 hover:bg-rose-700 text-white'
-                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                }`}
+                className={`flex-1 min-h-[44px] px-4 py-2.5 rounded-md text-xs font-black flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95 ${isListening
+                  ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  }`}
               >
                 {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                 <span>{isListening ? 'Stop & Analyze Task' : 'Start Speaking'}</span>
@@ -629,7 +626,7 @@ export default function VoiceAssistantModal({
 
               <button
                 onClick={onClose}
-                className="min-h-[44px] px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-bold cursor-pointer active:scale-95 shrink-0"
+                className="min-h-[44px] px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-md text-xs font-bold cursor-pointer active:scale-95 shrink-0"
               >
                 Cancel
               </button>

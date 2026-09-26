@@ -1,13 +1,13 @@
 import React from 'react';
-import { 
-  TrendingUp, 
-  Briefcase, 
-  UserCheck, 
-  DollarSign, 
-  PieChart, 
-  Bot, 
-  FileText, 
-  Bell, 
+import {
+  TrendingUp,
+  Briefcase,
+  UserCheck,
+  DollarSign,
+  PieChart,
+  Bot,
+  FileText,
+  Bell,
   Settings,
   Sparkles,
   ArrowUpRight,
@@ -50,7 +50,7 @@ export default function GenericModuleView({ moduleId, onOpenAI }) {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-brand-500/10 text-brand-600">
+            <div className="p-2 rounded-md bg-brand-500/10 text-brand-600">
               <IconComponent className="w-5 h-5" />
             </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">{info.title}</h1>
@@ -60,9 +60,9 @@ export default function GenericModuleView({ moduleId, onOpenAI }) {
           </p>
         </div>
 
-        <button 
+        <button
           onClick={onOpenAI}
-          className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-brand-500/20 transition-all self-start"
+          className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-md text-xs font-bold flex items-center gap-1.5 shadow-md shadow-brand-500/20 transition-all self-start"
         >
           <Sparkles className="w-4 h-4" />
           <span>AI Insight Analysis</span>
@@ -79,7 +79,7 @@ export default function GenericModuleView({ moduleId, onOpenAI }) {
               <ArrowUpRight className="w-3.5 h-3.5" /> +4.2% this month
             </span>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-brand-500/10 text-brand-600 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-md bg-brand-500/10 text-brand-600 flex items-center justify-center">
             <Zap className="w-5 h-5" />
           </div>
         </div>
@@ -90,7 +90,7 @@ export default function GenericModuleView({ moduleId, onOpenAI }) {
             <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">100%</div>
             <span className="text-[11px] font-bold text-emerald-600 mt-0.5">On Schedule</span>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-md bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
             <ShieldCheck className="w-5 h-5" />
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function GenericModuleView({ moduleId, onOpenAI }) {
             <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">16</div>
             <span className="text-[11px] font-bold text-slate-400 mt-0.5">Automated</span>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-md bg-purple-500/10 text-purple-600 flex items-center justify-center">
             <Bot className="w-5 h-5" />
           </div>
         </div>
@@ -112,7 +112,7 @@ export default function GenericModuleView({ moduleId, onOpenAI }) {
             <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">98%</div>
             <span className="text-[11px] font-bold text-brand-600 mt-0.5">Optimal Execution</span>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-md bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
             <Sparkles className="w-5 h-5" />
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function GenericModuleView({ moduleId, onOpenAI }) {
 
       {/* Main Module Content */}
       <div className="card-base p-8 text-center space-y-4 bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50">
-        <div className="w-16 h-16 rounded-2xl bg-brand-500/10 text-brand-600 flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 rounded-md bg-brand-500/10 text-brand-600 flex items-center justify-center mx-auto">
           <IconComponent className="w-8 h-8" />
         </div>
         <h2 className="text-lg font-black text-slate-900 dark:text-white">{info.title} Live Suite</h2>
@@ -129,9 +129,9 @@ export default function GenericModuleView({ moduleId, onOpenAI }) {
         </p>
 
         <div className="pt-4 flex items-center justify-center gap-3">
-          <button 
+          <button
             onClick={onOpenAI}
-            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md transition-all"
+            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-md shadow-md transition-all"
           >
             Launch AI Diagnostic
           </button>

@@ -65,11 +65,10 @@ export default function MetaBusinessView({
             <button
               key={tab.id}
               onClick={() => setMetaSubTab(tab.id)}
-              className={`px-3 py-2 rounded-2xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 shrink-0 min-w-[65px] border cursor-pointer ${
-                isActive
-                  ? 'bg-blue-50/80 dark:bg-blue-950/50 border-blue-600 text-blue-600 dark:text-blue-400 font-extrabold shadow-sm'
-                  : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
-              }`}
+              className={`px-3 py-2 rounded-md text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 shrink-0 min-w-[65px] border cursor-pointer ${isActive
+                ? 'bg-blue-50/80 dark:bg-blue-950/50 border-blue-600 text-blue-600 dark:text-blue-400 font-extrabold shadow-sm'
+                : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                }`}
             >
               <span className="text-base">{tab.icon}</span>
               <span className="text-[10px]">{tab.label}</span>
@@ -79,7 +78,7 @@ export default function MetaBusinessView({
       </div>
 
       {/* Desktop Sub-Tab Bar (100% Preserved for Desktop Screens) */}
-      <div className="hidden sm:flex flex-wrap items-center gap-2 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 w-fit">
+      <div className="hidden sm:flex flex-wrap items-center gap-2 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-md border border-slate-200/80 dark:border-slate-700/80 w-fit">
         {[
           { id: 'overview', label: 'Dashboard', icon: <BarChart2 className="w-4 h-4 text-blue-500" /> },
           { id: 'facebook', label: 'Facebook', icon: <FacebookLogo className="w-4 h-4" /> },
@@ -91,7 +90,7 @@ export default function MetaBusinessView({
           <button
             key={tab.id}
             onClick={() => setMetaSubTab(tab.id)}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${metaSubTab === tab.id
+            className={`px-4 py-2 rounded-md text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${metaSubTab === tab.id
               ? 'bg-blue-600 text-white shadow-md scale-100'
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
               }`}
@@ -149,7 +148,7 @@ export default function MetaBusinessView({
                 href={portfolio?.meta_business_url || "https://business.facebook.com"}
                 target="_blank"
                 rel="noreferrer"
-                className="block text-center py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 font-extrabold rounded-xl text-xs hover:bg-blue-100 transition-all"
+                className="block text-center py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 font-extrabold rounded-md text-xs hover:bg-blue-100 transition-all"
               >
                 Open Meta Business Manager ↗
               </a>
@@ -178,7 +177,7 @@ export default function MetaBusinessView({
                       <p className="text-xs text-slate-400 font-bold">{page.category || 'Software Company'}</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl text-xs">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center bg-slate-50 dark:bg-slate-800/50 p-3 rounded-md text-xs">
                     <div>
                       <span className="text-[9px] text-slate-400 block font-bold">Followers</span>
                       <strong className="text-slate-900 dark:text-white text-sm">{(page.followers || page.followers_count || 0).toLocaleString()}</strong>
@@ -201,7 +200,7 @@ export default function MetaBusinessView({
                   <h3 className="text-sm font-extrabold text-slate-900 dark:text-white mt-1">No Facebook Page Connected</h3>
                   <p className="text-xs text-slate-400 font-medium mt-1">Authorize Meta OAuth to fetch real Facebook Pages.</p>
                 </div>
-                <button onClick={handleConnectMetaAccount} className="w-full py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 transition-all">
+                <button onClick={handleConnectMetaAccount} className="w-full py-2 bg-indigo-600 text-white font-bold rounded-md text-xs hover:bg-indigo-700 transition-all">
                   Connect Facebook Page
                 </button>
               </div>
@@ -265,7 +264,7 @@ export default function MetaBusinessView({
                         </div>
                       </div>
 
-                      <div className="p-3 bg-white dark:bg-slate-800 rounded-xl text-xs space-y-1 border border-slate-100 dark:border-slate-750">
+                      <div className="p-3 bg-white dark:bg-slate-800 rounded-md text-xs space-y-1 border border-slate-100 dark:border-slate-750">
                         <span className="text-[9px] font-bold text-slate-400 block">{activeMessage.sender_name}:</span>
                         <p className="text-slate-800 dark:text-slate-200 text-xs font-medium">"{activeMessage.text}"</p>
                       </div>
@@ -275,19 +274,19 @@ export default function MetaBusinessView({
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
                           placeholder={`Write reply to ${activeMessage.sender_name}...`}
-                          className="w-full p-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 h-20"
+                          className="w-full p-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 h-20"
                         />
                         <div className="flex justify-between items-center">
                           <button
                             onClick={() => handleGenerateAI && handleGenerateAI('auto-reply')}
-                            className="px-2.5 py-1 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-bold rounded-lg flex items-center gap-1"
+                            className="px-2.5 py-1 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-bold rounded-md-lg flex items-center gap-1"
                           >
                             <Sparkles className="w-3 h-3" />
                             <span>AI Auto-Reply</span>
                           </button>
                           <button
                             onClick={handleSendReply}
-                            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md"
+                            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-md shadow-md"
                           >
                             Send Reply
                           </button>
@@ -312,7 +311,7 @@ export default function MetaBusinessView({
                 </h3>
                 <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
                   {(reviews || []).map((rev) => (
-                    <div key={rev.id} className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs space-y-1.5 border border-slate-100 dark:border-slate-800">
+                    <div key={rev.id} className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-md text-xs space-y-1.5 border border-slate-100 dark:border-slate-800">
                       <div className="flex justify-between items-center">
                         <strong className="text-slate-900 dark:text-white text-xs">{rev.reviewer}</strong>
                         <span className="text-amber-400 font-black text-xs">★★★★★</span>
@@ -351,7 +350,7 @@ export default function MetaBusinessView({
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-3">
                     <h3 className="text-lg font-black text-slate-900 dark:text-white">@{instagram.username}</h3>
-                    <span className="text-xs text-pink-600 font-bold px-2 py-0.5 bg-pink-50 dark:bg-pink-950/60 rounded-md">
+                    <span className="text-xs text-pink-600 font-bold px-2 py-0.5 bg-pink-50 dark:bg-pink-950/60 rounded-md-md">
                       {instagram.name || 'Codigix Infotech'}
                     </span>
                   </div>
@@ -374,7 +373,7 @@ export default function MetaBusinessView({
               </div>
 
               {/* Professional Dashboard Metrics */}
-              <div className="border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-gradient-to-r from-pink-500/5 via-purple-500/5 to-indigo-500/5 space-y-3">
+              <div className="border border-slate-200 dark:border-slate-700 rounded-md p-4 bg-gradient-to-r from-pink-500/5 via-purple-500/5 to-indigo-500/5 space-y-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 text-sm">
                     <BarChart2 className="w-4 h-4 text-pink-600" /> Professional Dashboard Insights
@@ -382,19 +381,19 @@ export default function MetaBusinessView({
                   <span className="text-xs text-slate-400 font-medium">Last 30 Days Telemetry</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs pt-1">
-                  <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-750">
+                  <div className="bg-white dark:bg-slate-800 p-3 rounded-md border border-slate-100 dark:border-slate-750">
                     <span className="text-[10px] text-slate-400 block font-bold uppercase">Accounts Reached</span>
                     <strong className="text-pink-600 font-black text-base">{insights?.reach > 0 ? insights.reach.toLocaleString() : '0'}</strong>
                   </div>
-                  <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-750">
+                  <div className="bg-white dark:bg-slate-800 p-3 rounded-md border border-slate-100 dark:border-slate-750">
                     <span className="text-[10px] text-slate-400 block font-bold uppercase">Profile Views</span>
                     <strong className="text-purple-600 font-black text-base">{insights?.profile_views > 0 ? insights.profile_views.toLocaleString() : '0'}</strong>
                   </div>
-                  <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-750">
+                  <div className="bg-white dark:bg-slate-800 p-3 rounded-md border border-slate-100 dark:border-slate-750">
                     <span className="text-[10px] text-slate-400 block font-bold uppercase">Total Impressions</span>
                     <strong className="text-indigo-600 font-black text-base">{insights?.impressions > 0 ? insights.impressions.toLocaleString() : '0'}</strong>
                   </div>
-                  <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-750">
+                  <div className="bg-white dark:bg-slate-800 p-3 rounded-md border border-slate-100 dark:border-slate-750">
                     <span className="text-[10px] text-slate-400 block font-bold uppercase">Website Clicks</span>
                     <strong className="text-emerald-600 font-black text-base">42</strong>
                   </div>
@@ -405,7 +404,7 @@ export default function MetaBusinessView({
             <div className="card-base p-6 space-y-3 border-l-4 border-pink-600">
               <span className="text-[10px] font-black uppercase text-pink-600 tracking-wider">Instagram Account</span>
               <h3 className="text-base font-extrabold text-slate-900 dark:text-white">No Instagram Account Connected</h3>
-              <button onClick={handleConnectMetaAccount} className="px-4 py-2 bg-pink-600 text-white font-bold rounded-xl text-xs">
+              <button onClick={handleConnectMetaAccount} className="px-4 py-2 bg-pink-600 text-white font-bold rounded-md text-xs">
                 Connect Instagram Account
               </button>
             </div>
@@ -419,7 +418,7 @@ export default function MetaBusinessView({
           <div className="card-base p-6 space-y-4 border-l-4 border-emerald-600">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white font-black text-xl flex items-center justify-center border border-emerald-500 shadow-md">
+                <div className="w-14 h-14 rounded-md bg-emerald-600 text-white font-black text-xl flex items-center justify-center border border-emerald-500 shadow-md">
                   💬
                 </div>
                 <div>
@@ -439,31 +438,31 @@ export default function MetaBusinessView({
                   </p>
                 </div>
               </div>
-              <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-black rounded-xl border border-emerald-200 dark:border-emerald-800">
+              <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-black rounded-md border border-emerald-200 dark:border-emerald-800">
                 Connected & Active
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
-              <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-md border border-slate-200 dark:border-slate-700">
                 <span className="text-[10px] text-slate-400 font-bold uppercase block">Messages Sent</span>
                 <strong className="text-base font-black text-emerald-600">
                   {saas?.whatsapp?.messages_sent ? saas.whatsapp.messages_sent.toLocaleString() : '1,240'} Messages
                 </strong>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-md border border-slate-200 dark:border-slate-700">
                 <span className="text-[10px] text-slate-400 font-bold uppercase block">Customer Inquiries</span>
                 <strong className="text-base font-black text-blue-600">
                   {saas?.whatsapp?.customer_inquiries ? saas.whatsapp.customer_inquiries.toLocaleString() : '842'} Received
                 </strong>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-md border border-slate-200 dark:border-slate-700">
                 <span className="text-[10px] text-slate-400 font-bold uppercase block">Template Delivery</span>
                 <strong className="text-base font-black text-purple-600">
                   {saas?.whatsapp?.template_delivery_rate || '99.4%'} Success
                 </strong>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-md border border-slate-200 dark:border-slate-700">
                 <span className="text-[10px] text-slate-400 font-bold uppercase block">Avg Response Time</span>
                 <strong className="text-base font-black text-amber-500">
                   {saas?.whatsapp?.avg_response_time || '1.2 Minutes'}
@@ -477,28 +476,28 @@ export default function MetaBusinessView({
       {/* SUB-PROFILE 4: META ADS, CAMPAIGNS & CRM LEADS */}
       {metaSubTab === 'ads' && (
         <div className="space-y-6">
-            <DataTable
-              title="Active Meta Sponsored Campaigns"
-              columns={[
-                { key: 'name', header: 'Campaign Name', sortable: true, render: (camp) => <span className="font-bold text-slate-900 dark:text-white">{camp.name}</span> },
-                { key: 'objective', header: 'Objective', sortable: true, render: (camp) => <span className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 font-bold text-[9px]">{camp.objective}</span> },
-                { key: 'budget', header: 'Budget', sortable: true, render: (camp) => <span className="font-bold text-slate-700 dark:text-slate-300">{camp.budget}</span> },
-                { key: 'spend', header: 'Spend', sortable: true, render: (camp) => <span className="text-slate-900 dark:text-white font-extrabold">{camp.spend}</span> },
-                { key: 'reach', header: 'Reach', sortable: true, render: (camp) => <span className="text-slate-500">{camp.reach}</span> },
-                { key: 'leads', header: 'Leads', sortable: true, render: (camp) => <span className="text-emerald-600 font-black">{camp.leads}</span> },
-                { key: 'roas', header: 'ROAS', sortable: true, render: (camp) => <span className="text-emerald-600 font-black text-sm">{camp.roas}x</span> }
-              ]}
-              data={campaigns && campaigns.length > 0 ? campaigns : []}
-              defaultPageSize={5}
-              searchable={false}
-            />
+          <DataTable
+            title="Active Meta Sponsored Campaigns"
+            columns={[
+              { key: 'name', header: 'Campaign Name', sortable: true, render: (camp) => <span className="font-bold text-slate-900 dark:text-white">{camp.name}</span> },
+              { key: 'objective', header: 'Objective', sortable: true, render: (camp) => <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-600 font-bold text-[9px]">{camp.objective}</span> },
+              { key: 'budget', header: 'Budget', sortable: true, render: (camp) => <span className="font-bold text-slate-700 dark:text-slate-300">{camp.budget}</span> },
+              { key: 'spend', header: 'Spend', sortable: true, render: (camp) => <span className="text-slate-900 dark:text-white font-extrabold">{camp.spend}</span> },
+              { key: 'reach', header: 'Reach', sortable: true, render: (camp) => <span className="text-slate-500">{camp.reach}</span> },
+              { key: 'leads', header: 'Leads', sortable: true, render: (camp) => <span className="text-emerald-600 font-black">{camp.leads}</span> },
+              { key: 'roas', header: 'ROAS', sortable: true, render: (camp) => <span className="text-emerald-600 font-black text-sm">{camp.roas}x</span> }
+            ]}
+            data={campaigns && campaigns.length > 0 ? campaigns : []}
+            defaultPageSize={5}
+            searchable={false}
+          />
         </div>
       )}
 
       {/* Step 15: Meta Dashboard Debug JSON Inspector */}
-      <details className="mt-8 p-4 bg-slate-900 text-slate-200 rounded-2xl border border-slate-800 text-xs">
+      <details className="mt-8 p-4 bg-slate-900 text-slate-200 rounded-md border border-slate-800 text-xs">
         <summary className="font-bold cursor-pointer hover:text-white">Meta Dashboard Debug JSON</summary>
-        <pre className="mt-3 p-3 bg-slate-950 rounded-xl overflow-x-auto text-[11px] font-mono text-emerald-400 max-h-96">
+        <pre className="mt-3 p-3 bg-slate-950 rounded-md overflow-x-auto text-[11px] font-mono text-emerald-400 max-h-96">
           {JSON.stringify(saas || metaSaaSData, null, 2)}
         </pre>
       </details>

@@ -147,7 +147,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
   return (
     <div className="space-y-4 sm:space-y-6 pb-20 text-slate-800 dark:text-slate-100 max-w-[1600px] mx-auto">
       {/* Top Header Card */}
-      <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
+      <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -181,7 +181,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
                   alert('Please allow notification permission in browser or mobile phone settings.');
                 }
               }}
-              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl sm:rounded-2xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-md sm:rounded-md shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
               <span>Enable Mobile Push</span>
@@ -189,7 +189,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
 
             <button
               onClick={handleMarkAllRead}
-              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-xs rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-xs rounded-md sm:rounded-md border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
               <span>Mark All Read</span>
@@ -197,7 +197,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
 
             <button
               onClick={loadNotifications}
-              className="p-2 sm:p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl sm:rounded-2xl shadow-md transition-all cursor-pointer"
+              className="p-2 sm:p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md sm:rounded-md shadow-md transition-all cursor-pointer"
               title="Refresh Notifications"
             >
               <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -221,9 +221,9 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${selectedCategory === cat.id
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+              className={`px-3 py-1.5 rounded-md text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${selectedCategory === cat.id
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
                 }`}
             >
               {cat.badgeColor && (
@@ -243,7 +243,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
           placeholder="Search notifications or task titles..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 sm:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm"
+          className="w-full pl-9 pr-4 py-2 sm:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md sm:rounded-md text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm"
         />
       </div>
 
@@ -267,11 +267,11 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
           return (
             <div
               key={item.id}
-              className={`p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 ${severityBg} ${item.unread ? 'border-l-4 border-l-blue-600 shadow-sm' : 'opacity-85'
+              className={`p-3.5 sm:p-4 rounded-md sm:rounded-md border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 ${severityBg} ${item.unread ? 'border-l-4 border-l-blue-600 shadow-sm' : 'opacity-85'
                 }`}
             >
               <div className="flex items-start gap-3">
-                <div className="p-1.5 sm:p-2 rounded-xl bg-white dark:bg-slate-900 shadow-sm shrink-0 mt-0.5">
+                <div className="p-1.5 sm:p-2 rounded-md bg-white dark:bg-slate-900 shadow-sm shrink-0 mt-0.5">
                   {icon}
                 </div>
                 <div className="space-y-0.5 min-w-0">
@@ -280,7 +280,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
                       {item.title}
                     </h3>
                     {item.unread && (
-                      <span className="px-1.5 py-0.5 bg-blue-600 text-white rounded text-[8px] sm:text-[9px] font-black uppercase">
+                      <span className="px-1.5 py-0.5 bg-blue-600 text-white rounded-md text-[8px] sm:text-[9px] font-black uppercase">
                         NEW
                       </span>
                     )}
@@ -298,7 +298,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
                 {item.unread && (
                   <button
                     onClick={() => handleMarkAsRead(item.id)}
-                    className="px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] sm:text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
+                    className="px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-md-lg text-[10px] sm:text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
                   >
                     Mark Read
                   </button>
@@ -306,7 +306,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
 
                 <button
                   onClick={() => handleClear(item.id)}
-                  className="p-1 text-slate-400 hover:text-rose-500 hover:bg-white dark:hover:bg-slate-900 rounded-lg cursor-pointer transition-all"
+                  className="p-1 text-slate-400 hover:text-rose-500 hover:bg-white dark:hover:bg-slate-900 rounded-md-lg cursor-pointer transition-all"
                   title="Dismiss notification"
                 >
                   <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -341,7 +341,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
       {/* ── Mobile Filters Drawer Modal ── */}
       {showMobileFilterModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-blue-600" />
@@ -349,7 +349,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
               </div>
               <button
                 onClick={() => setShowMobileFilterModal(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -366,7 +366,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by title or message..."
-                    className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
                   />
                 </div>
               </div>
@@ -386,9 +386,9 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
                     <button
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold border text-left cursor-pointer transition-all truncate ${selectedCategory === cat.id
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                      className={`py-2 px-3 rounded-md text-xs font-bold border text-left cursor-pointer transition-all truncate ${selectedCategory === cat.id
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                         }`}
                     >
                       {cat.label}
@@ -404,13 +404,13 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
                   setSearchQuery('');
                   setSelectedCategory('all');
                 }}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-md cursor-pointer"
               >
                 Reset Filters
               </button>
               <button
                 onClick={() => setShowMobileFilterModal(false)}
-                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-md cursor-pointer"
               >
                 Apply Filters
               </button>

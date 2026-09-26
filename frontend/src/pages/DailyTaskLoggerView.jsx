@@ -43,7 +43,7 @@ export default function DailyTaskLoggerView({
           map[dStr] = { dateStr: dStr, dateObj: dObj, count: 0 };
         }
         map[dStr].count++;
-      } catch(e) {}
+      } catch (e) { }
     });
     return Object.values(map).sort((a, b) => a.dateObj - b.dateObj);
   })();
@@ -72,7 +72,7 @@ export default function DailyTaskLoggerView({
           status: isSameDateAsOrigin ? 'Completed' : t.status,
           completedDates: updatedCompletedDates
         };
-        updatePlannerTaskAPI(t.id, updated).catch(() => {});
+        updatePlannerTaskAPI(t.id, updated).catch(() => { });
         return updated;
       }
       return t;
@@ -93,7 +93,7 @@ export default function DailyTaskLoggerView({
           status: isSameDateAsOrigin ? 'Completed' : t.status,
           completedDates: updatedCompletedDates
         };
-        updatePlannerTaskAPI(t.id, updated).catch(() => {});
+        updatePlannerTaskAPI(t.id, updated).catch(() => { });
         return updated;
       }
       return t;
@@ -120,7 +120,7 @@ export default function DailyTaskLoggerView({
       if (data && Array.isArray(data.domains) && data.domains.length > 0) {
         setDbDomains(data.domains);
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const loggerDateStr = loggerDate.toDateString();
@@ -238,7 +238,7 @@ export default function DailyTaskLoggerView({
             status: isSameDateAsOrigin ? plannerStatus : t.status,
             completedDates: updatedCompletedDates
           };
-          updatePlannerTaskAPI(taskId, updated).catch(() => {});
+          updatePlannerTaskAPI(taskId, updated).catch(() => { });
           return updated;
         }
         return t;
@@ -295,7 +295,7 @@ export default function DailyTaskLoggerView({
 
   const priorityColor = p => p === 'High' ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'
     : p === 'Medium' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
-    : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
+      : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
 
   return (
     <div className="space-y-3 sm:space-y-6 pb-20 lg:pb-12 text-slate-800 dark:text-slate-100 max-w-full overflow-x-hidden">
@@ -304,7 +304,7 @@ export default function DailyTaskLoggerView({
       <div className="flex flex-row items-center justify-between gap-2 border-b sm:border-b-0 border-slate-200/60 dark:border-slate-800 pb-2 sm:pb-0">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 shrink-0">
+            <div className="p-1.5 sm:p-2 rounded-md bg-blue-500/10 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 shrink-0">
               <CheckSquare className="w-4 h-4 sm:w-6 sm:h-6" />
             </div>
             <h1 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white truncate">Daily Task Logger</h1>
@@ -317,17 +317,17 @@ export default function DailyTaskLoggerView({
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             onClick={() => onNavigate && onNavigate('planner')}
-            className="px-2.5 py-1.5 sm:px-3.5 sm:py-2.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200 rounded-xl sm:rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1 hover:bg-slate-50 shadow-sm transition-all cursor-pointer"
+            className="px-2.5 py-1.5 sm:px-3.5 sm:py-2.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200 rounded-md sm:rounded-md text-xs font-extrabold flex items-center justify-center gap-1 hover:bg-slate-50 shadow-sm transition-all cursor-pointer"
             title="Open Daily Planner"
           >
             <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 shrink-0" />
             <span className="hidden sm:inline">Open Planner</span>
             <span className="sm:hidden text-[11px]">Planner</span>
           </button>
-          
+
           <button
-            onClick={() => alert(`✅ Logs recorded for ${formattedDate}`)}
-            className="px-2.5 py-1.5 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl sm:rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+            onClick={() => alert(`Logs recorded for ${formattedDate}`)}
+            className="px-2.5 py-1.5 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md sm:rounded-md text-xs font-extrabold flex items-center justify-center gap-1 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
             title="Save Day's Logs"
           >
             <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
@@ -338,7 +338,7 @@ export default function DailyTaskLoggerView({
       </div>
 
       {/* ── Compact Date Navigator & Today Overview Bar ── */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-4 shadow-sm flex flex-row items-center justify-between gap-2">
+      <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-4 shadow-sm flex flex-row items-center justify-between gap-2">
         {/* Left Side Overview */}
         <div className="min-w-0">
           <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-400 block truncate">TODAY OVERVIEW</span>
@@ -359,24 +359,24 @@ export default function DailyTaskLoggerView({
 
         {/* Right Side Date Navigator Controls */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          <button onClick={handlePrevDay} className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Previous day">
+          <button onClick={handlePrevDay} className="p-1.5 sm:p-2 rounded-md-lg sm:rounded-md border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Previous day">
             <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 dark:text-slate-300" />
           </button>
 
-          <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-slate-50 dark:bg-slate-800/80 rounded-lg sm:rounded-xl border border-slate-200/60 dark:border-slate-700/60 max-w-[130px] sm:max-w-none">
+          <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-slate-50 dark:bg-slate-800/80 rounded-md-lg sm:rounded-md border border-slate-200/60 dark:border-slate-700/60 max-w-[130px] sm:max-w-none">
             <Calendar className="w-3.5 h-3.5 text-blue-600 shrink-0" />
             <span className="font-extrabold text-[11px] sm:text-xs text-slate-900 dark:text-white truncate">
               {loggerDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </span>
           </div>
 
-          <button onClick={handleNextDay} className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Next day">
+          <button onClick={handleNextDay} className="p-1.5 sm:p-2 rounded-md-lg sm:rounded-md border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Next day">
             <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 dark:text-slate-300" />
           </button>
 
           <button
             onClick={() => setLoggerDate(new Date())}
-            className="px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-extrabold hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition-all cursor-pointer hidden sm:block"
+            className="px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-md-lg sm:rounded-md text-[11px] sm:text-xs font-extrabold hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition-all cursor-pointer hidden sm:block"
           >
             Today
           </button>
@@ -407,7 +407,7 @@ export default function DailyTaskLoggerView({
             const dPct = domain.tasks.length > 0 ? Math.round((dDone / domain.tasks.length) * 100) : 33;
 
             return (
-              <div key={domain.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm space-y-2.5 p-3 sm:p-4">
+              <div key={domain.id} className="bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm space-y-2.5 p-3 sm:p-4">
 
                 {/* Domain Header Card */}
                 <div
@@ -419,7 +419,7 @@ export default function DailyTaskLoggerView({
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white truncate">{domain.name}</span>
-                        <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md shrink-0">
+                        <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md-md shrink-0">
                           {domain.tasks.length} tasks
                         </span>
                       </div>
@@ -447,14 +447,14 @@ export default function DailyTaskLoggerView({
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={e => { e.stopPropagation(); handleMarkDomainDone(domain.id); }}
-                    className="px-2 py-1 sm:px-3 sm:py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center gap-1 border border-emerald-200 dark:border-emerald-800 cursor-pointer"
+                    className="px-2 py-1 sm:px-3 sm:py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 rounded-md text-[11px] sm:text-xs font-extrabold flex items-center gap-1 border border-emerald-200 dark:border-emerald-800 cursor-pointer"
                   >
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Complete All</span>
                   </button>
                   <button
                     onClick={e => { e.stopPropagation(); setAddingDomainId(addingDomainId === domain.id ? null : domain.id); }}
-                    className="px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center gap-1 border border-blue-200 dark:border-blue-800 cursor-pointer"
+                    className="px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 rounded-md text-[11px] sm:text-xs font-extrabold flex items-center gap-1 border border-blue-200 dark:border-blue-800 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Task</span>
@@ -463,17 +463,17 @@ export default function DailyTaskLoggerView({
 
                 {/* Inline Add Task Input */}
                 {addingDomainId === domain.id && (
-                  <div className="p-2 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-100 dark:border-blue-900/40 flex items-center gap-1.5">
+                  <div className="p-2 bg-blue-50/50 dark:bg-blue-950/20 rounded-md border border-blue-100 dark:border-blue-900/40 flex items-center gap-1.5">
                     <input
                       type="text"
                       value={newTaskInput[domain.id] || ''}
                       onChange={e => setNewTaskInput({ ...newTaskInput, [domain.id]: e.target.value })}
                       onKeyDown={e => e.key === 'Enter' && handleAddDomainTask(domain.id)}
                       placeholder={`Add task under ${domain.name}…`}
-                      className="flex-1 px-2.5 py-1 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+                      className="flex-1 px-2.5 py-1 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
                       autoFocus
                     />
-                    <button onClick={() => handleAddDomainTask(domain.id)} className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-lg cursor-pointer">Save</button>
+                    <button onClick={() => handleAddDomainTask(domain.id)} className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-md-lg cursor-pointer">Save</button>
                     <button onClick={() => setAddingDomainId(null)} className="p-1 text-slate-400 hover:text-slate-600"><X className="w-3.5 h-3.5" /></button>
                   </div>
                 )}
@@ -482,35 +482,32 @@ export default function DailyTaskLoggerView({
                 {isOpen && (
                   <div className="space-y-2 pt-1">
                     {domain.tasks.map(task => (
-                      <div 
-                        key={task.id} 
-                        className={`p-2.5 sm:p-3 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-                          task.status === 'DONE' ? 'bg-emerald-50/30 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/40' : 'bg-slate-50/50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'
-                        }`}
+                      <div
+                        key={task.id}
+                        className={`p-2.5 sm:p-3 rounded-md border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${task.status === 'DONE' ? 'bg-emerald-50/30 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/40' : 'bg-slate-50/50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'
+                          }`}
                       >
                         <div className="flex items-start gap-2 flex-1 min-w-0">
                           {/* Status dot */}
-                          <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${
-                            task.status === 'DONE' ? 'bg-emerald-500' : task.status === 'OFF' ? 'bg-slate-300 dark:bg-slate-600' : 'bg-amber-500'
-                          }`} />
+                          <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${task.status === 'DONE' ? 'bg-emerald-500' : task.status === 'OFF' ? 'bg-slate-300 dark:bg-slate-600' : 'bg-amber-500'
+                            }`} />
 
                           <div className="flex-1 min-w-0 space-y-1">
-                            <p className={`text-xs font-black leading-snug ${
-                              task.status === 'DONE' ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'
-                            }`}>
+                            <p className={`text-xs font-black leading-snug ${task.status === 'DONE' ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'
+                              }`}>
                               {task.title}
                             </p>
 
                             <div className="flex items-center gap-1 flex-wrap">
                               {task.time && (
-                                <span className="text-[9px] font-extrabold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded flex items-center gap-1 border border-blue-100 dark:border-blue-900/60">
+                                <span className="text-[9px] font-extrabold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded-md flex items-center gap-1 border border-blue-100 dark:border-blue-900/60">
                                   <Clock className="w-2.5 h-2.5" /> {task.time}
                                 </span>
                               )}
-                              <span className="text-[9px] font-extrabold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-900/60">
+                              <span className="text-[9px] font-extrabold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded-md border border-blue-100 dark:border-blue-900/60">
                                 {domain.name}
                               </span>
-                              <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${priorityColor(task.priority)}`}>
+                              <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md ${priorityColor(task.priority)}`}>
                                 {task.priority || 'Normal'}
                               </span>
                             </div>
@@ -519,27 +516,25 @@ export default function DailyTaskLoggerView({
 
                         {/* 3-State Toggle Pill Buttons (Compact Icons + Text on Desktop, Icon-focused on Mobile to Save Space) */}
                         <div className="flex items-center justify-between sm:justify-end gap-1 shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
-                          <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1 rounded-xl">
+                          <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1 rounded-md">
                             <button
                               onClick={() => handleSetTaskStatus(task.id, 'DONE')}
-                              className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${
-                                task.status === 'DONE'
-                                  ? 'bg-emerald-600 text-white shadow-sm'
-                                  : 'text-slate-500 hover:text-emerald-600'
-                              }`}
+                              className={`px-2 py-1 rounded-md-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${task.status === 'DONE'
+                                ? 'bg-emerald-600 text-white shadow-sm'
+                                : 'text-slate-500 hover:text-emerald-600'
+                                }`}
                               title="Mark as Done"
                             >
                               <CheckCircle className="w-3 h-3" />
                               <span className="hidden sm:inline">Done</span>
                             </button>
-                            
+
                             <button
                               onClick={() => handleSetTaskStatus(task.id, 'NOT DONE')}
-                              className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${
-                                task.status === 'NOT DONE'
-                                  ? 'bg-amber-500 text-white shadow-sm'
-                                  : 'text-slate-500 hover:text-amber-600'
-                              }`}
+                              className={`px-2 py-1 rounded-md-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${task.status === 'NOT DONE'
+                                ? 'bg-amber-500 text-white shadow-sm'
+                                : 'text-slate-500 hover:text-amber-600'
+                                }`}
                               title="Mark as Pending"
                             >
                               <XCircle className="w-3 h-3" />
@@ -548,11 +543,10 @@ export default function DailyTaskLoggerView({
 
                             <button
                               onClick={() => handleSetTaskStatus(task.id, 'OFF')}
-                              className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${
-                                task.status === 'OFF'
-                                  ? 'bg-slate-600 text-white shadow-sm'
-                                  : 'text-slate-500 hover:text-slate-700'
-                              }`}
+                              className={`px-2 py-1 rounded-md-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${task.status === 'OFF'
+                                ? 'bg-slate-600 text-white shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
+                                }`}
                               title="Mark as Off"
                             >
                               <MinusCircle className="w-3 h-3" />
@@ -562,7 +556,7 @@ export default function DailyTaskLoggerView({
 
                           <button
                             onClick={() => setNoteModalTask(task)}
-                            className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                            className="p-1 sm:p-1.5 rounded-md-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                             title="Notes"
                           >
                             <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -583,7 +577,7 @@ export default function DailyTaskLoggerView({
           {/* 2-Column Mobile Analytics Row */}
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 sm:gap-4">
             {/* Compact Execution Rate Card */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-5 text-center shadow-sm flex flex-col justify-between">
+            <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 p-3 sm:p-5 text-center shadow-sm flex flex-col justify-between">
               <h3 className="font-extrabold text-slate-900 dark:text-white text-[11px] sm:text-sm flex items-center justify-center gap-1 mb-1">
                 <Target className="w-3.5 h-3.5 text-blue-600" /> Execution Rate
               </h3>
@@ -603,13 +597,13 @@ export default function DailyTaskLoggerView({
                 </div>
               </div>
               <div className="flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-extrabold border-t border-slate-100 dark:border-slate-800 pt-2 mt-1">
-                <span className="text-emerald-600">☑️ {doneCount || 1} <span className="hidden sm:inline">Done</span></span>
-                <span className="text-amber-500">⏳ {pendingCount || 2} <span className="hidden sm:inline">Pending</span></span>
+                <span className="text-emerald-600 flex items-center gap-1"><CheckSquare className="w-3 h-3" /> {doneCount || 1} <span className="hidden sm:inline">Done</span></span>
+                <span className="text-amber-500 flex items-center gap-1"><Clock className="w-3 h-3" /> {pendingCount || 2} <span className="hidden sm:inline">Pending</span></span>
               </div>
             </div>
 
             {/* Compact Domain Breakdown Card */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-5 shadow-sm flex flex-col justify-between">
+            <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 p-3 sm:p-5 shadow-sm flex flex-col justify-between">
               <div>
                 <h3 className="font-extrabold text-slate-900 dark:text-white text-[11px] sm:text-sm flex items-center gap-1 mb-2">
                   <BarChart2 className="w-3.5 h-3.5 text-blue-600" /> Domain Breakdown
@@ -625,9 +619,9 @@ export default function DailyTaskLoggerView({
                 </div>
               </div>
 
-              <div 
+              <div
                 onClick={() => onNavigate && onNavigate('dashboard')}
-                className="mt-2.5 p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-100 dark:border-slate-700/80 flex items-center justify-between text-[10px] sm:text-[11px] font-extrabold text-blue-600 cursor-pointer hover:bg-slate-100"
+                className="mt-2.5 p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/80 rounded-md border border-slate-100 dark:border-slate-700/80 flex items-center justify-between text-[10px] sm:text-[11px] font-extrabold text-blue-600 cursor-pointer hover:bg-slate-100"
               >
                 <span>View All Domains</span>
                 <ChevronRight className="w-3 h-3" />
@@ -636,7 +630,7 @@ export default function DailyTaskLoggerView({
           </div>
 
           {/* Compact Retrospective Card */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-5 shadow-sm space-y-2.5">
+          <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-5 shadow-sm space-y-2.5">
             <h3 className="font-black text-slate-900 dark:text-white text-xs sm:text-sm flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-blue-600" /> Retrospective
             </h3>
@@ -645,7 +639,7 @@ export default function DailyTaskLoggerView({
               value={retrospective}
               onChange={e => setRetrospective(e.target.value)}
               placeholder="Record insights, blockers, wins, or learnings for today…"
-              className="w-full p-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-200 resize-none font-semibold"
+              className="w-full p-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-200 resize-none font-semibold"
             />
             <div className="flex flex-wrap items-center justify-between gap-1.5 text-[10px] font-extrabold text-slate-400">
               <button
@@ -674,7 +668,7 @@ export default function DailyTaskLoggerView({
       {/* ── Task Note Modal ── */}
       {noteModalTask && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
                 <MessageSquare className="w-4 h-4 text-blue-600" /> Task Notes
@@ -687,10 +681,10 @@ export default function DailyTaskLoggerView({
               value={noteModalTask.note || ''}
               onChange={e => setNoteModalTask({ ...noteModalTask, note: e.target.value })}
               placeholder="Task notes, blockers, or execution details…"
-              className="w-full p-3 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800 dark:text-slate-200"
+              className="w-full p-3 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800 dark:text-slate-200"
             />
             <div className="flex justify-end gap-2">
-              <button onClick={() => setNoteModalTask(null)} className="px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
+              <button onClick={() => setNoteModalTask(null)} className="px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md">Cancel</button>
               <button
                 onClick={() => {
                   if (setPlannerTasks) {
@@ -700,7 +694,7 @@ export default function DailyTaskLoggerView({
                   }
                   setNoteModalTask(null);
                 }}
-                className="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-sm"
+                className="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-md shadow-sm"
               >
                 Save Note
               </button>
@@ -721,7 +715,7 @@ export default function DailyTaskLoggerView({
       {/* ── Mobile Filters Drawer Modal ── */}
       {showMobileFilterModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-blue-600" />
@@ -729,7 +723,7 @@ export default function DailyTaskLoggerView({
               </div>
               <button
                 onClick={() => setShowMobileFilterModal(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -746,7 +740,7 @@ export default function DailyTaskLoggerView({
                     value={loggerSearchQuery}
                     onChange={(e) => setLoggerSearchQuery(e.target.value)}
                     placeholder="Search by title or domain..."
-                    className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
                   />
                 </div>
               </div>
@@ -757,7 +751,7 @@ export default function DailyTaskLoggerView({
                 <select
                   value={selectedDomainFilter}
                   onChange={(e) => setSelectedDomainFilter(e.target.value)}
-                  className="w-full py-2 px-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-full py-2 px-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none"
                 >
                   <option value="ALL">All 22 Executive Domains</option>
                   {dbDomains.map(d => (
@@ -773,13 +767,13 @@ export default function DailyTaskLoggerView({
                   setLoggerSearchQuery('');
                   setSelectedDomainFilter('ALL');
                 }}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-md cursor-pointer"
               >
                 Reset Filters
               </button>
               <button
                 onClick={() => setShowMobileFilterModal(false)}
-                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-md cursor-pointer"
               >
                 Apply Filters
               </button>

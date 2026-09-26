@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Utensils,
   Apple,
@@ -20,6 +20,7 @@ import {
   X,
   Plus,
   RefreshCw,
+  RotateCw,
   ExternalLink,
   ChevronDown,
   ChevronUp,
@@ -34,7 +35,8 @@ import {
   CheckCheck,
   Search,
   BookOpen,
-  Activity
+  Activity,
+  MoreVertical
 } from 'lucide-react';
 import {
   WEEKLY_DIET_PLAN,
@@ -45,7 +47,13 @@ import {
   updateDietStatusAPI,
   syncDietToPlannerAPI
 } from '../../services/api';
-import { sendSystemNotification, requestNotificationPermission, showNotificationToast } from '../../utils/notificationService';
+import {
+  sendSystemNotification,
+  requestNotificationPermission,
+  showNotificationToast,
+  openWhatsAppAlert,
+  checkNotificationSupport
+} from '../../utils/notificationService';
 import { deduplicateTasks, deduplicateTimeline } from '../../utils/plannerDeduplication';
 import NextDayIngredientsModal from './NextDayIngredientsModal';
 
@@ -71,18 +79,284 @@ function playDietChime() {
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+function SwipeableDietCard({ item, state, theme, onToggleDone, onOpenModal }) {
+  const [dragOffset, setDragOffset] = React.useState(0);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [isExiting, setIsExiting] = React.useState(false);
+  const touchStartRef = React.useRef({ x: 0, y: 0 });
+  const touchDirectionRef = React.useRef(null);
+
+  const isCompleted = state.status === 'completed';
+  const isRescheduled = state.status === 'rescheduled';
+
+  const handleTouchStart = (e) => {
+    if (!e.touches || e.touches.length === 0) return;
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    touchDirectionRef.current = null;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!e.touches || e.touches.length === 0) return;
+    const diffX = e.touches[0].clientX - touchStartRef.current.x;
+    const diffY = e.touches[0].clientY - touchStartRef.current.y;
+
+    if (!touchDirectionRef.current) {
+      if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
+        touchDirectionRef.current = Math.abs(diffX) > Math.abs(diffY) ? 'horizontal' : 'vertical';
+      }
+    }
+
+    if (touchDirectionRef.current === 'horizontal') {
+      let currentX = diffX;
+      if (Math.abs(diffX) > 70) {
+        currentX = Math.sign(diffX) * (70 + (Math.abs(diffX) - 70) * 0.35);
+      }
+      setDragOffset(Math.max(-130, Math.min(130, currentX)));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    if (touchDirectionRef.current === 'horizontal') {
+      if (dragOffset < -55) {
+        if (!isCompleted) {
+          setIsExiting(true);
+          setTimeout(() => {
+            onToggleDone(item);
+            setIsExiting(false);
+          }, 300);
+        } else {
+          onToggleDone(item);
+        }
+      } else if (dragOffset > 55) {
+        onOpenModal(item);
+      }
+    }
+    setDragOffset(0);
+  };
+
+  const isLeftSwiping = dragOffset < -8;
+  const isRightSwiping = dragOffset > 8;
+
+  const formatTimeOnly = (timeStr) => {
+    if (!timeStr) return '';
+    return timeStr.split('-')[0].trim();
+  };
+
+  const dotColor = theme.bg ? theme.bg.split(' ')[0].replace('-50', '-500') : 'bg-slate-500';
+
+  return (
+    <>
+      {/* ── MOBILE VIEW: Swipeable Timeline Card ── */}
+      <div className={`sm:hidden flex gap-3 w-full transition-all duration-300 relative ${isExiting ? 'opacity-0 !max-h-0 !p-0 !m-0 !border-0' : 'max-h-[800px] opacity-100'}`}>
+        {/* Left Timeline Column */}
+        <div className="w-16 shrink-0 relative flex flex-col items-end pt-3">
+          <div className="text-[10px] font-black text-slate-800 dark:text-slate-200 text-right w-full pr-3">
+            {formatTimeOnly(item.timeFormatted) || '12:00 PM'}
+          </div>
+          <div className={`w-2.5 h-2.5 rounded-full absolute top-[15px] right-0 translate-x-[4.5px] z-10 ${dotColor}`} />
+          <div className="w-px bg-slate-200 dark:bg-slate-700/60 absolute top-[20px] bottom-[-20px] right-0 translate-x-[4px]" />
+        </div>
+
+        {/* Right Swipeable Card Wrapper */}
+        <div className="flex-1 relative overflow-hidden rounded-xl select-none touch-pan-y transition-all">
+           {/* Background Revealed Action: Right Swipe -> Details (Blue) */}
+           <div className={`absolute inset-y-0 left-0 w-full rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white flex items-center justify-start pl-4 gap-2.5 transition-opacity ${isRightSwiping ? 'opacity-100' : 'opacity-0'}`}>
+             <div className="w-8 h-8 rounded-md bg-white/20 flex items-center justify-center">
+               <BookOpen className="w-4 h-4 text-white" />
+             </div>
+           </div>
+     
+           {/* Background Revealed Action: Left Swipe -> Toggle Done (Emerald) */}
+           <div className={`absolute inset-y-0 right-0 w-full rounded-xl flex items-center justify-end pr-4 gap-2.5 transition-opacity ${isLeftSwiping ? 'opacity-100' : 'opacity-0'} ${isCompleted ? 'bg-amber-500' : 'bg-emerald-500'}`}>
+             <div className="w-8 h-8 rounded-md bg-white/20 flex items-center justify-center">
+               {isCompleted ? <RotateCcw className="w-4 h-4 text-white" /> : <CheckCircle2 className="w-4 h-4 text-white" />}
+             </div>
+           </div>
+     
+           {/* Main Foreground Card */}
+           <div
+             onTouchStart={handleTouchStart}
+             onTouchMove={handleTouchMove}
+             onTouchEnd={handleTouchEnd}
+             style={{ transform: `translateX(${dragOffset}px)` }}
+             className={`relative p-3 rounded-xl border flex gap-3 transition-all duration-200 cursor-pointer active:scale-[0.99] bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700/80 shadow-xs hover:shadow-md ${isCompleted ? 'opacity-65 bg-slate-50 dark:bg-slate-900/40' : ''}`}
+             onClick={() => onOpenModal(item)}
+           >
+             {/* Card Icon */}
+             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${theme.bg} ${theme.text}`}>
+               {theme.icon}
+             </div>
+
+             {/* Main Card Content */}
+             <div className="flex-1 min-w-0 flex flex-col justify-center">
+               <h4 className={`text-[14px] font-extrabold leading-tight break-words ${isCompleted ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'}`}>
+                 {item.taskTitle}
+               </h4>
+               
+               {/* Instructions */}
+               {item.instructions && !isCompleted && (
+                 <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                   💡 {item.instructions}
+                 </p>
+               )}
+
+               <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                 <span className={`px-2 py-0.5 rounded-md-lg text-[10px] font-bold border ${theme.bg} ${theme.text} ${theme.border}`}>
+                   {item.category}
+                 </span>
+                 {item.reminderMinutesBefore && (
+                   <span className="flex items-center gap-1 px-2 py-0.5 rounded-md-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+                     <Bell className="w-3 h-3" /> {item.reminderMinutesBefore}m
+                   </span>
+                 )}
+               </div>
+
+               <div className="flex items-center gap-3 mt-2 text-[10px] font-bold text-slate-500">
+                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {isRescheduled && state.rescheduledTime ? state.rescheduledTime : item.timeFormatted}</span>
+               </div>
+               
+               {/* Ingredients / Steps if not completed */}
+               {!isCompleted && item.description && (
+                 (() => {
+                   const rawItems = item.description.split(';').map(s => s.trim()).filter(Boolean);
+                   const items = rawItems.filter(s => !['n/a', 'none', 'na', '-', '.', 'nil'].includes(s.toLowerCase()));
+                   if (items.length === 0) return null;
+                   
+                   const displayItems = items.slice(0, 4);
+                   const hasMore = items.length > 4;
+
+                   return (
+                     <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                       <ul className="grid grid-cols-2 gap-x-3 gap-y-1">
+                         {displayItems.map((ing, i) => (
+                           <li key={i} className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate flex items-center gap-1.5">
+                             <span className={`w-1 h-1 rounded-full shrink-0 ${item.category === 'Nutrition' || item.category === 'Hydration' || item.category.includes('Meal') ? 'bg-emerald-400' : 'bg-indigo-400'}`} />
+                             <span className="truncate">{ing}</span>
+                           </li>
+                         ))}
+                         {hasMore && (
+                           <li className="text-[10px] text-slate-400 font-bold italic flex items-center pl-2.5">
+                             +{items.length - 4} more
+                           </li>
+                         )}
+                       </ul>
+                     </div>
+                   );
+                 })()
+               )}
+             </div>
+
+             {/* Right Actions */}
+             <div className="flex flex-col items-center justify-between shrink-0 py-0.5">
+               <button onClick={(e) => { e.stopPropagation(); onOpenModal(item); }} className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer">
+                 <MoreVertical className="w-4 h-4" />
+               </button>
+               <button
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   setIsExiting(true);
+                   setTimeout(() => {
+                     onToggleDone(item);
+                     setIsExiting(false);
+                   }, 300);
+                 }}
+                 className={`w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCompleted ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm' : 'border-2 border-slate-300 dark:border-slate-600 hover:border-emerald-500'}`}
+               >
+                 {isCompleted && <Check className="w-3 h-3 stroke-[3]" />}
+               </button>
+             </div>
+           </div>
+        </div>
+      </div>
+
+      {/* ── DESKTOP VIEW: Original Grid Card ── */}
+      <div className={`hidden sm:flex p-4 rounded-3xl border transition-all duration-300 relative overflow-hidden flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-700 ${isCompleted ? 'opacity-60 scale-[0.98]' : 'scale-100'} ${theme.cardBorder || ''}`}>
+        <div className="flex items-start sm:items-center gap-4 min-w-0">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${theme.bg} ${theme.text}`}>
+            <span className="text-2xl">{theme.icon}</span>
+          </div>
+
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border ${theme.bg} ${theme.text} ${theme.border}`}>
+                {item.category}
+              </span>
+              {item.reminderMinutesBefore && (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+                  <Bell className="w-3 h-3" /> {item.reminderMinutesBefore}m
+                </span>
+              )}
+              {item.completionRequired && (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-200/50 dark:border-emerald-800/50">
+                  <CheckCircle2 className="w-3 h-3" /> Required
+                </span>
+              )}
+            </div>
+
+            <h4 className={`text-base font-black truncate leading-tight ${isCompleted ? 'line-through text-slate-500' : 'text-slate-800 dark:text-slate-200'}`}>
+              {item.taskTitle}
+            </h4>
+
+            <div className="flex items-center gap-3 mt-1.5 text-xs font-bold text-slate-500">
+              <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {isRescheduled && state.rescheduledTime ? state.rescheduledTime : item.timeFormatted}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 sm:shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+          {/* Only show ingredients button if there's a description */}
+          {item.description && (
+            <button
+              onClick={() => onOpenModal(item)}
+              className="flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 min-h-[32px] bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
+            >
+              <Utensils className="w-3.5 h-3.5" />
+              <span>Ingredients</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+            <button
+              onClick={() => onToggleDone(item)}
+              className={`px-2.5 sm:px-3 py-1.5 min-h-[32px] rounded-xl text-xs font-black flex items-center gap-1 transition-all cursor-pointer active:scale-95 shadow-xs ${
+                isCompleted
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 border border-slate-200/80 dark:border-slate-700/80'
+              }`}
+            >
+              <Check className={`w-3.5 h-3.5 ${isCompleted ? 'stroke-[3]' : ''}`} />
+              <span>{isCompleted ? 'Done' : 'Mark Done'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function WeeklyDietManager({
   plannerTasks = [],
   setPlannerTasks,
   setScheduleTimeline,
-  onOpenTaskModal
+  onOpenTaskModal,
+  selectedPlannerDate
 }) {
   // ── 1. IDENTIFY CURRENT DAY ──
   const realTodayName = useMemo(() => {
     return new Date().toLocaleDateString('en-US', { weekday: 'long' });
   }, []);
 
-  const [selectedDay, setSelectedDay] = useState(realTodayName);
+  const [selectedDay, setSelectedDay] = useState(
+    selectedPlannerDate ? selectedPlannerDate.toLocaleDateString('en-US', { weekday: 'long' }) : realTodayName
+  );
+
+  useEffect(() => {
+    if (selectedPlannerDate) {
+      setSelectedDay(selectedPlannerDate.toLocaleDateString('en-US', { weekday: 'long' }));
+    }
+  }, [selectedPlannerDate]);
   const [selectedMealForModal, setSelectedMealForModal] = useState(null);
   const [skipModalItem, setSkipModalItem] = useState(null);
   const [skipReason, setSkipReason] = useState('Eating Out');
@@ -98,6 +372,8 @@ export default function WeeklyDietManager({
   );
   const [toastMessage, setToastMessage] = useState(null);
   const [activeInAppReminder, setActiveInAppReminder] = useState(null);
+  const [undoState, setUndoState] = useState(null);
+  const undoTimerRef = useRef(null);
 
   // ── NEXT DAY INGREDIENTS PREPARATION CHECKLIST STATE ──
   // Key format: `${prepDay}` -> array of checked ingredient strings
@@ -152,42 +428,77 @@ export default function WeeklyDietManager({
     }
   }, [completions]);
 
-  // Request browser notification permission
+  // Request browser notification permission with full mobile diagnostic
   const handleEnableNotifications = async () => {
-    const granted = await requestNotificationPermission();
-    setNotificationPermissionGranted(granted);
-    if (granted) {
+    const res = await requestNotificationPermission();
+    const isGranted = res.granted || (typeof Notification !== 'undefined' && Notification.permission === 'granted');
+    setNotificationPermissionGranted(isGranted);
+
+    if (isGranted) {
       playDietChime();
-      sendSystemNotification('Diet & Task Notifications Active 🥗', {
-        body: 'You will receive reminders before each and every task, plus 8:00 PM next-day grocery & prep alerts! Tap to open details.',
-        tag: 'diet-welcome'
+      sendSystemNotification('Mobile Alert Test Successful 🔔', {
+        body: 'Audio chime, vibration, and push notifications are active on this device!',
+        tag: 'diet-welcome-' + Date.now()
       });
-      showToast('Notifications enabled successfully!');
+      showToast('🎉 Mobile alerts & sounds enabled successfully!');
+    } else if (res.reason === 'denied') {
+      alert('⚠️ Notifications are blocked in your mobile browser settings. To receive alerts on your phone, open Browser Settings > Site Settings > Notifications and select "Allow".');
+    } else if (res.reason === 'unsupported') {
+      alert('⚠️ Tip: To receive push notifications on iOS or older Android, tap the "Install App" or "Add to Home Screen" button in your browser.');
     } else {
-      alert('Notification permissions are required to receive lead-time alerts on your mobile phone.');
+      showToast('Notification permission request processed.');
     }
   };
 
-  // Immediate Test Notification & Phone Vibration
+  // Immediate Test Notification, Vibration & Audio Chime
   const handleTestNotification = async () => {
     let granted = notificationPermissionGranted;
     if (!granted) {
-      granted = await requestNotificationPermission();
+      const res = await requestNotificationPermission();
+      granted = res.granted || (typeof Notification !== 'undefined' && Notification.permission === 'granted');
       setNotificationPermissionGranted(granted);
     }
     const testItem = nextUpcomingDietItem || dayDietItems[0] || WEEKLY_DIET_PLAN[0];
     playDietChime();
-    const testIngs = testItem.description ? testItem.description.split(';').map(s => s.trim()).filter(Boolean) : [];
-    const testIngPreview = testIngs.length > 0 ? `\n🥗 Ingredients: ${testIngs.slice(0, 3).join(', ')}${testIngs.length > 3 ? '...' : ''}` : '';
 
-    sendSystemNotification(testItem.taskTitle, {
-      body: testItem.timeFormatted || testItem.time,
+    sendSystemNotification(`🔔 [Alert Test] ${testItem.taskTitle}`, {
+      body: `Scheduled for ${testItem.timeFormatted || testItem.time} • Sound & Vibration active!`,
       mealId: testItem.id,
       day: testItem.day,
       tag: 'test-reminder-' + Date.now()
     });
     setActiveInAppReminder({ item: testItem, minutesLeft: 5 });
-    showToast('Sent test notification! Tap it or the top banner to open details.');
+    showToast('🔔 Fired test alert to your device with chime & vibration!');
+  };
+
+  // Share today's schedule and 8:00 PM prep alert directly to WhatsApp
+  const handleWhatsAppTodaySchedule = () => {
+    const todayItems = WEEKLY_DIET_PLAN.filter(item => item.day === selectedDay);
+    const completedCount = todayItems.filter(i => completions[`${selectedDay}_${i.id}`]?.status === 'completed').length;
+
+    let text = `🥗 *Daily Planner – ${selectedDay}'s Diet & Wellness Schedule*\n`;
+    text += `📊 Progress: ${completedCount}/${todayItems.length} Completed (Health Score: ${dailyHealthScore}/100)\n\n`;
+    text += `*Schedule & Meal Alerts:*\n`;
+
+    todayItems.forEach(item => {
+      const isDone = completions[`${selectedDay}_${item.id}`]?.status === 'completed';
+      const mark = isDone ? '✅' : '⏰';
+      text += `${mark} *${item.timeFormatted || item.time}* - ${item.taskTitle}\n`;
+      if (item.description) {
+        text += `   📝 ${item.description.slice(0, 90)}${item.description.length > 90 ? '...' : ''}\n`;
+      }
+    });
+
+    const todayPrep = NEXT_DAY_PREP_CHECKLIST[selectedDay];
+    if (todayPrep) {
+      text += `\n🛒 *8:00 PM Ingredient Preparation Alert:*\n`;
+      text += `Next Day: ${todayPrep.forNextDay}\n`;
+      text += `Pantry list: ${todayPrep.ingredients}\n`;
+    }
+
+    text += `\n_Generated from Codigix Daily Planner & Health OS_`;
+    openWhatsAppAlert(text);
+    showToast(`Opening WhatsApp with ${selectedDay}'s alert schedule!`);
   };
 
   // Instant trigger to send Next-Day Prep Alert to mobile phone
@@ -201,8 +512,10 @@ export default function WeeklyDietManager({
     sendSystemNotification(`🛒 8:00 PM Prep: Tomorrow's Ingredients (${targetPrep.forNextDay})`, {
       body: `Pantry items needed for ${targetPrep.forNextDay}:\n${targetPrep.ingredients}\nTap to open detailed prep checklist.`,
       tag: `next-day-prep-${targetPrep.prepDay}`,
-      type: 'nextDayPrep',
-      prepDay: targetPrep.prepDay
+      data: {
+        type: 'nextDayPrep',
+        day: targetPrep.prepDay
+      }
     });
     showToast(`Sent ${targetPrep.forNextDay}'s ingredient prep alert to your phone!`);
   };
@@ -303,8 +616,10 @@ export default function WeeklyDietManager({
           sendSystemNotification(`🛒 8:00 PM: Prepare Tomorrow's Ingredients (${todayPrep.forNextDay})!`, {
             body: `Pantry checklist for ${todayPrep.forNextDay}:\n${todayPrep.ingredients.slice(0, 110)}...\nTap to check off ready items!`,
             tag: `diet-prep-${realTodayName}`,
-            type: 'nextDayPrep',
-            prepDay: realTodayName
+            data: {
+              type: 'nextDayPrep',
+              day: realTodayName
+            }
           });
         }
       }
@@ -373,8 +688,77 @@ export default function WeeklyDietManager({
 
   // ── 2. LOAD TODAY'S DIET ITEMS ──
   const dayDietItems = useMemo(() => {
-    return WEEKLY_DIET_PLAN.filter(item => item.day === selectedDay);
-  }, [selectedDay]);
+    const staticItems = WEEKLY_DIET_PLAN.filter(item => item.day === selectedDay);
+
+    const dynamicWellnessTasks = plannerTasks.filter(t => {
+      const isWellness = (t.title && t.title.toLowerCase().includes('[🥗 diet]')) || ['Breakfast', 'Lunch', 'Dinner', 'Nutrition', 'Hydration', 'Health', 'Exercise', 'Routine', 'Sleep', 'Preparation', 'Diet'].includes(t.category);
+      if (!isWellness) return false;
+
+      let belongsToDay = false;
+      if (t.date) {
+        try {
+          const d = new Date(t.date);
+          const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+          if (dayName === selectedDay) belongsToDay = true;
+        } catch (e) { }
+      }
+      if (t.recurring && t.recurring !== 'None') {
+        const r = t.recurring.toLowerCase();
+        if (r === 'daily' || r === 'everyday') belongsToDay = true;
+        else if (r === 'weekdays' && !['Saturday', 'Sunday'].includes(selectedDay)) belongsToDay = true;
+        else if (r === 'weekends' && ['Saturday', 'Sunday'].includes(selectedDay)) belongsToDay = true;
+        else if (r.includes(selectedDay.toLowerCase())) belongsToDay = true;
+      }
+      return belongsToDay;
+    }).map(t => ({
+      id: t.id,
+      day: selectedDay,
+      time: t.time || '12:00 PM',
+      timeFormatted: t.time || '12:00 PM',
+      category: t.category || 'Routine',
+      taskTitle: t.title ? t.title.replace(/\[🥗\s*diet\]\s*/i, '') : 'Wellness Task',
+      description: t.notes || '',
+      completionRequired: true,
+      isDynamic: true
+    }));
+
+    const combined = [...staticItems, ...dynamicWellnessTasks];
+    const unique = [];
+    const seenIds = new Set();
+    const seenTitles = new Set();
+
+    for (const item of combined) {
+      const titleKey = item.taskTitle?.toLowerCase().trim() || '';
+      if (!seenIds.has(item.id) && !seenTitles.has(titleKey)) {
+        seenIds.add(item.id);
+        seenTitles.add(titleKey);
+        unique.push(item);
+      }
+    }
+    return unique.sort((a, b) => {
+      const parseTime = (timeStr) => {
+        if (!timeStr) return 9999;
+
+        // Match either 12-hour (e.g. 08:30 AM) or 24-hour (e.g. 08:30) format
+        const match12 = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (match12) {
+          let h = parseInt(match12[1]);
+          const m = parseInt(match12[2]);
+          if (match12[3].toUpperCase() === 'PM' && h < 12) h += 12;
+          if (match12[3].toUpperCase() === 'AM' && h === 12) h = 0;
+          return h * 60 + m;
+        }
+
+        const match24 = timeStr.match(/(\d+):(\d+)/);
+        if (match24) {
+          return parseInt(match24[1]) * 60 + parseInt(match24[2]);
+        }
+
+        return 9999;
+      };
+      return parseTime(a.time) - parseTime(b.time);
+    });
+  }, [selectedDay, plannerTasks]);
 
   // ── FILTER & SEARCH STATE FOR DIET ITEMS ──
   const [dietFilter, setDietFilter] = useState('All');
@@ -641,13 +1025,23 @@ export default function WeeklyDietManager({
       showToast(`✨ Completed: ${item.taskTitle}! +Health Score`);
     }
 
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setUndoState({
+      item,
+      isNowCompleted: newStatus === 'completed',
+    });
+
+    undoTimerRef.current = setTimeout(() => {
+      setUndoState(null);
+    }, 5000);
+
     // Sync status to backend
     updateDietStatusAPI({
       taskId: item.id,
       day: selectedDay,
       status: newStatus,
       timestamp: new Date().toISOString()
-    }).catch(() => {});
+    }).catch(() => { });
   };
 
   const handleOpenSkipModal = (item) => {
@@ -675,7 +1069,7 @@ export default function WeeklyDietManager({
       status: 'skipped',
       skipReason,
       timestamp: new Date().toISOString()
-    }).catch(() => {});
+    }).catch(() => { });
 
     showToast(`Skipped: ${skipModalItem.taskTitle} (${skipReason})`);
     setSkipModalItem(null);
@@ -706,7 +1100,7 @@ export default function WeeklyDietManager({
       status: 'rescheduled',
       rescheduledTime: rescheduleNewTime,
       timestamp: new Date().toISOString()
-    }).catch(() => {});
+    }).catch(() => { });
 
     showToast(`Rescheduled to ${rescheduleNewTime}`);
     setRescheduleModalItem(null);
@@ -716,25 +1110,25 @@ export default function WeeklyDietManager({
   const getCategoryTheme = (cat) => {
     switch (cat) {
       case 'Breakfast':
-        return { bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-amber-700 dark:text-amber-300', border: 'border-amber-200 dark:border-amber-800', icon: '🍳' };
+        return { bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-amber-700 dark:text-amber-300', border: 'border-amber-200 dark:border-amber-800', icon: <Coffee className="w-4 h-4" /> };
       case 'Lunch':
-        return { bg: 'bg-emerald-50 dark:bg-emerald-950/40', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-200 dark:border-emerald-800', icon: '🍱' };
+        return { bg: 'bg-emerald-50 dark:bg-emerald-950/40', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-200 dark:border-emerald-800', icon: <Utensils className="w-4 h-4" /> };
       case 'Dinner':
-        return { bg: 'bg-indigo-50 dark:bg-indigo-950/40', text: 'text-indigo-700 dark:text-indigo-300', border: 'border-indigo-200 dark:border-indigo-800', icon: '🥗' };
+        return { bg: 'bg-indigo-50 dark:bg-indigo-950/40', text: 'text-indigo-700 dark:text-indigo-300', border: 'border-indigo-200 dark:border-indigo-800', icon: <Utensils className="w-4 h-4" /> };
       case 'Nutrition':
-        return { bg: 'bg-teal-50 dark:bg-teal-950/40', text: 'text-teal-700 dark:text-teal-300', border: 'border-teal-200 dark:border-teal-800', icon: '🌱' };
+        return { bg: 'bg-teal-50 dark:bg-teal-950/40', text: 'text-teal-700 dark:text-teal-300', border: 'border-teal-200 dark:border-teal-800', icon: <Activity className="w-4 h-4" /> };
       case 'Hydration':
-        return { bg: 'bg-sky-50 dark:bg-sky-950/40', text: 'text-sky-700 dark:text-sky-300', border: 'border-sky-200 dark:border-sky-800', icon: '💧' };
+        return { bg: 'bg-sky-50 dark:bg-sky-950/40', text: 'text-sky-700 dark:text-sky-300', border: 'border-sky-200 dark:border-sky-800', icon: <Droplet className="w-4 h-4" /> };
       case 'Exercise':
-        return { bg: 'bg-rose-50 dark:bg-rose-950/40', text: 'text-rose-700 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800', icon: '🏃' };
+        return { bg: 'bg-rose-50 dark:bg-rose-950/40', text: 'text-rose-700 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800', icon: <Dumbbell className="w-4 h-4" /> };
       case 'Snack':
-        return { bg: 'bg-orange-50 dark:bg-orange-950/40', text: 'text-orange-700 dark:text-orange-300', border: 'border-orange-200 dark:border-orange-800', icon: '🍎' };
+        return { bg: 'bg-orange-50 dark:bg-orange-950/40', text: 'text-orange-700 dark:text-orange-300', border: 'border-orange-200 dark:border-orange-800', icon: <Apple className="w-4 h-4" /> };
       case 'Preparation':
-        return { bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-200 dark:border-purple-800', icon: '🛒' };
+        return { bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-200 dark:border-purple-800', icon: <ShoppingCart className="w-4 h-4" /> };
       case 'Sleep':
-        return { bg: 'bg-violet-50 dark:bg-violet-950/40', text: 'text-violet-700 dark:text-violet-300', border: 'border-violet-200 dark:border-violet-800', icon: '😴' };
+        return { bg: 'bg-violet-50 dark:bg-violet-950/40', text: 'text-violet-700 dark:text-violet-300', border: 'border-violet-200 dark:border-violet-800', icon: <Moon className="w-4 h-4" /> };
       default:
-        return { bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-200 dark:border-slate-700', icon: '⚡' };
+        return { bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-200 dark:border-slate-700', icon: <Sparkles className="w-4 h-4" /> };
     }
   };
 
@@ -744,12 +1138,12 @@ export default function WeeklyDietManager({
 
       {/* ── ACTIVE IN-APP MOBILE REMINDER POPUP BANNER ── */}
       {activeInAppReminder && (
-        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white p-3.5 sm:p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-4 border border-amber-300/40">
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white p-3.5 sm:p-4 rounded-md shadow-xl flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-4 border border-amber-300/40">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="text-xl shrink-0 animate-bounce">⏰</span>
+            <span className="shrink-0 animate-bounce"><Clock className="w-6 h-6" /></span>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="px-1.5 py-0.5 bg-white/20 rounded text-[9px] font-black uppercase tracking-wider shrink-0">
+                <span className="px-1.5 py-0.5 bg-white/20 rounded-md text-[9px] font-black uppercase tracking-wider shrink-0">
                   {activeInAppReminder.minutesLeft > 0 ? `In ${activeInAppReminder.minutesLeft}m` : 'RIGHT NOW'}
                 </span>
                 <span className="text-xs sm:text-sm font-black truncate">{activeInAppReminder.item.taskTitle}</span>
@@ -765,9 +1159,9 @@ export default function WeeklyDietManager({
                 setSelectedMealForModal(activeInAppReminder.item);
                 setActiveInAppReminder(null);
               }}
-              className="px-3 py-1.5 bg-white text-orange-950 rounded-xl text-xs font-black shadow-md hover:bg-amber-50 cursor-pointer active:scale-95"
+              className="px-3 py-1.5 bg-white text-orange-950 rounded-md text-xs font-black shadow-md hover:bg-amber-50 cursor-pointer active:scale-95 flex items-center gap-1"
             >
-              Open Details 🔍
+              Open Details <Search className="w-3 h-3" />
             </button>
             <button
               onClick={() => setActiveInAppReminder(null)}
@@ -779,161 +1173,63 @@ export default function WeeklyDietManager({
         </div>
       )}
 
-      {/* ── TOP HERO BANNER: Clean, Responsive PWA Header ── */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-800 text-white p-4 sm:p-6 shadow-xl shadow-emerald-950/15 border border-emerald-400/20">
-        <div className="absolute -right-8 -bottom-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute left-1/3 -top-10 w-36 h-36 bg-cyan-400/10 rounded-full blur-xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* Left Column: Title, Next Meal, Progress */}
-          <div className="space-y-2.5 flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-0.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
-                <Utensils className="w-3 h-3 text-amber-300" />
-                WEEKLY DIET & HEALTH PLAN
-              </span>
-              {realTodayName === selectedDay ? (
-                <span className="px-2.5 py-0.5 bg-amber-400 text-amber-950 font-black rounded-full text-[10px] flex items-center gap-1 shadow-xs animate-pulse">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-950" />
-                  ACTIVE TODAY
-                </span>
-              ) : (
-                <span className="px-2.5 py-0.5 bg-emerald-400/30 rounded-full text-[10px] font-bold text-emerald-100">
-                  {selectedDay} Schedule
-                </span>
-              )}
-            </div>
-
+      {/* ── TOP HERO BANNER: Minimal Design ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 sm:p-4 rounded-md shadow-xs">
+        {/* Left: Quick Stats */}
+        <div className="flex flex-col gap-1.5 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center shrink-0">
+              <Activity className="w-4 h-4" />
+            </span>
             <div>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-tight">
-                {selectedDay}'s Nutrition & Routine
+              <h2 className="text-sm font-black text-slate-900 dark:text-white truncate">
+                {selectedDay}'s Nutrition
               </h2>
-              <p className="text-xs sm:text-sm text-emerald-100/90 font-medium mt-0.5">
-                Calibrated meal timings, targeted ingredient prep & wellness tracking.
-              </p>
-            </div>
-
-            {/* Next Meal & Daily Progress Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
-              {nextUpcomingDietItem && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-950/60 backdrop-blur-md rounded-xl text-xs font-bold text-emerald-100 border border-emerald-400/30 shrink-0">
-                  <Clock className="w-3.5 h-3.5 text-amber-300 animate-spin shrink-0" style={{ animationDuration: '6s' }} />
-                  <span className="text-white/80">Next:</span>
-                  <span className="text-white font-black truncate max-w-[160px] sm:max-w-[200px]">{nextUpcomingDietItem.taskTitle}</span>
-                  <span className="text-amber-300 font-extrabold shrink-0">({nextUpcomingDietItem.diffMins}m)</span>
-                </div>
-              )}
-
-              {/* Progress counter */}
-              <div className="flex-1 bg-emerald-950/40 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-emerald-400/20 flex items-center justify-between gap-2 text-xs">
-                <span className="text-emerald-100 font-bold truncate">
-                  Completed: <span className="font-black text-white">{dayDietItems.filter(i => completions[`${selectedDay}_${i.id}`]?.status === 'completed').length}</span> of {dayDietItems.length}
-                </span>
-                <span className="font-black text-amber-300 shrink-0">
-                  {dayDietItems.length > 0 ? Math.round((dayDietItems.filter(i => completions[`${selectedDay}_${i.id}`]?.status === 'completed').length / dayDietItems.length) * 100) : 0}%
-                </span>
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                <span className="text-emerald-600">Score: {dailyHealthScore}/100</span>
+                <span>•</span>
+                <span>{dayDietItems.filter(i => completions[`${selectedDay}_${i.id}`]?.status === 'completed').length}/{dayDietItems.length} Done</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Visual Health Score & Action Buttons */}
-          <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end justify-between gap-3 shrink-0">
-            {/* Health Score Pill */}
-            <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-3 sm:px-4 sm:py-2.5 flex items-center justify-between sm:justify-center gap-3">
-              <div className="text-left sm:text-right">
-                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-100">
-                  Daily Health Score
-                </div>
-                <div className="text-[11px] text-white/80 font-semibold">
-                  Nutritional Adherence
-                </div>
-              </div>
-              <div className="px-3 py-1 bg-white text-emerald-950 rounded-xl text-lg sm:text-xl font-black shadow-md flex items-center gap-1">
-                <span>{dailyHealthScore}</span>
-                <span className="text-xs text-emerald-700 font-extrabold">/100</span>
-              </div>
+          {nextUpcomingDietItem && (
+            <div className="text-[11px] font-medium text-slate-500 truncate flex items-center gap-1 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              Next: <span className="font-bold text-slate-700 dark:text-slate-300">{nextUpcomingDietItem.taskTitle}</span> ({nextUpcomingDietItem.diffMins}m)
             </div>
-
-            {/* Top Action Buttons */}
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <button
-                onClick={() => {
-                  setIngredientsModalDay(selectedDay);
-                  setIngredientsModalMealId(null);
-                  setShowNextDayModal(true);
-                }}
-                className="flex-1 sm:flex-initial min-h-[38px] px-3.5 py-1.5 bg-white text-emerald-950 hover:bg-emerald-50 rounded-xl text-xs font-black shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
-              >
-                <Utensils className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="whitespace-nowrap">Ingredients Prep</span>
-              </button>
-
-              <button
-                onClick={handleSyncToPlanner}
-                disabled={isSyncing}
-                className="flex-1 sm:flex-initial min-h-[38px] px-3.5 py-1.5 bg-emerald-500/30 hover:bg-emerald-500/50 text-white border border-emerald-400/40 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${isSyncing ? 'animate-spin' : ''}`} />
-                <span className="whitespace-nowrap">{isSyncing ? 'Syncing...' : 'Sync Tasks'}</span>
-              </button>
-            </div>
-          </div>
+          )}
         </div>
-      </div>
 
-      {/* ── 1. 7-DAY NAVIGATION: Responsive Grid with Dates & Status ── */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-1.5 sm:p-2 rounded-2xl shadow-xs">
-        <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
-          {DAYS_OF_WEEK.map(day => {
-            const isSelected = selectedDay === day;
-            const isToday = realTodayName === day;
-            const dayItems = WEEKLY_DIET_PLAN.filter(i => i.day === day && i.completionRequired);
-            const doneItems = dayItems.filter(i => completions[`${day}_${i.id}`]?.status === 'completed').length;
-            const isAllDone = dayItems.length > 0 && doneItems === dayItems.length;
-            const dateInfo = weekDayDates[day];
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-center w-full sm:w-auto">
+          <button
+            onClick={() => {
+              setIngredientsModalDay(selectedDay);
+              setIngredientsModalMealId(null);
+              setShowNextDayModal(true);
+            }}
+            className="flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
+          >
+            <Utensils className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Prep List</span>
+          </button>
 
-            return (
-              <button
-                key={day}
-                onClick={() => setSelectedDay(day)}
-                className={`py-1.5 sm:py-2 px-0.5 sm:px-1 rounded-xl text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[48px] sm:min-h-[58px] active:scale-95 relative ${
-                  isSelected
-                    ? 'bg-emerald-600 text-white shadow-md font-black ring-2 ring-emerald-500/30'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800'
-                }`}
-              >
-                <div className="flex items-center gap-0.5 sm:gap-1">
-                  <span className="text-[10px] sm:text-xs font-black truncate">{day.slice(0, 3)}</span>
-                  {isToday && (
-                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSelected ? 'bg-amber-300' : 'bg-emerald-500 animate-pulse'}`} />
-                  )}
-                </div>
-
-                {dateInfo && (
-                  <span className={`text-[9px] sm:text-[10px] font-extrabold truncate ${isSelected ? 'text-emerald-100' : 'text-slate-400'}`}>
-                    {dateInfo.monthNum}/{dateInfo.dateNum}
-                  </span>
-                )}
-
-                <div className="text-[8px] sm:text-[9px] mt-0.5">
-                  {isAllDone ? (
-                    <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-300 mx-auto" />
-                  ) : (
-                    <span className={`truncate ${isSelected ? 'text-emerald-100 font-black' : 'text-slate-400 font-extrabold'}`}>
-                      {doneItems}/{dayItems.length}
-                    </span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+          <button
+            onClick={handleSyncToPlanner}
+            disabled={isSyncing}
+            className="flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 dark:text-emerald-300 text-emerald-700 border border-emerald-200/60 dark:border-emerald-800/60 rounded-md text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync Planner'}</span>
+          </button>
         </div>
       </div>
 
       {/* ── 9. WEEKLY PROGRESS & PREPARATION (Compact 3-Pill Bar on Mobile) ── */}
       <div className="grid grid-cols-3 gap-2">
         {/* Compliance */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3 rounded-2xl shadow-xs text-center flex flex-col justify-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3 rounded-md shadow-xs text-center flex flex-col justify-center">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-center gap-1">
             <Flame className="w-3 h-3 text-emerald-500 shrink-0" />
             <span className="truncate">Compliance</span>
@@ -944,7 +1240,7 @@ export default function WeeklyDietManager({
         </div>
 
         {/* Streak */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3 rounded-2xl shadow-xs text-center flex flex-col justify-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3 rounded-md shadow-xs text-center flex flex-col justify-center">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-center gap-1">
             <span>🔥</span>
             <span className="truncate">Streak</span>
@@ -957,7 +1253,7 @@ export default function WeeklyDietManager({
         {/* 8 PM Prep Drawer Trigger */}
         <button
           onClick={() => setShowPrepChecklist(!showPrepChecklist)}
-          className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200/80 dark:border-purple-800/60 p-2.5 sm:p-3 rounded-2xl shadow-xs text-center flex flex-col justify-center cursor-pointer transition-all active:scale-95"
+          className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200/80 dark:border-purple-800/60 p-2.5 sm:p-3 rounded-md shadow-xs text-center flex flex-col justify-center cursor-pointer transition-all active:scale-95"
         >
           <div className="text-[10px] font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider flex items-center justify-center gap-1">
             <span>🛒</span>
@@ -978,7 +1274,7 @@ export default function WeeklyDietManager({
         const progressPct = Math.round((readyCount / items.length) * 100);
 
         return (
-          <div className="p-4 bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 rounded-2xl space-y-3 animate-in fade-in zoom-in-95">
+          <div className="p-4 bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 rounded-md space-y-3 animate-in fade-in zoom-in-95">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200/60 dark:border-purple-800/60 pb-2.5">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🛒</span>
@@ -1001,7 +1297,7 @@ export default function WeeklyDietManager({
                 <button
                   onClick={() => handleSendNextDayPrepNotification(prepData)}
                   title="Send instant alert to phone"
-                  className="px-2.5 py-1.5 rounded-xl bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 text-[11px] font-extrabold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-md bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 text-[11px] font-extrabold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
                 >
                   <Bell className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                   <span>Send Alert</span>
@@ -1009,7 +1305,7 @@ export default function WeeklyDietManager({
                 <button
                   onClick={() => handleCopyPrepIngredients(prepData)}
                   title="Copy formatted list for WhatsApp"
-                  className="px-2.5 py-1.5 rounded-xl bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 text-[11px] font-extrabold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-md bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 text-[11px] font-extrabold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
                 >
                   <Copy className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                   <span>WhatsApp</span>
@@ -1017,7 +1313,7 @@ export default function WeeklyDietManager({
                 <button
                   onClick={() => setShowNextDayModal(true)}
                   title="Open full screen modal"
-                  className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-extrabold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-extrabold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
                 >
                   <span>Detailed Modal</span>
                 </button>
@@ -1038,15 +1334,13 @@ export default function WeeklyDietManager({
                   <button
                     key={i}
                     onClick={() => togglePrepItem(selectedDay, ing)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer active:scale-95 ${
-                      isChecked
-                        ? 'bg-emerald-100 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 line-through opacity-85'
-                        : 'bg-white dark:bg-slate-800 border-purple-200 dark:border-purple-800/80 text-slate-800 dark:text-slate-200 hover:border-purple-400'
-                    }`}
+                    className={`px-2.5 py-1 rounded-md-lg text-[11px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer active:scale-95 ${isChecked
+                      ? 'bg-emerald-100 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 line-through opacity-85'
+                      : 'bg-white dark:bg-slate-800 border-purple-200 dark:border-purple-800/80 text-slate-800 dark:text-slate-200 hover:border-purple-400'
+                      }`}
                   >
-                    <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] ${
-                      isChecked ? 'bg-emerald-600 text-white' : 'border border-slate-300 dark:border-slate-600'
-                    }`}>
+                    <span className={`w-3.5 h-3.5 rounded-md flex items-center justify-center text-[9px] ${isChecked ? 'bg-emerald-600 text-white' : 'border border-slate-300 dark:border-slate-600'
+                      }`}>
                       {isChecked && <Check className="w-2.5 h-2.5" />}
                     </span>
                     <span>{ing}</span>
@@ -1058,259 +1352,55 @@ export default function WeeklyDietManager({
         );
       })()}
 
-      {/* ── 2 & 5. DIET ITEMS LIST WITH FILTERING, SEARCH & ZERO-DUPLICATION CARDS ── */}
+      {/* ── 2 & 5. DIET ITEMS LIST WITH MINIMAL DESIGN ── */}
       <div className="space-y-3.5">
-        {/* Header Row: Title & Subtitle */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <h3 className="font-black text-slate-900 dark:text-white text-sm sm:text-base">
-              {selectedDay}'s Scheduled Diet Items ({dayDietItems.length})
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <h3 className="font-black text-slate-900 dark:text-white text-sm sm:text-base truncate">
+              {selectedDay}'s Wellness & Diet
             </h3>
-            <span className="text-[11px] font-bold text-slate-400">• Chronological Flow</span>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs font-extrabold">
-            <span className="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-lg border border-emerald-200/60 dark:border-emerald-800/60">
-              {dayDietItems.filter(i => completions[`${selectedDay}_${i.id}`]?.status === 'completed').length} of {dayDietItems.length} Done
+            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 text-xs font-black shrink-0">
+              {dayDietItems.length}
             </span>
           </div>
-        </div>
 
-        {/* Quick Filter Tabs & Search Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1">
-          {/* Segmented Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-            {[
-              { id: 'All', label: 'All Items', count: dietFilterCounts.all },
-              { id: 'Meals', label: '🍽️ Meals', count: dietFilterCounts.meals },
-              { id: 'Snacks', label: '🍎 Snacks & Drinks', count: dietFilterCounts.snacks },
-              { id: 'Routine', label: '🧘 Routine', count: dietFilterCounts.routine },
-              { id: 'Pending', label: '⏳ Pending', count: dietFilterCounts.pending },
-              { id: 'Completed', label: '✅ Done', count: dietFilterCounts.completed }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setDietFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shrink-0 active:scale-95 ${
-                  dietFilter === tab.id
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                  dietFilter === tab.id ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                }`}>
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Quick Search */}
-          <div className="relative min-w-[210px] shrink-0">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              value={dietSearchQuery}
-              onChange={(e) => setDietSearchQuery(e.target.value)}
-              placeholder="Search meal or ingredient..."
-              className="w-full pl-8 pr-7 py-1.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-            />
-            {dietSearchQuery && (
-              <button
-                onClick={() => setDietSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <select
+              value={dietFilter}
+              onChange={(e) => setDietFilter(e.target.value)}
+              className="text-[11px] sm:text-xs font-black bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1.5 text-slate-700 dark:text-slate-200 cursor-pointer"
+            >
+              <option value="Pending">Pending</option>
+              <option value="All">All Items</option>
+              <option value="Completed">Done</option>
+              <option value="Meals">Meals</option>
+              <option value="Routine">Routine</option>
+            </select>
           </div>
         </div>
 
-        {/* Diet Cards Grid */}
+        {/* Minimal Swipeable Diet Cards Grid */}
         {filteredDietItems.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div className="space-y-2.5">
             {filteredDietItems.map((item) => {
               const state = completions[`${selectedDay}_${item.id}`] || {};
-              const isCompleted = state.status === 'completed';
-              const isSkipped = state.status === 'skipped';
-              const isRescheduled = state.status === 'rescheduled';
               const theme = getCategoryTheme(item.category);
-              const isFoodItem = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Nutrition', 'Hydration'].includes(item.category);
-              const itemsList = item.description ? item.description.split(';').map(s => s.trim()).filter(Boolean) : [];
-
               return (
-                <div
+                <SwipeableDietCard
                   key={item.id}
-                  className={`p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between gap-3 relative ${
-                    isCompleted
-                      ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800/80 shadow-xs'
-                      : isSkipped
-                      ? 'bg-amber-50/30 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/40 opacity-75'
-                      : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs hover:shadow-md'
-                  }`}
-                >
-                  <div className="space-y-2.5">
-                    {/* Top Row: Time Badge + Rescheduled + Category Badge + Lead Time */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-base">{theme.icon}</span>
-                        <span className="text-xs font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-slate-500" />
-                          <span>{isRescheduled && state.rescheduledTime ? state.rescheduledTime : item.timeFormatted}</span>
-                        </span>
-                        {isRescheduled && (
-                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 rounded text-[9px] font-black">
-                            Rescheduled
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border ${theme.bg} ${theme.text} ${theme.border}`}>
-                          {item.category}
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 text-[9px] font-bold flex items-center gap-0.5">
-                          <Bell className="w-2.5 h-2.5" />
-                          {item.reminderMinutesBefore}m
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Title & Clickable Recipe Modal Trigger */}
-                    <div
-                      onClick={() => setSelectedMealForModal(item)}
-                      className="cursor-pointer group"
-                    >
-                      <h4 className={`text-sm sm:text-base font-black leading-snug group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors ${
-                        isCompleted ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'
-                      }`}>
-                        {item.taskTitle}
-                      </h4>
-
-                      {/* Instructions / Preparation hint if available */}
-                      {item.instructions && (
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium line-clamp-1 italic">
-                          💡 {item.instructions}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Clean Ingredients or Routine Steps Badge List (No Duplicate Raw Text!) */}
-                    {itemsList.length > 0 && (
-                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                        <div className="flex items-center justify-between gap-1 mb-1.5">
-                          <span className={`text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${
-                            isFoodItem ? 'text-emerald-700 dark:text-emerald-400' : 'text-indigo-700 dark:text-indigo-400'
-                          }`}>
-                            {isFoodItem ? <Utensils className="w-3 h-3" /> : <Activity className="w-3 h-3" />}
-                            <span>{isFoodItem ? `Ingredients (${itemsList.length})` : `Activity Steps (${itemsList.length})`}</span>
-                          </span>
-                          <span className="text-[9px] text-slate-400 font-medium">Tap recipe for details</span>
-                        </div>
-
-                        <div className="flex flex-wrap gap-1">
-                          {itemsList.slice(0, 6).map((step, idx) => (
-                            <span
-                              key={idx}
-                              className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-colors ${
-                                isFoodItem
-                                  ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200/70 dark:border-emerald-800/60'
-                                  : 'bg-indigo-50 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300 border-indigo-200/70 dark:border-indigo-800/60'
-                              }`}
-                            >
-                              {step}
-                            </span>
-                          ))}
-                          {itemsList.length > 6 && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedMealForModal(item);
-                              }}
-                              className="inline-flex items-center px-1.5 py-0.5 rounded-lg text-[10px] font-black bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
-                            >
-                              +{itemsList.length - 6} more
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Skip Reason Badge if skipped */}
-                    {isSkipped && (
-                      <div className="mt-1 text-[10px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3 shrink-0" />
-                        <span>Skipped: {state.skipReason || 'Eating out'}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Clean Bottom Action Strip */}
-                  <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1.5 sm:gap-2">
-                    <button
-                      onClick={() => setSelectedMealForModal(item)}
-                      className="px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
-                    >
-                      <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
-                      <span className="hidden sm:inline">{isFoodItem ? 'Recipe & Prep' : 'Full Guide'}</span>
-                      <span className="sm:hidden">{isFoodItem ? 'Recipe' : 'Guide'}</span>
-                      <ChevronRight className="w-3 h-3 opacity-60" />
-                    </button>
-
-                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                      <button
-                        onClick={() => handleOpenRescheduleModal(item)}
-                        title="Reschedule time"
-                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer active:scale-90"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                      </button>
-
-                      <button
-                        onClick={() => handleOpenSkipModal(item)}
-                        title="Skip meal / routine"
-                        className="px-2 py-1 min-h-[28px] sm:min-h-[32px] rounded-xl text-xs font-bold text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors cursor-pointer active:scale-90 flex items-center"
-                      >
-                        Skip
-                      </button>
-
-                      <button
-                        onClick={() => handleComplete(item)}
-                        className={`px-2.5 sm:px-3 py-1.5 min-h-[32px] rounded-xl text-xs font-black flex items-center gap-1 transition-all cursor-pointer active:scale-95 shadow-xs ${
-                          isCompleted
-                            ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 border border-slate-200/80 dark:border-slate-700/80'
-                        }`}
-                      >
-                        <Check className={`w-3.5 h-3.5 ${isCompleted ? 'stroke-[3]' : ''}`} />
-                        <span>{isCompleted ? 'Done' : 'Mark Done'}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  item={item}
+                  state={state}
+                  theme={theme}
+                  onToggleDone={handleComplete}
+                  onOpenModal={setSelectedMealForModal}
+                />
               );
             })}
           </div>
         ) : (
-          <div className="py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center justify-center p-6 space-y-2">
-            <Utensils className="w-8 h-8 text-slate-300 dark:text-slate-600" />
-            <h4 className="text-sm font-black text-slate-800 dark:text-slate-200">No diet items found</h4>
-            <p className="text-xs text-slate-500 max-w-xs">
-              {dietSearchQuery ? `No matches found for "${dietSearchQuery}". Try clearing search.` : `No items in this category.`}
-            </p>
-            {(dietSearchQuery || dietFilter !== 'All') && (
-              <button
-                onClick={() => {
-                  setDietSearchQuery('');
-                  setDietFilter('All');
-                }}
-                className="mt-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
-              >
-                Reset Filters
-              </button>
-            )}
+          <div className="flex flex-col items-center justify-center py-12 text-slate-400 text-center">
+            <CheckCircle2 className="w-10 h-10 mb-2 opacity-40 text-emerald-600" />
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">No Wellness Tasks</p>
           </div>
         )}
       </div>
@@ -1319,7 +1409,7 @@ export default function WeeklyDietManager({
       {selectedMealForModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="fixed inset-0" onClick={() => setSelectedMealForModal(null)} />
-          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 sm:p-6 space-y-4 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto z-10 animate-in slide-in-from-bottom duration-200">
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 sm:p-6 space-y-4 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto z-10 animate-in slide-in-from-bottom duration-200">
             {/* Mobile Drag Indicator Bar */}
             <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto -mt-1 mb-2 sm:hidden" />
 
@@ -1343,27 +1433,29 @@ export default function WeeklyDietManager({
 
               <button
                 onClick={() => setSelectedMealForModal(null)}
-                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="p-2 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Ingredients Breakdown */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                <Utensils className="w-3.5 h-3.5 text-emerald-600" />
-                Ingredients & Quantities
-              </h4>
-              <div className="bg-slate-50 dark:bg-slate-800/80 rounded-2xl p-3.5 space-y-1.5 border border-slate-100 dark:border-slate-700/80">
-                {selectedMealForModal.description.split(';').map((ing, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                    <span>{ing.trim()}</span>
-                  </div>
-                ))}
+            {selectedMealForModal.description && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <Utensils className="w-3.5 h-3.5 text-emerald-600" />
+                  Ingredients & Quantities
+                </h4>
+                <div className="bg-slate-50 dark:bg-slate-800/80 rounded-md p-3.5 space-y-1.5 border border-slate-100 dark:border-slate-700/80">
+                  {selectedMealForModal.description.split(';').map((ing, i) => (
+                    <div key={i} className="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                      <span>{ing.trim()}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Preparation Instructions */}
             {selectedMealForModal.instructions && (
@@ -1372,7 +1464,7 @@ export default function WeeklyDietManager({
                   <CheckSquare className="w-3.5 h-3.5 text-blue-600" />
                   Preparation Instructions
                 </h4>
-                <div className="bg-blue-50/60 dark:bg-blue-950/30 rounded-2xl p-3.5 text-xs text-slate-700 dark:text-slate-200 leading-relaxed border border-blue-100 dark:border-blue-900/50">
+                <div className="bg-blue-50/60 dark:bg-blue-950/30 rounded-md p-3.5 text-xs text-slate-700 dark:text-slate-200 leading-relaxed border border-blue-100 dark:border-blue-900/50">
                   {selectedMealForModal.instructions}
                 </div>
               </div>
@@ -1380,7 +1472,7 @@ export default function WeeklyDietManager({
 
             {/* Next Day Prep Reminder if applicable */}
             {selectedMealForModal.nextDayPrepReminder && (
-              <div className="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-200 dark:border-purple-800 text-xs text-purple-900 dark:text-purple-200 flex items-start gap-2">
+              <div className="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-md border border-purple-200 dark:border-purple-800 text-xs text-purple-900 dark:text-purple-200 flex items-start gap-2">
                 <Bookmark className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-black block">Evening Prep Note:</span>
@@ -1391,15 +1483,17 @@ export default function WeeklyDietManager({
 
             {/* Notification details */}
             <div className="flex items-center justify-between text-xs text-slate-400 px-1 pt-1">
-              <span>🔔 Reminder: {selectedMealForModal.reminderMinutesBefore}m before</span>
-              <span>🏷️ {selectedMealForModal.tags.join(', ')}</span>
+              <span className="flex items-center gap-1"><Bell className="w-3.5 h-3.5" /> Reminder: {selectedMealForModal.reminderMinutesBefore}m before</span>
+              {selectedMealForModal.tags && selectedMealForModal.tags.length > 0 && (
+                <span className="flex items-center gap-1"><Bookmark className="w-3.5 h-3.5" /> {selectedMealForModal.tags.join(', ')}</span>
+              )}
             </div>
 
             {/* Modal Actions: Responsive thumb-friendly row */}
             <div className="pt-2 flex items-center gap-2 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={() => setSelectedMealForModal(null)}
-                className="flex-1 sm:flex-initial px-4 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer text-center min-h-[44px]"
+                className="flex-1 sm:flex-initial px-4 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md cursor-pointer text-center min-h-[44px]"
               >
                 Close
               </button>
@@ -1408,7 +1502,7 @@ export default function WeeklyDietManager({
                   handleComplete(selectedMealForModal);
                   setSelectedMealForModal(null);
                 }}
-                className="flex-2 sm:flex-initial px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px] active:scale-95"
+                className="flex-2 sm:flex-initial px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-black shadow-md flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px] active:scale-95"
               >
                 <Check className="w-4 h-4" />
                 <span>Mark as Completed</span>
@@ -1422,7 +1516,7 @@ export default function WeeklyDietManager({
       {skipModalItem && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="fixed inset-0" onClick={() => setSkipModalItem(null)} />
-          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-5 space-y-4 max-h-[85vh] overflow-y-auto z-10 animate-in slide-in-from-bottom duration-200">
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl sm:rounded-md shadow-2xl w-full max-w-sm p-5 space-y-4 max-h-[85vh] overflow-y-auto z-10 animate-in slide-in-from-bottom duration-200">
             {/* Mobile Drag Indicator Bar */}
             <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto -mt-1 mb-2 sm:hidden" />
 
@@ -1447,11 +1541,10 @@ export default function WeeklyDietManager({
                 <button
                   key={reason}
                   onClick={() => setSkipReason(reason)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer min-h-[42px] flex items-center justify-between active:scale-98 ${
-                    skipReason === reason
-                      ? 'bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 border border-amber-300'
-                      : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
-                  }`}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-md text-xs font-bold transition-all cursor-pointer min-h-[42px] flex items-center justify-between active:scale-98 ${skipReason === reason
+                    ? 'bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 border border-amber-300'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
+                    }`}
                 >
                   <span>{reason}</span>
                   {skipReason === reason && <Check className="w-3.5 h-3.5 text-amber-600" />}
@@ -1462,13 +1555,13 @@ export default function WeeklyDietManager({
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={() => setSkipModalItem(null)}
-                className="px-3 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer text-center min-h-[44px]"
+                className="px-3 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md cursor-pointer text-center min-h-[44px]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmSkip}
-                className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold rounded-xl shadow-md cursor-pointer text-center min-h-[44px] active:scale-95"
+                className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold rounded-md shadow-md cursor-pointer text-center min-h-[44px] active:scale-95"
               >
                 Confirm Skip
               </button>
@@ -1481,7 +1574,7 @@ export default function WeeklyDietManager({
       {rescheduleModalItem && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="fixed inset-0" onClick={() => setRescheduleModalItem(null)} />
-          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-5 space-y-4 max-h-[85vh] overflow-y-auto z-10 animate-in slide-in-from-bottom duration-200">
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl sm:rounded-md shadow-2xl w-full max-w-sm p-5 space-y-4 max-h-[85vh] overflow-y-auto z-10 animate-in slide-in-from-bottom duration-200">
             {/* Mobile Drag Indicator Bar */}
             <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto -mt-1 mb-2 sm:hidden" />
 
@@ -1516,7 +1609,7 @@ export default function WeeklyDietManager({
                     const formatted = `${displayH < 10 ? '0' : ''}${displayH}:${newM < 10 ? '0' : ''}${newM} ${period}`;
                     setRescheduleNewTime(formatted);
                   }}
-                  className="px-2 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 text-slate-700 dark:text-slate-300 text-xs font-extrabold rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer text-center min-h-[40px] active:scale-95"
+                  className="px-2 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 text-slate-700 dark:text-slate-300 text-xs font-extrabold rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer text-center min-h-[40px] active:scale-95"
                 >
                   {shift}
                 </button>
@@ -1530,22 +1623,77 @@ export default function WeeklyDietManager({
                 value={rescheduleNewTime}
                 onChange={(e) => setRescheduleNewTime(e.target.value)}
                 placeholder="e.g. 01:30 PM"
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-800 dark:text-white min-h-[44px]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm font-bold text-slate-800 dark:text-white min-h-[44px]"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={() => setRescheduleModalItem(null)}
-                className="px-3 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer text-center min-h-[44px]"
+                className="px-3 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md cursor-pointer text-center min-h-[44px]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmReschedule}
-                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-xl shadow-md cursor-pointer text-center min-h-[44px] active:scale-95"
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-md shadow-md cursor-pointer text-center min-h-[44px] active:scale-95"
               >
                 Save New Time
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Floating Undo Toast ── */}
+      {undoState && (
+        <div className="fixed bottom-28 sm:bottom-10 left-3 right-3 sm:right-10 sm:left-auto sm:w-96 z-[9999] animate-in slide-in-from-bottom-5 duration-200">
+          <div className="p-3.5 bg-slate-900/95 dark:bg-slate-800/95 text-white backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div
+                className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${undoState.isNowCompleted ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
+                  }`}
+              >
+                {undoState.isNowCompleted ? (
+                  <CheckCircle2 className="w-5 h-5" />
+                ) : (
+                  <RotateCcw className="w-5 h-5" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-black truncate text-white">
+                  {undoState.item.taskTitle}
+                </p>
+                <p className="text-[10px] text-slate-400 font-bold truncate">
+                  {undoState.isNowCompleted ? 'Marked as completed' : 'Marked as pending'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  handleComplete(undoState.item); // Toggle it back
+                  if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+                  setUndoState(null);
+                }}
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-black shadow-md flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Undo</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+                  setUndoState(null);
+                }}
+                className="p-1.5 text-slate-400 hover:text-white rounded-md-lg transition-colors cursor-pointer"
+                title="Dismiss"
+              >
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>

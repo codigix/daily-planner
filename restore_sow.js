@@ -27,7 +27,7 @@ const replacementDeliverables = `{activeSection === 'deliverables' && (
                     </div>
 
                     {quotationData.sowMode === 'advanced' ? (
-                      <div className="mt-4 flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-xl bg-blue-50/50 dark:bg-blue-900/20">
+                      <div className="mt-4 flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-md bg-blue-50/50 dark:bg-blue-900/20">
                         <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 text-center max-w-sm">
                           Advanced mode allows you to use a full rich-text editor with tables, lists, and deep formatting.
                         </p>
@@ -36,7 +36,7 @@ const replacementDeliverables = `{activeSection === 'deliverables' && (
                             sowContentRef.current = quotationData.scopeOfWorkHtml;
                             setShowSowModal(true);
                           }}
-                          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow-sm transition-all flex items-center gap-2"
+                          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-md-lg shadow-sm transition-all flex items-center gap-2"
                         >
                           <Layout className="w-4 h-4" /> Open Full-Page Editor
                         </button>
@@ -63,7 +63,7 @@ const regexPreview = /\{\/\* ================= PAGE 4\+: SCOPE OF WORK \(LAYOUT 
 
 const replacePreview = `{/* ================= PAGE 4+: SCOPE OF WORK (LAYOUT ADAPTIVE & DYNAMIC PAGINATION) ================= */}
            {quotationData.sowMode === 'advanced' ? (
-              <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+              <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
                   <div className="p-8 space-y-6 flex-1">
                      <div>
                        <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Scope of Work & Deliverables</h2>
@@ -104,7 +104,7 @@ const modalJSX = `
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setShowSowModal(false)}
-                  className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                  className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md-lg transition-colors"
                 >
                   Cancel
                 </button>
@@ -113,7 +113,7 @@ const modalJSX = `
                     setQuotationData(prev => ({ ...prev, scopeOfWorkHtml: sowContentRef.current }));
                     setShowSowModal(false);
                   }}
-                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-lg shadow-md transition-all flex items-center gap-2"
+                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-md-lg shadow-md transition-all flex items-center gap-2"
                 >
                   <Check className="w-4 h-4" /> Save Content
                 </button>

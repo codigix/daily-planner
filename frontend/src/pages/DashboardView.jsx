@@ -110,7 +110,7 @@ export default function DashboardView({
         <div className="flex justify-start sm:justify-end items-center gap-2">
           <button
             onClick={() => onNavigate && onNavigate('planner')}
-            className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm py-2.5 px-3 rounded-2xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm py-2.5 px-3 rounded-md shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add Task</span>
@@ -118,13 +118,13 @@ export default function DashboardView({
 
           <button
             onClick={() => onNavigate && onNavigate('finance')}
-            className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm py-2.5 px-3 rounded-2xl shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm py-2.5 px-3 rounded-md shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <DollarSign className="w-4 h-4" />
             <span>Finance</span>
           </button>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm py-2.5 px-3 rounded-2xl shadow-sm flex items-center justify-center gap-1.5">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm py-2.5 px-3 rounded-md shadow-sm flex items-center justify-center gap-1.5">
             <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
             <span className="truncate">{liveDateFormatted}</span>
           </div>
@@ -136,7 +136,7 @@ export default function DashboardView({
         {/* Card 1: Completion */}
         <div
           onClick={() => onNavigate && onNavigate('planner')}
-          className="card-base p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer"
+          className="card-base p-3.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">Completion</span>
@@ -155,7 +155,7 @@ export default function DashboardView({
         {/* Card 2: Completed */}
         <div
           onClick={() => onNavigate && onNavigate('planner')}
-          className="card-base p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer"
+          className="card-base p-3.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">Completed</span>
@@ -172,7 +172,7 @@ export default function DashboardView({
         {/* Card 3: Pending */}
         <div
           onClick={() => onNavigate && onNavigate('planner')}
-          className="card-base p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer"
+          className="card-base p-3.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">Pending</span>
@@ -189,7 +189,7 @@ export default function DashboardView({
         {/* Card 4: Meetings */}
         <div
           onClick={() => onNavigate && onNavigate('meetings')}
-          className="card-base p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer"
+          className="card-base p-3.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">Meetings</span>
@@ -206,7 +206,7 @@ export default function DashboardView({
         {/* Card 5: Pipeline */}
         <div
           onClick={() => onNavigate && onNavigate('followups')}
-          className="card-base p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer col-span-2 sm:col-span-1"
+          className="card-base p-3.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer col-span-2 sm:col-span-1"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">Pipeline</span>
@@ -224,10 +224,10 @@ export default function DashboardView({
       {/* Row 3: Execution Trend, Tasks by Domain & Today's Schedule */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
         {/* Monthly Execution Trend */}
-        <div className="card-base p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
+        <div className="card-base p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">Monthly Execution Trend</h3>
-            <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300 text-[10px] font-bold rounded-md">Live</span>
+            <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300 text-[10px] font-bold rounded-md-md">Live</span>
           </div>
 
           <div className="h-44 w-full pt-2">
@@ -248,7 +248,7 @@ export default function DashboardView({
         </div>
 
         {/* Tasks by Domain */}
-        <div className="card-base p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
+        <div className="card-base p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">Tasks by Domain</h3>
             <span className="text-[11px] text-slate-400 font-medium">Total {totalTasks} Tasks</span>
@@ -284,7 +284,7 @@ export default function DashboardView({
         </div>
 
         {/* Today's Schedule */}
-        <div className="card-base p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
+        <div className="card-base p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">Today's Schedule</h3>
             <button
@@ -311,7 +311,7 @@ export default function DashboardView({
       {/* Row 4: Recent Executive Stream & AI Assistant */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         {/* Executive Activity Stream */}
-        <div className="card-base p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
+        <div className="card-base p-4 sm:p-5 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
             <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">Recent Executive Stream</h3>
             <span className="text-[11px] font-semibold text-slate-400">Real-time log</span>
@@ -320,7 +320,7 @@ export default function DashboardView({
           <div className="space-y-2.5 text-xs">
             {activityItems.length > 0 ? (
               activityItems.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800/80">
+                <div key={idx} className="flex items-center justify-between p-2.5 rounded-md bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800/80">
                   <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px] sm:max-w-none">
                     {item.type}: {item.text}
                   </span>
@@ -339,7 +339,7 @@ export default function DashboardView({
         </div>
 
         {/* AI Executive Assistant */}
-        <div className="card-base p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
+        <div className="card-base p-4 sm:p-5 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-blue-600" />
@@ -347,7 +347,7 @@ export default function DashboardView({
             </div>
             <button
               onClick={onOpenAI}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center gap-1 cursor-pointer"
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-md shadow-md shadow-blue-500/20 transition-all flex items-center gap-1 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" /> Ask AI
             </button>

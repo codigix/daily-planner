@@ -22,26 +22,26 @@ import ModalContainer from './components/modals/ModalContainer';
 import PWAInstallModal from './components/modals/PWAInstallModal';
 import { usePWAInstall } from './hooks/usePWAInstall';
 
-import { 
-  navItems 
+import {
+  navItems
 } from './data/mockData';
 
-import { 
-  getPlannerAPI, 
-  createPlannerTaskAPI, 
-  getDomainsAPI, 
-  getMeetingsAPI, 
-  createMeetingAPI, 
-  getClientsAPI, 
-  createClientAPI 
+import {
+  getPlannerAPI,
+  createPlannerTaskAPI,
+  getDomainsAPI,
+  getMeetingsAPI,
+  createMeetingAPI,
+  getClientsAPI,
+  createClientAPI
 } from './services/api';
 
 import { Lock, LogIn } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
-import NotificationToaster from './components/common/NotificationToaster';
 import { sendSystemNotification } from './utils/notificationService';
 import { deduplicateTasks, deduplicateTimeline } from './utils/plannerDeduplication';
+import { WEEKLY_DIET_PLAN, NEXT_DAY_PREP_CHECKLIST } from './data/weeklyDietData';
 
 const normalizeTab = (rawTab) => {
   if (!rawTab) return 'dashboard';
@@ -94,6 +94,21 @@ function AppContent() {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('hashchange', handlePopState);
     };
+  }, []);
+
+  // Proactively request native system notification permission on first user interaction
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      const askForNotificationPermission = () => {
+        Notification.requestPermission().catch(() => { });
+      };
+      window.addEventListener('click', askForNotificationPermission, { once: true, passive: true });
+      window.addEventListener('touchstart', askForNotificationPermission, { once: true, passive: true });
+      return () => {
+        window.removeEventListener('click', askForNotificationPermission);
+        window.removeEventListener('touchstart', askForNotificationPermission);
+      };
+    }
   }, []);
 
   // Application Data States — loaded per authenticated user account
@@ -209,6 +224,121 @@ function AppContent() {
     });
   };
 
+  // ── Global Real-Time Background Notification Runner ──
+  // Continuously monitors task & diet meal schedules across ALL tabs (Dashboard, Planner, Meetings, etc.)
+  useEffect(() => {
+    const firedKeys = new Set();
+
+    const checkGlobalReminders = () => {
+      const now = new Date();
+      const todayStr = now.toDateString();
+      const todayDayName = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const currentHours = now.getHours();
+      const currentMins = now.getMinutes();
+      const currentTotalMins = currentHours * 60 + currentMins;
+
+      // 1. Check Weekly Diet Plan items for today
+      const todayDietItems = WEEKLY_DIET_PLAN.filter(item => item.day === todayDayName);
+      let completions = {};
+      try {
+        const saved = localStorage.getItem('codigix_diet_completions_v2');
+        if (saved) completions = JSON.parse(saved);
+      } catch (e) { }
+
+      todayDietItems.forEach(item => {
+        const compKey = `${todayDayName}_${item.id}`;
+        if (completions[compKey]?.status === 'completed' || completions[compKey]?.status === 'skipped') {
+          return;
+        }
+
+        const [h, m] = item.time.split(':').map(Number);
+        const itemTotalMins = h * 60 + m;
+        const diff = itemTotalMins - currentTotalMins;
+
+        const reminderLead = item.reminderMinutesBefore || 10;
+        const leadKey = `${todayStr}_diet_lead_${item.id}`;
+        const exactKey = `${todayStr}_diet_exact_${item.id}`;
+
+        // Lead-time window (1 to reminderLead mins before)
+        if (diff <= reminderLead && diff >= 1 && !firedKeys.has(leadKey)) {
+          firedKeys.add(leadKey);
+          sendSystemNotification(item.taskTitle, {
+            body: `In ${diff}m • ${item.timeFormatted || item.time}`,
+            mealId: item.id,
+            day: todayDayName,
+            url: `/planner?openDietMealId=${item.id}&openDay=${todayDayName}`,
+            tag: `diet-lead-${item.id}`
+          });
+        }
+
+        // Exact-time window (0 to -15 mins)
+        if (diff <= 0 && diff >= -15 && !firedKeys.has(exactKey)) {
+          firedKeys.add(exactKey);
+          sendSystemNotification(`🔔 NOW: ${item.taskTitle}`, {
+            body: item.timeFormatted || item.time,
+            mealId: item.id,
+            day: todayDayName,
+            url: `/planner?openDietMealId=${item.id}&openDay=${todayDayName}`,
+            tag: `diet-exact-${item.id}`
+          });
+        }
+      });
+
+      // 2. 8:00 PM Next Day Ingredients Prep Alert
+      const todayPrep = NEXT_DAY_PREP_CHECKLIST[todayDayName];
+      if (todayPrep) {
+        const prepTotalMins = 20 * 60; // 20:00
+        const prepDiff = prepTotalMins - currentTotalMins;
+        const prepKey = `${todayStr}_prep_2000`;
+        if (prepDiff <= 0 && prepDiff >= -30 && !firedKeys.has(prepKey)) {
+          firedKeys.add(prepKey);
+          sendSystemNotification(`🛒 8:00 PM: Prepare Tomorrow's Ingredients (${todayPrep.forNextDay})!`, {
+            body: `Pantry checklist for ${todayPrep.forNextDay}:\n${todayPrep.ingredients.slice(0, 100)}...\nTap to open detailed prep checklist!`,
+            tag: `diet-prep-${todayDayName}`,
+            type: 'nextDayPrep',
+            day: todayDayName,
+            url: `/planner?openNextDayPrep=1&openDay=${todayDayName}`
+          });
+        }
+      }
+
+      // 3. Regular Planner Tasks with scheduled times for today
+      (plannerTasks || []).forEach(t => {
+        if (t.status === 'Completed' || t.status === 'Done' || t.completed) return;
+        const tTime = t.time || t.scheduled_time;
+        if (!tTime) return;
+
+        const timeMatch = tTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+        if (timeMatch) {
+          let [_, hStr, mStr, meridiem] = timeMatch;
+          let h = parseInt(hStr, 10);
+          const m = parseInt(mStr, 10);
+          if (meridiem) {
+            if (meridiem.toUpperCase() === 'PM' && h < 12) h += 12;
+            if (meridiem.toUpperCase() === 'AM' && h === 12) h = 0;
+          }
+          const taskMins = h * 60 + m;
+          const diff = taskMins - currentTotalMins;
+          const taskExactKey = `${todayStr}_task_${t.id}`;
+
+          if (diff <= 0 && diff >= -15 && !firedKeys.has(taskExactKey)) {
+            firedKeys.add(taskExactKey);
+            sendSystemNotification(`📋 Task Reminder: ${t.title}`, {
+              body: tTime,
+              taskId: t.id,
+              url: `/planner?openTaskId=${t.id}`,
+              tag: `task-reminder-${t.id}`
+            });
+          }
+        }
+      });
+    };
+
+    checkGlobalReminders();
+    const timerId = setInterval(checkGlobalReminders, 25000);
+    return () => clearInterval(timerId);
+  }, [plannerTasks]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#f4f6fa] dark:bg-slate-950 flex items-center justify-center font-sans">
@@ -260,23 +390,23 @@ function AppContent() {
         <div className="max-w-7xl mx-auto">
           {!user ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 text-center">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl p-8 max-w-md w-full space-y-6 relative overflow-hidden animate-in fade-in zoom-in-95">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md-3xl shadow-xl p-8 max-w-md w-full space-y-6 relative overflow-hidden animate-in fade-in zoom-in-95">
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
-                
-                <div className="mx-auto w-16 h-16 bg-blue-50 dark:bg-blue-950/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+
+                <div className="mx-auto w-16 h-16 bg-blue-50 dark:bg-blue-950/30 rounded-md flex items-center justify-center text-blue-600 dark:text-blue-400">
                   <Lock className="w-8 h-8" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Authentication Required</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                     To access the Executive OS dashboard, track planner tasks, schedule meetings, and manage company resources, please sign in.
                   </p>
                 </div>
-                
+
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="w-full py-3 bg-[#E60023] hover:bg-[#CC001F] text-white font-extrabold text-xs rounded-xl shadow-lg shadow-red-500/25 flex items-center justify-center gap-2.5 transition-all cursor-pointer active:scale-95"
+                  className="w-full py-3 bg-[#E60023] hover:bg-[#CC001F] text-white font-extrabold text-xs rounded-md shadow-lg shadow-red-500/25 flex items-center justify-center gap-2.5 transition-all cursor-pointer active:scale-95"
                 >
                   <LogIn className="w-4.5 h-4.5" />
                   <span>Sign In to Executive OS</span>
@@ -305,6 +435,7 @@ function AppContent() {
                   setScheduleTimeline={setScheduleTimeline}
                   onOpenAI={() => setActiveModal('ai')}
                   onAddTask={() => setActiveModal('task')}
+                  onOpenModal={(type) => setActiveModal(type)}
                   isLoading={plannerLoading}
                 />
               )}
@@ -340,49 +471,49 @@ function AppContent() {
               )}
 
               {activeTab === 'sales' && (
-                <SalesKPIView 
+                <SalesKPIView
                   clients={displayClients}
                   setClients={setClients}
                   plannerTasks={displayPlannerTasks}
-                  onOpenAI={() => setActiveModal('ai')} 
+                  onOpenAI={() => setActiveModal('ai')}
                 />
               )}
 
               {activeTab === 'projects' && (
-                <ProjectKPIView 
+                <ProjectKPIView
                   plannerTasks={displayPlannerTasks}
                   clients={displayClients}
-                  onOpenAI={() => setActiveModal('ai')} 
+                  onOpenAI={() => setActiveModal('ai')}
                 />
               )}
 
               {activeTab === 'team' && (
-                <TeamPerformanceView 
+                <TeamPerformanceView
                   domains={displayDomains}
                   plannerTasks={displayPlannerTasks}
-                  onOpenAI={() => setActiveModal('ai')} 
+                  onOpenAI={() => setActiveModal('ai')}
                 />
               )}
 
               {activeTab === 'finance' && (
-                <FinanceDashboardView 
+                <FinanceDashboardView
                   clients={displayClients}
                   plannerTasks={displayPlannerTasks}
                   onNavigate={(tab) => setActiveTab(tab)}
-                  onOpenAI={() => setActiveModal('ai')} 
+                  onOpenAI={() => setActiveModal('ai')}
                 />
               )}
 
               {activeTab === 'create-quotation' && (
-                <CreateQuotationView 
+                <CreateQuotationView
                   onNavigate={(tab) => setActiveTab(tab)}
                 />
               )}
 
               {activeTab === 'marketing' && (
-                <MarketingDashboardView 
+                <MarketingDashboardView
                   clients={displayClients}
-                  onOpenAI={() => setActiveModal('ai')} 
+                  onOpenAI={() => setActiveModal('ai')}
                 />
               )}
 
@@ -398,31 +529,31 @@ function AppContent() {
               )}
 
               {activeTab === 'reports' && (
-                <ReportsView 
+                <ReportsView
                   plannerTasks={displayPlannerTasks}
                   meetings={displayMeetings}
                   clients={displayClients}
-                  onOpenAI={() => setActiveModal('ai')} 
+                  onOpenAI={() => setActiveModal('ai')}
                 />
               )}
 
               {activeTab === 'profile' && (
-                <ProfileView 
+                <ProfileView
                   user={user}
                   plannerTasks={displayPlannerTasks}
                   meetings={displayMeetings}
                   clients={displayClients}
                   domains={displayDomains}
                   onNavigate={(tab) => setActiveTab(tab)}
-                  onOpenAI={() => setActiveModal('ai')} 
+                  onOpenAI={() => setActiveModal('ai')}
                 />
               )}
 
               {activeTab === 'notifications' && (
-                <NotificationsView 
+                <NotificationsView
                   plannerTasks={displayPlannerTasks}
                   onNavigate={(tab) => setActiveTab(tab)}
-                  onOpenAI={() => setActiveModal('ai')} 
+                  onOpenAI={() => setActiveModal('ai')}
                 />
               )}
 
@@ -460,9 +591,6 @@ function AppContent() {
         isInstalled={isInstalled}
         onInstall={promptInstall}
       />
-
-      {/* Premium In-App Notification Toaster */}
-      <NotificationToaster onNavigate={(tab) => setActiveTab(tab)} />
 
       {/* Floating Mobile Bottom Navigation Bar */}
       <MobileBottomNav

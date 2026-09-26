@@ -75,7 +75,7 @@ f = f.replace(targetLabel2, `                      {period.short}
 // Finally, add the table under purchases tab exactly
 const targetTableEnd = `              <button
                 onClick={() => setShowPurchaseModal(true)}
-                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-md flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Record New Purchase</span>
@@ -87,14 +87,14 @@ const targetTableEnd = `              <button
 
 const tableAddition = `              <button
                 onClick={() => setShowPurchaseModal(true)}
-                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-md flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Record New Purchase</span>
               </button>
             }
           />
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden mt-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-sm overflow-hidden mt-4">
             <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
               <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
                 <tr>

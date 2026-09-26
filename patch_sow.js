@@ -80,7 +80,7 @@ const oldPreview = `{/* ================= PAGE 4+: SCOPE OF WORK (LAYOUT ADAPTIV
 
 const newPreview = `{/* ================= PAGE 4+: SCOPE OF WORK (LAYOUT ADAPTIVE & DYNAMIC PAGINATION) ================= */}
            {quotationData.sowMode === 'advanced' ? (
-              <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+              <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
                   <div className="p-8 space-y-6 flex-1">
                      <div>
                        <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>Scope of Work & Deliverables</h2>

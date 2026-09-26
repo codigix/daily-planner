@@ -35,7 +35,7 @@ export default function GMBView({
             <button
               onClick={handleSyncGoogle}
               disabled={isSyncingGoogle}
-              className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 font-extrabold text-xs rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 font-extrabold text-xs rounded-md border border-slate-700 transition-all flex items-center gap-1.5 shadow-sm"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncingGoogle ? 'animate-spin' : ''}`} />
               <span>{isSyncingGoogle ? 'Syncing Engine...' : 'Sync GMB Telemetry'}</span>
@@ -43,7 +43,7 @@ export default function GMBView({
 
             <button
               onClick={handleConnectGoogleAccount}
-              className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 active:scale-95 text-white font-black text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5"
+              className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 active:scale-95 text-white font-black text-xs rounded-md transition-all shadow-md flex items-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-200" />
               <span>Connect Google Business</span>
@@ -51,7 +51,7 @@ export default function GMBView({
 
             <button
               onClick={() => setShowGoogleTokenModal(true)}
-              className="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700"
+              className="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-md border border-slate-700"
             >
               🔑 Access Token
             </button>
@@ -64,13 +64,13 @@ export default function GMBView({
         <div className="flex justify-between items-start flex-wrap gap-4">
           <div className="flex items-center gap-3">
             {googleData?.account?.profile_picture ? (
-              <img 
-                src={googleData.account.profile_picture} 
-                alt="GMB Profile" 
-                className="w-12 h-12 rounded-xl object-cover border-2 border-amber-500 shadow-sm shrink-0" 
+              <img
+                src={googleData.account.profile_picture}
+                alt="GMB Profile"
+                className="w-12 h-12 rounded-md object-cover border-2 border-amber-500 shadow-sm shrink-0"
               />
             ) : (
-              <div className="w-12 h-12 rounded-xl bg-amber-500 text-white font-black text-lg flex items-center justify-center border border-amber-400 shadow-sm shrink-0">
+              <div className="w-12 h-12 rounded-md bg-amber-500 text-white font-black text-lg flex items-center justify-center border border-amber-400 shadow-sm shrink-0">
                 📍
               </div>
             )}
@@ -88,9 +88,9 @@ export default function GMBView({
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-xs font-black rounded-xl border border-amber-300 dark:border-amber-800">
+            <span className="px-3 py-1 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-xs font-black rounded-md border border-amber-300 dark:border-amber-800">
               {isGoogleConnected ? '✓ GMB Connected' : 'Demo Profile'}
             </span>
           </div>

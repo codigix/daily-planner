@@ -30,7 +30,7 @@ export default function MetaLeads({ leads = [], onSyncCRM }) {
             <h2 className="text-xl font-black text-white mt-1">🎯 Meta Lead Form Submissions</h2>
             <p className="text-xs text-slate-300">Automatic duplicate detection, AI lead scoring & 1-click CRM push.</p>
           </div>
-          <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-black rounded-xl border border-emerald-500/30">
+          <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-black rounded-md border border-emerald-500/30">
             {leads.length} Meta Leads Captured
           </span>
         </div>
@@ -61,16 +61,14 @@ export default function MetaLeads({ leads = [], onSyncCRM }) {
                   <td className="p-3.5 font-mono text-slate-600 dark:text-slate-300">{lead.phone || 'N/A'}</td>
                   <td className="p-3.5 text-slate-800 dark:text-slate-200 font-semibold">{lead.company || 'Enterprise Client'}</td>
                   <td className="p-3.5">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                      (lead.lead_score || 85) >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-700'
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${(lead.lead_score || 85) >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-700'
+                      }`}>
                       {(lead.lead_score || 85)} / 100
                     </span>
                   </td>
                   <td className="p-3.5">
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-                      lead.crm_sync_status === 'SYNCED' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-700'
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${lead.crm_sync_status === 'SYNCED' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-700'
+                      }`}>
                       {lead.crm_sync_status || 'PENDING'}
                     </span>
                   </td>
@@ -78,7 +76,7 @@ export default function MetaLeads({ leads = [], onSyncCRM }) {
                     <button
                       onClick={() => handleSync(lead.lead_id || lead.id)}
                       disabled={syncingId === (lead.lead_id || lead.id)}
-                      className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] rounded-lg shadow transition-all flex items-center gap-1"
+                      className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] rounded-md-lg shadow transition-all flex items-center gap-1"
                     >
                       {syncingId === (lead.lead_id || lead.id) ? (
                         <RefreshCw className="w-3 h-3 animate-spin" />

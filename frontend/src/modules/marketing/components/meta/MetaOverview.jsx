@@ -42,7 +42,7 @@ export default function MetaOverview({
     <div className="space-y-4 sm:space-y-6">
 
       {/* ── Business Portfolio Dark Card Banner (Matches Screenshot Dark Portfolio Card) ── */}
-      <div className="bg-black p-4 sm:p-6 text-white border-none rounded-3xl space-y-4 shadow-xl">
+      <div className="bg-black p-4 sm:p-6 text-white border-none rounded-md-3xl space-y-4 shadow-xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export default function MetaOverview({
             href="https://business.facebook.com"
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 shrink-0"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-md shadow-md transition-all flex items-center gap-1.5 shrink-0"
           >
             <span>Open Suite</span>
             <span>↗</span>
@@ -74,7 +74,7 @@ export default function MetaOverview({
 
         {/* 6 Side-by-Side Telemetry Boxes (2 Rows of 3 Cols on Mobile) */}
         <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 pt-2 border-t border-slate-800/80 text-xs">
-          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-md border border-slate-800/80 flex flex-col justify-between">
             <div className="flex items-center gap-1 text-slate-400">
               <Clock className="w-3 h-3" />
               <span className="text-[8px] sm:text-[9px] font-bold uppercase truncate">Last Sync</span>
@@ -82,7 +82,7 @@ export default function MetaOverview({
             <strong className="text-white font-black text-xs mt-1 truncate">08:25 PM</strong>
           </div>
 
-          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-md border border-slate-800/80 flex flex-col justify-between">
             <div className="flex items-center gap-1 text-slate-400">
               <Timer className="w-3 h-3 text-emerald-400" />
               <span className="text-[8px] sm:text-[9px] font-bold uppercase truncate">Next Sync</span>
@@ -90,7 +90,7 @@ export default function MetaOverview({
             <strong className="text-emerald-400 font-black text-xs mt-1 truncate">13 mins</strong>
           </div>
 
-          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-md border border-slate-800/80 flex flex-col justify-between">
             <div className="flex items-center gap-1 text-slate-400">
               <Activity className="w-3 h-3 text-cyan-400" />
               <span className="text-[8px] sm:text-[9px] font-bold uppercase truncate">Sync Duration</span>
@@ -98,7 +98,7 @@ export default function MetaOverview({
             <strong className="text-cyan-400 font-black text-xs mt-1 truncate">1.85s</strong>
           </div>
 
-          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-md border border-slate-800/80 flex flex-col justify-between">
             <div className="flex items-center gap-1 text-slate-400">
               <CheckCircle2 className="w-3 h-3 text-emerald-400" />
               <span className="text-[8px] sm:text-[9px] font-bold uppercase truncate">Records Created</span>
@@ -106,7 +106,7 @@ export default function MetaOverview({
             <strong className="text-emerald-400 font-black text-xs mt-1 truncate">+3 New</strong>
           </div>
 
-          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-md border border-slate-800/80 flex flex-col justify-between">
             <div className="flex items-center gap-1 text-slate-400">
               <FileCode className="w-3 h-3 text-purple-400" />
               <span className="text-[8px] sm:text-[9px] font-bold uppercase truncate">Records Updated</span>
@@ -114,7 +114,7 @@ export default function MetaOverview({
             <strong className="text-purple-400 font-black text-xs mt-1 truncate">18 Updated</strong>
           </div>
 
-          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
+          <div className="bg-slate-900/80 p-2 sm:p-2.5 rounded-md border border-slate-800/80 flex flex-col justify-between">
             <div className="flex items-center gap-1 text-slate-400">
               <AlertCircle className="w-3 h-3 text-rose-400" />
               <span className="text-[8px] sm:text-[9px] font-bold uppercase truncate">Records Failed</span>
@@ -127,8 +127,8 @@ export default function MetaOverview({
       {/* ── SECTION 1: 6 White KPI Cards Row (Matches Screenshot KPI Cards Row) ── */}
       <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 overflow-x-auto sm:overflow-visible snap-x no-scrollbar pb-1">
         {/* Card 1: Followers */}
-        <div className="card-base p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-1">
+        <div className="card-base p-3 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
+          <div className="w-8 h-8 rounded-md bg-blue-500/10 text-blue-600 flex items-center justify-center mb-1">
             <Users className="w-4 h-4" />
           </div>
           <span className="text-[10px] font-bold text-slate-400 block truncate">Followers</span>
@@ -140,8 +140,8 @@ export default function MetaOverview({
         </div>
 
         {/* Card 2: Reach */}
-        <div className="card-base p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-1">
+        <div className="card-base p-3 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
+          <div className="w-8 h-8 rounded-md bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-1">
             <Eye className="w-4 h-4" />
           </div>
           <span className="text-[10px] font-bold text-slate-400 block truncate">Reach</span>
@@ -153,8 +153,8 @@ export default function MetaOverview({
         </div>
 
         {/* Card 3: Engagement */}
-        <div className="card-base p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-1">
+        <div className="card-base p-3 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
+          <div className="w-8 h-8 rounded-md bg-purple-500/10 text-purple-600 flex items-center justify-center mb-1">
             <BarChart2 className="w-4 h-4" />
           </div>
           <span className="text-[10px] font-bold text-slate-400 block truncate">Engagement</span>
@@ -166,8 +166,8 @@ export default function MetaOverview({
         </div>
 
         {/* Card 4: Meta Leads */}
-        <div className="card-base p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-1">
+        <div className="card-base p-3 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
+          <div className="w-8 h-8 rounded-md bg-amber-500/10 text-amber-600 flex items-center justify-center mb-1">
             <Target className="w-4 h-4" />
           </div>
           <span className="text-[10px] font-bold text-slate-400 block truncate">Leads</span>
@@ -176,8 +176,8 @@ export default function MetaOverview({
         </div>
 
         {/* Card 5: Ad Spend */}
-        <div className="card-base p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center mb-1">
+        <div className="card-base p-3 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
+          <div className="w-8 h-8 rounded-md bg-indigo-500/10 text-indigo-600 flex items-center justify-center mb-1">
             <DollarSign className="w-4 h-4" />
           </div>
           <span className="text-[10px] font-bold text-slate-400 block truncate">Ad Spend</span>
@@ -186,8 +186,8 @@ export default function MetaOverview({
         </div>
 
         {/* Card 6: Campaigns */}
-        <div className="card-base p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-pink-500/10 text-pink-600 flex items-center justify-center mb-1">
+        <div className="card-base p-3 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between items-center text-center min-w-[105px] shrink-0 sm:min-w-0">
+          <div className="w-8 h-8 rounded-md bg-pink-500/10 text-pink-600 flex items-center justify-center mb-1">
             <Target className="w-4 h-4" />
           </div>
           <span className="text-[10px] font-bold text-slate-400 block truncate">Campaigns</span>
@@ -199,15 +199,15 @@ export default function MetaOverview({
       {/* ── SECTION 2: 4 Dedicated Platform Cards Row (Matches Screenshot Platform Cards) ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Facebook */}
-        <div className="card-base p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between space-y-3">
+        <div className="card-base p-3.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between space-y-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-blue-600 text-white font-black flex items-center justify-center text-xs shrink-0">
+              <div className="w-7 h-7 rounded-md bg-blue-600 text-white font-black flex items-center justify-center text-xs shrink-0">
                 f
               </div>
               <div>
                 <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Facebook</h4>
-                <span className="px-1.5 py-0.2 rounded text-[8px] font-extrabold bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+                <span className="px-1.5 py-0.2 rounded-md text-[8px] font-extrabold bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
                   Page Active
                 </span>
               </div>
@@ -222,22 +222,22 @@ export default function MetaOverview({
 
           <button
             onClick={() => onNavigateTab && onNavigateTab('facebook')}
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black flex items-center justify-center transition-all cursor-pointer"
+            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-black flex items-center justify-center transition-all cursor-pointer"
           >
             ➜
           </button>
         </div>
 
         {/* Card 2: Instagram */}
-        <div className="card-base p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between space-y-3">
+        <div className="card-base p-3.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between space-y-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-amber-500 via-pink-600 to-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0">
+              <div className="w-7 h-7 rounded-md bg-gradient-to-tr from-amber-500 via-pink-600 to-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0">
                 ig
               </div>
               <div>
                 <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Instagram</h4>
-                <span className="px-1.5 py-0.2 rounded text-[8px] font-extrabold bg-pink-50 text-pink-600 dark:bg-pink-950/40 dark:text-pink-300">
+                <span className="px-1.5 py-0.2 rounded-md text-[8px] font-extrabold bg-pink-50 text-pink-600 dark:bg-pink-950/40 dark:text-pink-300">
                   Business Active
                 </span>
               </div>
@@ -252,22 +252,22 @@ export default function MetaOverview({
 
           <button
             onClick={() => onNavigateTab && onNavigateTab('instagram')}
-            className="w-full py-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white rounded-xl text-xs font-black flex items-center justify-center transition-all cursor-pointer"
+            className="w-full py-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white rounded-md text-xs font-black flex items-center justify-center transition-all cursor-pointer"
           >
             ➜
           </button>
         </div>
 
         {/* Card 3: WhatsApp */}
-        <div className="card-base p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between space-y-3">
+        <div className="card-base p-3.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between space-y-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white font-black flex items-center justify-center text-xs shrink-0">
+              <div className="w-7 h-7 rounded-md bg-emerald-600 text-white font-black flex items-center justify-center text-xs shrink-0">
                 wa
               </div>
               <div>
                 <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">WhatsApp</h4>
-                <span className="px-1.5 py-0.2 rounded text-[8px] font-extrabold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
+                <span className="px-1.5 py-0.2 rounded-md text-[8px] font-extrabold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
                   Cloud API
                 </span>
               </div>
@@ -282,22 +282,22 @@ export default function MetaOverview({
 
           <button
             onClick={() => onNavigateTab && onNavigateTab('whatsapp')}
-            className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black flex items-center justify-center transition-all cursor-pointer"
+            className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-black flex items-center justify-center transition-all cursor-pointer"
           >
             ➜
           </button>
         </div>
 
         {/* Card 4: Meta Ads */}
-        <div className="card-base p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between space-y-3">
+        <div className="card-base p-3.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between space-y-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0">
+              <div className="w-7 h-7 rounded-md bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0">
                 ∞
               </div>
               <div>
                 <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Meta Ads</h4>
-                <span className="px-1.5 py-0.2 rounded text-[8px] font-extrabold bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-300">
+                <span className="px-1.5 py-0.2 rounded-md text-[8px] font-extrabold bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-300">
                   Campaigns Active
                 </span>
               </div>
@@ -312,7 +312,7 @@ export default function MetaOverview({
 
           <button
             onClick={() => onNavigateTab && onNavigateTab('ads')}
-            className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black flex items-center justify-center transition-all cursor-pointer"
+            className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-xs font-black flex items-center justify-center transition-all cursor-pointer"
           >
             ➜
           </button>
@@ -320,7 +320,7 @@ export default function MetaOverview({
       </div>
 
       {/* ── SECTION 3: Platform Sync Pipeline Card (Matches Screenshot Pipeline) ── */}
-      <div className="card-base p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
+      <div className="card-base p-4 sm:p-5 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
         <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
           <h3 className="font-extrabold text-xs text-slate-900 dark:text-white">Platform Sync Pipeline</h3>
           <span className="text-[10px] font-extrabold text-purple-600 dark:text-purple-400">
@@ -402,9 +402,9 @@ export default function MetaOverview({
       </div>
 
       {/* ── SECTION 4: AI Marketing Insight Banner (Matches Screenshot Banner) ── */}
-      <div className="p-3.5 sm:p-4 bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl flex items-center justify-between gap-3">
+      <div className="p-3.5 sm:p-4 bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-blue-500/10 border border-purple-500/20 rounded-md flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-purple-600 text-white shrink-0 shadow-md">
+          <div className="p-2 rounded-md bg-purple-600 text-white shrink-0 shadow-md">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
@@ -415,7 +415,7 @@ export default function MetaOverview({
           </div>
         </div>
 
-        <button className="px-3 py-1.5 bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 rounded-xl text-[10px] font-extrabold flex items-center gap-1 shrink-0 shadow-sm hover:bg-purple-50 transition-all cursor-pointer">
+        <button className="px-3 py-1.5 bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 rounded-md text-[10px] font-extrabold flex items-center gap-1 shrink-0 shadow-sm hover:bg-purple-50 transition-all cursor-pointer">
           <span>View Insights</span>
           <ChevronRight className="w-3 h-3" />
         </button>

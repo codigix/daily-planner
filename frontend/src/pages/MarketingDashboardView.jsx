@@ -9,7 +9,8 @@ import {
   ShieldCheck,
   Filter,
   X,
-  Search
+  Search,
+  Zap
 } from 'lucide-react';
 
 import {
@@ -410,7 +411,7 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
     <div className="space-y-6 max-w-[1600px] mx-auto text-slate-800 dark:text-slate-100">
       {/* Meta Notice Alert Banner */}
       {metaNotice && (
-        <div className="p-4 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded-2xl flex items-center justify-between text-xs text-indigo-900 dark:text-indigo-200">
+        <div className="p-4 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded-md flex items-center justify-between text-xs text-indigo-900 dark:text-indigo-200">
           <span className="font-bold flex items-center gap-2">
             <span>ℹ️</span> {metaNotice}
           </span>
@@ -424,10 +425,10 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
       )}
 
       {/* Executive SaaS Header Ribbon (Matches Screenshot Header) */}
-      <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 shadow-sm space-y-4">
+      <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md-3xl p-4 sm:p-6 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-start gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-blue-500/10 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-11 h-11 rounded-md bg-blue-500/10 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
               <TrendingUp className="w-6 h-6" />
             </div>
             <div className="space-y-1">
@@ -453,7 +454,7 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
             <button
               onClick={handleManualSync}
               disabled={isSyncing}
-              className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-2xl border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-md border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-blue-500 ${isSyncing ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">{isSyncing ? 'Refreshing All APIs...' : 'Refresh Live Metrics'}</span>
@@ -462,9 +463,9 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
 
             <button
               onClick={() => setShowTokenModal(true)}
-              className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-2xl border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+              className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-md border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
             >
-              <span className="text-amber-500">⚡</span>
+              <Zap className="w-4 h-4 text-amber-500" />
               <span>Webhook Setup</span>
             </button>
           </div>
@@ -532,7 +533,7 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
 
         {/* Right Side: Navigation Tabs Sidebar (Horizontal pill bar on mobile, vertical sidebar on desktop) */}
         <div className="w-full lg:w-80 shrink-0 lg:sticky lg:top-6 space-y-3 order-first lg:order-last">
-          <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-3.5 sm:p-5 shadow-sm space-y-3">
+          <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md-3xl p-3.5 sm:p-5 shadow-sm space-y-3">
             <div className="hidden sm:flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
               <div>
                 <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Navigation Tabs</h3>
@@ -552,13 +553,13 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-auto min-w-[160px] sm:min-w-0 lg:w-full text-left p-2.5 sm:p-3.5 rounded-2xl transition-all flex items-center justify-between shrink-0 group ${isActive
+                    className={`w-auto min-w-[160px] sm:min-w-0 lg:w-full text-left p-2.5 sm:p-3.5 rounded-md transition-all flex items-center justify-between shrink-0 group ${isActive
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20'
                       : 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/50 dark:border-slate-700/50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className="text-base p-1.5 rounded-xl bg-white/20 dark:bg-slate-700/50 flex items-center justify-center shrink-0">
+                      <span className="text-base p-1.5 rounded-md bg-white/20 dark:bg-slate-700/50 flex items-center justify-center shrink-0">
                         {tab.icon}
                       </span>
                       <div>
@@ -623,7 +624,7 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
       {/* ── Mobile Filters Drawer Modal ── */}
       {showMobileFilterModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-blue-600" />
@@ -631,7 +632,7 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
               </div>
               <button
                 onClick={() => setShowMobileFilterModal(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -651,11 +652,10 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
                     <button
                       key={p.id}
                       onClick={() => setActiveTab(p.id)}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold border text-left cursor-pointer transition-all ${
-                        activeTab === p.id
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                      }`}
+                      className={`py-2 px-3 rounded-md text-xs font-bold border text-left cursor-pointer transition-all ${activeTab === p.id
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                        }`}
                     >
                       {p.label}
                     </button>
@@ -678,11 +678,10 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
                       <button
                         key={tab.id}
                         onClick={() => setMetaSubTab(tab.id)}
-                        className={`py-2 px-2 rounded-xl text-xs font-bold border text-center cursor-pointer transition-all truncate ${
-                          metaSubTab === tab.id
-                            ? 'bg-blue-50/80 dark:bg-blue-950/50 border-blue-600 text-blue-600 dark:text-blue-400 font-extrabold'
-                            : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                        }`}
+                        className={`py-2 px-2 rounded-md text-xs font-bold border text-center cursor-pointer transition-all truncate ${metaSubTab === tab.id
+                          ? 'bg-blue-50/80 dark:bg-blue-950/50 border-blue-600 text-blue-600 dark:text-blue-400 font-extrabold'
+                          : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                          }`}
                       >
                         {tab.label}
                       </button>
@@ -698,13 +697,13 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
                   setActiveTab('meta');
                   setMetaSubTab('overview');
                 }}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-md cursor-pointer"
               >
                 Reset Filters
               </button>
               <button
                 onClick={() => setShowMobileFilterModal(false)}
-                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-md cursor-pointer"
               >
                 Apply Filters
               </button>

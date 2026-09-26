@@ -143,13 +143,13 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-xl border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-slate-900 rounded-md shadow-2xl w-full max-w-xl border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900 z-10">
           <h3 className="font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
             <Video className="w-5 h-5 text-brand-600" />
             {isEdit ? 'Edit Meeting' : 'Schedule New Meeting'}
           </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-md-lg"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="p-5 space-y-4">
@@ -157,14 +157,14 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
           <div>
             <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Meeting Title *</label>
             <input type="text" value={form.title} onChange={e => set('title', e.target.value)}
-              placeholder="e.g. Q3 Strategy Review" className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
+              placeholder="e.g. Q3 Strategy Review" className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
           </div>
 
           {/* Description */}
           <div>
             <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Description</label>
             <textarea rows={2} value={form.description} onChange={e => set('description', e.target.value)}
-              placeholder="Brief context or purpose of this meeting..." className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium resize-none" />
+              placeholder="Brief context or purpose of this meeting..." className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium resize-none" />
           </div>
 
           {/* Row: Type + Status */}
@@ -172,14 +172,14 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
             <div>
               <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Type</label>
               <select value={form.type} onChange={e => set('type', e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
+                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
                 {MEETING_TYPES.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
             <div>
               <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Status</label>
               <select value={form.status} onChange={e => set('status', e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
+                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
                 {MEETING_STATUSES.map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
@@ -190,7 +190,7 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
             <div>
               <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Date</label>
               <input type="date" value={form.date} onChange={e => set('date', e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
+                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
             </div>
             <div>
               <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Time</label>
@@ -210,12 +210,12 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
                 const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
                 set('time', `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`);
               }}
-                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
+                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
             </div>
             <div>
               <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Duration</label>
               <select value={form.duration} onChange={e => set('duration', e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
+                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
                 {['15 min', '30 min', '45 min', '1 hr', '1.5 hr', '2 hr', '3 hr'].map(d => <option key={d}>{d}</option>)}
               </select>
             </div>
@@ -226,12 +226,12 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
             <div>
               <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">🎥 Video Call Link (Meet/Zoom/Teams)</label>
               <input type="text" value={form.videoLink} onChange={e => set('videoLink', e.target.value)}
-                placeholder="https://meet.google.com/xyz or Zoom URL" className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
+                placeholder="https://meet.google.com/xyz or Zoom URL" className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
             </div>
             <div>
               <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">📍 Physical Room / Location</label>
               <input type="text" value={form.location} onChange={e => set('location', e.target.value)}
-                placeholder="e.g. Conference Room 3B" className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
+                placeholder="e.g. Conference Room 3B" className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
             </div>
           </div>
 
@@ -240,12 +240,12 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
             <div>
               <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Client / Company</label>
               <input type="text" value={form.client} onChange={e => set('client', e.target.value)}
-                placeholder="e.g. Acme Corp" className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
+                placeholder="e.g. Acme Corp" className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
             </div>
             <div>
               <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Organizer</label>
               <input type="text" value={form.organizer} onChange={e => set('organizer', e.target.value)}
-                placeholder="e.g. CEO Office" className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
+                placeholder="e.g. CEO Office" className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
             </div>
           </div>
 
@@ -253,7 +253,7 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
           <div>
             <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Attendees (comma-separated)</label>
             <input type="text" value={form.members} onChange={e => set('members', e.target.value)}
-              placeholder="e.g. Rahul S., Priya M., Dev K." className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
+              placeholder="e.g. Rahul S., Priya M., Dev K." className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium" />
           </div>
 
           {/* Agenda */}
@@ -261,7 +261,7 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
             <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Agenda (one item per line)</label>
             <textarea rows={3} value={form.agenda} onChange={e => set('agenda', e.target.value)}
               placeholder={"Sprint review\nBlockers discussion\nNext milestone planning"}
-              className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium resize-none" />
+              className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium resize-none" />
           </div>
 
           {/* Action Items */}
@@ -269,13 +269,13 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
             <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block">Action Items (one per line)</label>
             <textarea rows={2} value={form.actionItems} onChange={e => set('actionItems', e.target.value)}
               placeholder={"Prepare status report\nShare updated roadmap"}
-              className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium resize-none" />
+              className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium resize-none" />
           </div>
         </div>
 
         <div className="flex justify-end gap-2 p-5 border-t border-slate-100 dark:border-slate-800 sticky bottom-0 bg-white dark:bg-slate-900">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
-          <button onClick={handleSave} className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-md shadow-brand-500/20 flex items-center gap-2">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md">Cancel</button>
+          <button onClick={handleSave} className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-md shadow-md shadow-brand-500/20 flex items-center gap-2">
             <Save className="w-4 h-4" /> {isEdit ? 'Save Changes' : 'Schedule Meeting'}
           </button>
         </div>
@@ -334,7 +334,7 @@ ${m.client ? `💼 Client: ${m.client}\n` : ''}${getVideoCallUrl(m) ? `🔗 Link
 📋 AGENDA:
 ${agendaText}
 
-⚡ ACTION ITEMS:
+ACTION ITEMS:
 ${actionText}`;
 
     navigator.clipboard.writeText(summary).then(() => {
@@ -451,7 +451,7 @@ ${actionText}`;
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 shrink-0">
+            <div className="p-2 rounded-md bg-blue-500/10 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 shrink-0">
               <Video className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Meeting Manager</h1>
@@ -464,7 +464,7 @@ ${actionText}`;
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => { setEditMeeting(null); setShowForm(true); }}
-            className="flex-1 sm:flex-initial px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-blue-600 rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 hover:bg-slate-50 shadow-sm transition-all cursor-pointer"
+            className="flex-1 sm:flex-initial px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-blue-600 rounded-md text-xs font-extrabold flex items-center justify-center gap-1.5 hover:bg-slate-50 shadow-sm transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4 text-blue-600 shrink-0" />
             <span className="truncate">Schedule</span>
@@ -472,7 +472,7 @@ ${actionText}`;
 
           <button
             onClick={onOpenAI}
-            className="flex-1 sm:flex-initial px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+            className="flex-1 sm:flex-initial px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
           >
             <Sparkles className="w-4 h-4 shrink-0" />
             <span className="truncate">AI Assistant</span>
@@ -488,13 +488,13 @@ ${actionText}`;
           { label: 'Completed', value: completedCount, sub: 'Conducted', icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/50' },
           { label: 'Participants', value: meetings.reduce((s, m) => s + (m.members?.length || 1), 0), sub: 'Total Attendees', icon: Users, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/50' },
         ].map(kpi => (
-          <div key={kpi.label} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-4 flex flex-col justify-between shadow-sm">
+          <div key={kpi.label} className="bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-4 flex flex-col justify-between shadow-sm">
             <div>
               <p className="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">{kpi.label}</p>
               <p className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white mt-0.5">{kpi.value}</p>
               <p className="text-[9px] sm:text-[11px] font-bold text-slate-400 truncate">{kpi.sub}</p>
             </div>
-            <div className={`w-7 h-7 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl ${kpi.bg} ${kpi.color} flex items-center justify-center self-end mt-1`}>
+            <div className={`w-7 h-7 sm:w-11 sm:h-11 rounded-md sm:rounded-md ${kpi.bg} ${kpi.color} flex items-center justify-center self-end mt-1`}>
               <kpi.icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             </div>
           </div>
@@ -520,7 +520,7 @@ ${actionText}`;
         {/* Search & Filter Controls Bar (Matches Screenshot) */}
         <div className="flex items-center gap-2">
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
-            className="px-2.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer shrink-0">
+            className="px-2.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-md text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer shrink-0">
             <option value="All">All Types</option>
             {MEETING_TYPES.map(t => <option key={t}>{t}</option>)}
           </select>
@@ -529,10 +529,10 @@ ${actionText}`;
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search meetings, clients..."
-              className="w-full pl-8 pr-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" />
+              className="w-full pl-8 pr-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" />
           </div>
 
-          <button className="p-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 shrink-0 cursor-pointer" title="Filters">
+          <button className="p-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 shrink-0 cursor-pointer" title="Filters">
             <Layers className="w-4 h-4" />
           </button>
         </div>
@@ -560,7 +560,7 @@ ${actionText}`;
                     <div className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1">
                       <span>{m.time}</span>
                       {hasTimeConflict(m, meetings) && (
-                        <span className="text-[9px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded border border-amber-300 shrink-0">
+                        <span className="text-[9px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded-md border border-amber-300 shrink-0">
                           ⚠️
                         </span>
                       )}
@@ -606,8 +606,8 @@ ${actionText}`;
                 align: 'right',
                 render: (m) => (
                   <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
-                    <button onClick={() => { setEditMeeting(m); setShowForm(true); }} className="p-1 rounded-lg text-slate-400 hover:text-blue-600" title="Edit"><Edit className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => setConfirmDeleteId(m.id)} className="p-1 rounded-lg text-slate-400 hover:text-rose-600" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => { setEditMeeting(m); setShowForm(true); }} className="p-1 rounded-md-lg text-slate-400 hover:text-blue-600" title="Edit"><Edit className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setConfirmDeleteId(m.id)} className="p-1 rounded-md-lg text-slate-400 hover:text-rose-600" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 )
               }
@@ -620,7 +620,7 @@ ${actionText}`;
         </div>
 
         {/* Right Card: Selected Meeting Detail Panel (Col 2 on Mobile, 4 Cols on Desktop - Matches Screenshot) */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between p-4 sm:p-6 min-h-[320px]">
+        <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between p-4 sm:p-6 min-h-[320px]">
           {selectedMeeting ? (
             <div className="space-y-4 my-auto">
               <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -646,14 +646,14 @@ ${actionText}`;
 
               <button
                 onClick={() => { setEditMeeting(selectedMeeting); setShowForm(true); }}
-                className="w-full py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-blue-600 hover:bg-slate-50 text-xs font-extrabold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                className="w-full py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-blue-600 hover:bg-slate-50 text-xs font-extrabold rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> Schedule Meeting
               </button>
             </div>
           ) : (
             <div className="my-auto text-center space-y-3">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-50 dark:bg-blue-950/50 rounded-2xl flex items-center justify-center mx-auto text-blue-600">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center justify-center mx-auto text-blue-600">
                 <Calendar className="w-6 h-6 sm:w-8 sm:h-8" />
               </div>
               <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">No Meeting Selected</h3>
@@ -662,7 +662,7 @@ ${actionText}`;
               </p>
               <button
                 onClick={() => { setEditMeeting(null); setShowForm(true); }}
-                className="mx-auto px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-blue-600 hover:bg-slate-50 text-xs font-extrabold rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                className="mx-auto px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-blue-600 hover:bg-slate-50 text-xs font-extrabold rounded-md flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> Schedule Meeting
               </button>
@@ -683,9 +683,9 @@ ${actionText}`;
       {/* ── Delete Confirmation ── */}
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-6 w-full max-w-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-md shadow-2xl border border-slate-200 dark:border-slate-700 p-6 w-full max-w-sm space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-rose-100 dark:bg-rose-900/40 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-rose-100 dark:bg-rose-900/40 rounded-md flex items-center justify-center">
                 <Trash2 className="w-5 h-5 text-rose-600" />
               </div>
               <div>
@@ -693,14 +693,14 @@ ${actionText}`;
                 <p className="text-xs text-slate-500">This action cannot be undone.</p>
               </div>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl font-medium">
+            <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-3 rounded-md font-medium">
               {meetings.find(m => m.id === confirmDeleteId)?.title}
             </p>
             <div className="flex gap-2 justify-end">
               <button onClick={() => setConfirmDeleteId(null)}
-                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md">Cancel</button>
               <button onClick={() => handleDelete(confirmDeleteId)}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl">Delete</button>
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-md">Delete</button>
             </div>
           </div>
         </div>
@@ -718,7 +718,7 @@ ${actionText}`;
       {/* ── Mobile Filters Drawer Modal ── */}
       {showMobileFilterModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-blue-600" />
@@ -726,7 +726,7 @@ ${actionText}`;
               </div>
               <button
                 onClick={() => setShowMobileFilterModal(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -743,7 +743,7 @@ ${actionText}`;
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by title, client, organizer..."
-                    className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
                   />
                 </div>
               </div>
@@ -756,7 +756,7 @@ ${actionText}`;
                     <button
                       key={status}
                       onClick={() => setActiveTab(status)}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold border text-left cursor-pointer transition-all ${activeTab === status
+                      className={`py-2 px-3 rounded-md text-xs font-bold border text-left cursor-pointer transition-all ${activeTab === status
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                         }`}
@@ -775,7 +775,7 @@ ${actionText}`;
                     <button
                       key={type}
                       onClick={() => setTypeFilter(type)}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold border text-center cursor-pointer transition-all truncate ${typeFilter === type
+                      className={`py-2 px-2 rounded-md text-xs font-bold border text-center cursor-pointer transition-all truncate ${typeFilter === type
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                         }`}
@@ -795,13 +795,13 @@ ${actionText}`;
                   setTypeFilter('All');
                   setSelectedDateFilter(null);
                 }}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-md cursor-pointer"
               >
                 Reset Filters
               </button>
               <button
                 onClick={() => setShowMobileFilterModal(false)}
-                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-md cursor-pointer"
               >
                 Apply Filters
               </button>

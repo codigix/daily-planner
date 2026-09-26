@@ -1,32 +1,32 @@
 import React, { useState } from 'react';
-import { 
-  Bot, 
-  Sparkles, 
-  Zap, 
-  Clock, 
-  Brain, 
-  Lightbulb, 
-  Target, 
-  Search, 
-  Send, 
-  CheckCircle2, 
-  Calendar, 
-  ArrowUpRight, 
-  ChevronRight, 
-  FileText, 
-  Mail, 
-  BarChart2, 
-  Video, 
+import {
+  Bot,
+  Sparkles,
+  Zap,
+  Clock,
+  Brain,
+  Lightbulb,
+  Target,
+  Search,
+  Send,
+  CheckCircle2,
+  Calendar,
+  ArrowUpRight,
+  ChevronRight,
+  FileText,
+  Mail,
+  BarChart2,
+  Video,
   CheckSquare
 } from 'lucide-react';
 
-export default function AIExecutiveAssistantView({ 
-  user, 
-  plannerTasks = [], 
-  meetings = [], 
-  clients = [], 
-  domains = [], 
-  onOpenAI 
+export default function AIExecutiveAssistantView({
+  user,
+  plannerTasks = [],
+  meetings = [],
+  clients = [],
+  domains = [],
+  onOpenAI
 }) {
   const [promptText, setPromptText] = useState('');
   const userName = user?.name || (user?.email ? user.email.split('@')[0] : 'User');
@@ -59,9 +59,9 @@ export default function AIExecutiveAssistantView({
     setPromptText('');
 
     setTimeout(() => {
-      setChatMessages(prev => [...prev, { 
-        role: 'assistant', 
-        text: `I've processed your request regarding "${msg}". Your schedule is synchronized with your active database.` 
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        text: `I've processed your request regarding "${msg}". Your schedule is synchronized with your active database.`
       }]);
     }, 600);
   };
@@ -76,7 +76,7 @@ export default function AIExecutiveAssistantView({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600">
+            <div className="p-2 rounded-md bg-purple-500/10 text-purple-600">
               <Bot className="w-5 h-5" />
             </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">AI Executive Assistant</h1>
@@ -92,19 +92,19 @@ export default function AIExecutiveAssistantView({
             <input
               type="text"
               placeholder="Search anything... Ctrl + K"
-              className="pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+              className="pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
             />
           </div>
 
-          <button 
+          <button
             onClick={onOpenAI}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-xs font-bold flex items-center gap-1.5 shadow-md shadow-purple-500/20"
           >
             <Sparkles className="w-4 h-4 fill-white" />
             <span>Ask AI</span>
           </button>
 
-          <button onClick={onOpenAI} className="px-4 py-2 bg-white dark:bg-slate-800 border border-purple-300 text-purple-700 dark:text-purple-300 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <button onClick={onOpenAI} className="px-4 py-2 bg-white dark:bg-slate-800 border border-purple-300 text-purple-700 dark:text-purple-300 rounded-md text-xs font-bold flex items-center gap-1.5 shadow-sm">
             <Zap className="w-4 h-4 text-purple-600" />
             <span>Create with AI</span>
           </button>
@@ -121,7 +121,7 @@ export default function AIExecutiveAssistantView({
               <ArrowUpRight className="w-3 h-3" /> {plannerTasks.length} Total Tasks
             </span>
           </div>
-          <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-md bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
             <Zap className="w-4 h-4" />
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function AIExecutiveAssistantView({
               <ArrowUpRight className="w-3 h-3" /> Based on Completed Tasks
             </span>
           </div>
-          <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-md bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
             <Clock className="w-4 h-4" />
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function AIExecutiveAssistantView({
               <ArrowUpRight className="w-3 h-3" /> {highPriorityClients.length} High Priority
             </span>
           </div>
-          <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-md bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
             <Brain className="w-4 h-4" />
           </div>
         </div>
@@ -160,7 +160,7 @@ export default function AIExecutiveAssistantView({
               <ArrowUpRight className="w-3 h-3" /> Live Database Records
             </span>
           </div>
-          <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-md bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
             <Lightbulb className="w-4 h-4" />
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function AIExecutiveAssistantView({
               <ArrowUpRight className="w-3 h-3" /> Real Execution Score
             </span>
           </div>
-          <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-md bg-teal-500/10 text-teal-600 flex items-center justify-center shrink-0">
             <Target className="w-4 h-4" />
           </div>
         </div>
@@ -194,11 +194,11 @@ export default function AIExecutiveAssistantView({
               onChange={(e) => setPromptText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask anything... (e.g., Summarize sales performance, Create meeting agenda, Analyze marketing ROI)"
-              className="w-full pl-4 pr-12 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs font-semibold"
+              className="w-full pl-4 pr-12 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs font-semibold"
             />
-            <button 
+            <button
               onClick={handleSend}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 text-white rounded-xl shadow-md hover:bg-purple-700"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 text-white rounded-md shadow-md hover:bg-purple-700"
             >
               <Send className="w-4 h-4" />
             </button>
@@ -212,10 +212,10 @@ export default function AIExecutiveAssistantView({
               "📈 Marketing ROI analysis",
               "✨ More suggestions"
             ].map((chip, idx) => (
-              <button 
+              <button
                 key={idx}
                 onClick={() => handleChipClick(chip)}
-                className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 text-[11px] transition-colors cursor-pointer"
+                className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-50 text-[11px] transition-colors cursor-pointer"
               >
                 {chip}
               </button>
@@ -225,7 +225,7 @@ export default function AIExecutiveAssistantView({
 
         {/* AI Assistant Status */}
         <div className="lg:col-span-4 card-base flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 flex items-center justify-center shrink-0">
+          <div className="w-16 h-16 rounded-md bg-purple-100 dark:bg-purple-900/40 text-purple-600 flex items-center justify-center shrink-0">
             <Bot className="w-8 h-8 animate-bounce" />
           </div>
           <div>
@@ -249,19 +249,19 @@ export default function AIExecutiveAssistantView({
             <button className="text-[10px] font-bold text-purple-600 hover:underline">View All</button>
           </div>
           <div className="space-y-2 text-xs">
-            <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50 text-[11px]">
+            <div className="p-2.5 rounded-md bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50 text-[11px]">
               <span className="font-bold text-slate-800 dark:text-slate-200 block">
                 {completedTasks.length} of {plannerTasks.length} daily tasks have been completed successfully.
               </span>
               <span className="text-emerald-700 dark:text-emerald-400 font-bold block mt-0.5">Execution Insight</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-900/50 text-[11px]">
+            <div className="p-2.5 rounded-md bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-900/50 text-[11px]">
               <span className="font-bold text-slate-800 dark:text-slate-200 block">
                 {clients.length} active clients in pipeline with {highPriorityClients.length} marked high priority.
               </span>
               <span className="text-purple-700 dark:text-purple-400 font-bold block mt-0.5">Sales Pipeline Insight</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50 text-[11px]">
+            <div className="p-2.5 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50 text-[11px]">
               <span className="font-bold text-slate-800 dark:text-slate-200 block">
                 {meetings.length} scheduled meetings currently listed on your calendar.
               </span>
@@ -283,12 +283,12 @@ export default function AIExecutiveAssistantView({
               { text: `Review ${upcomingMeetings.length} upcoming meetings`, desc: 'Prepare agendas and action items.' },
               { text: `Export executive report summary`, desc: 'Compile workspace analytics.' },
             ].map((sa, idx) => (
-              <div key={idx} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700/80 flex items-center justify-between">
+              <div key={idx} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-100 dark:border-slate-700/80 flex items-center justify-between">
                 <div>
                   <span className="font-bold text-slate-800 dark:text-slate-200 block text-[11px]">{sa.text}</span>
                   <span className="text-[9px] text-slate-400">{sa.desc}</span>
                 </div>
-                <button onClick={onOpenAI} className="px-2 py-1 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-[10px] rounded-lg hover:bg-purple-100 cursor-pointer">
+                <button onClick={onOpenAI} className="px-2 py-1 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-[10px] rounded-md-lg hover:bg-purple-100 cursor-pointer">
                   Apply
                 </button>
               </div>
@@ -303,21 +303,21 @@ export default function AIExecutiveAssistantView({
             <span className="text-[10px] font-bold text-slate-400">{currentDateStr}</span>
           </div>
           <div className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
-            <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
+            <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-md">
               <span>{meetings.length} Meetings</span>
               <span className="font-bold text-slate-900 dark:text-white text-[11px]">
                 {nextMeeting ? `Next: ${nextMeeting.time || ''} - ${nextMeeting.title}` : 'No upcoming meetings'}
               </span>
             </div>
-            <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
+            <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-md">
               <span>{plannerTasks.length} Tasks</span>
               <span className="font-bold text-emerald-600 text-[11px]">{completedTasks.length} Completed / {pendingTasks.length} Pending</span>
             </div>
-            <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
+            <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-md">
               <span>{clients.length} Follow-ups</span>
               <span className="font-bold text-amber-600 text-[11px]">{highPriorityClients.length} High Priority</span>
             </div>
-            <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
+            <div className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-md">
               <span>Pipeline Value</span>
               <span className="font-bold text-blue-600 text-[11px]">
                 {totalPipelineVal > 0 ? `₹ ${totalPipelineVal.toLocaleString('en-IN')}` : '₹ 0'}
@@ -345,7 +345,7 @@ export default function AIExecutiveAssistantView({
             const Icon = tool.icon;
             return (
               <div key={idx} className="card-base p-3 space-y-2 hover:shadow-card cursor-pointer">
-                <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center">
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="font-bold text-xs text-slate-900 dark:text-white">{tool.title}</div>

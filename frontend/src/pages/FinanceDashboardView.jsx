@@ -134,7 +134,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
     const saved = localStorage.getItem('codigix_sales_sheet_url') || '';
     const sheetUrl = window.prompt('Enter your Google Sheet URL for Sales/Invoices:', saved);
     if (!sheetUrl) return;
-    
+
     localStorage.setItem('codigix_sales_sheet_url', sheetUrl);
     setLoading(true);
     try {
@@ -144,9 +144,9 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
         loadFinanceTelemetry();
       } else {
         if (res.error && res.error.includes('Google Account not connected')) {
-           alert('Google Sheets Sync Error: Google Account not connected or token expired. Please connect your Google account by navigating to the backend URL: http://localhost:5001/api/google/auth in your browser.');
+          alert('Google Sheets Sync Error: Google Account not connected or token expired. Please connect your Google account by navigating to the backend URL: http://localhost:5001/api/google/auth in your browser.');
         } else {
-           alert(res.error || 'Sync failed');
+          alert(res.error || 'Sync failed');
         }
       }
     } catch (err) {
@@ -286,7 +286,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
     const saved = localStorage.getItem('codigix_purchases_sheet_url') || '';
     const sheetUrl = window.prompt('Enter your Google Sheet URL for Purchases/Expenses:', saved);
     if (!sheetUrl) return;
-    
+
     localStorage.setItem('codigix_purchases_sheet_url', sheetUrl);
     setLoading(true);
     try {
@@ -296,9 +296,9 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
         loadFinanceTelemetry();
       } else {
         if (res.error && res.error.includes('Google Account not connected')) {
-           alert('Google Sheets Sync Error: Google Account not connected or token expired. Please connect your Google account by navigating to the backend URL: http://localhost:5001/api/google/auth in your browser.');
+          alert('Google Sheets Sync Error: Google Account not connected or token expired. Please connect your Google account by navigating to the backend URL: http://localhost:5001/api/google/auth in your browser.');
         } else {
-           alert(res.error || 'Sync failed');
+          alert(res.error || 'Sync failed');
         }
       }
     } catch (err) {
@@ -412,7 +412,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
   return (
     <div className="space-y-6 pb-16 text-slate-800 dark:text-slate-100 max-w-[1600px] mx-auto">
       {/* Top Header & Period Filter Controls */}
-      <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+      <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-4 sm:p-6 shadow-sm space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
@@ -435,7 +435,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
             <button
               onClick={() => setShowSaleModal(true)}
-              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs rounded-xl transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs rounded-md transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
               title="Record Sale"
             >
               <Plus className="w-4 h-4 shrink-0" />
@@ -445,7 +445,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
 
             <button
               onClick={() => setShowPurchaseModal(true)}
-              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-extrabold text-xs rounded-xl transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-extrabold text-xs rounded-md transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
               title="Record Purchase"
             >
               <ShoppingBag className="w-4 h-4 shrink-0" />
@@ -455,7 +455,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
 
             <button
               onClick={() => onNavigate && onNavigate('create-quotation')}
-              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs rounded-xl transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm shadow-blue-500/20"
+              className="px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs rounded-md transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm shadow-blue-500/20"
               title="Create Quotation"
             >
               <FileText className="w-4 h-4 shrink-0" />
@@ -465,7 +465,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
 
             <button
               onClick={() => setShowQuotationModal(true)}
-              className="px-2.5 py-2 sm:px-3.5 sm:py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+              className="px-2.5 py-2 sm:px-3.5 sm:py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-md border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
               title="Calculator"
             >
               <Calculator className="w-4 h-4 text-blue-500 shrink-0" />
@@ -479,7 +479,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
         <div className="hidden sm:flex items-center gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setShowPeriodFilterModal(true)}
-            className="px-2.5 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-extrabold text-xs flex items-center gap-1 shrink-0 cursor-pointer transition-all active:scale-95 mr-1"
+            className="px-2.5 py-1.5 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-extrabold text-xs flex items-center gap-1 shrink-0 cursor-pointer transition-all active:scale-95 mr-1"
             title="Open Period Filters Modal"
           >
             <Filter className="w-3.5 h-3.5" />
@@ -499,7 +499,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
             <button
               key={period.id}
               onClick={() => setSelectedPeriod(period.id)}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${selectedPeriod === period.id
+              className={`px-2.5 py-1.5 rounded-md text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${selectedPeriod === period.id
                 ? 'bg-blue-600 text-white shadow-sm font-black'
                 : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
                 }`}
@@ -514,13 +514,13 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
       {/* KPI Cards Ribbon (2x2 Grid on Mobile, 4 Side-by-Side on Desktop) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Total Sales / Revenue */}
-        <div className="card-base p-3 sm:p-5 space-y-1.5 sm:space-y-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
+        <div className="card-base p-3 sm:p-5 space-y-1.5 sm:space-y-2 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-center text-slate-500">
             <span className="text-[10px] sm:text-xs font-semibold truncate">
               <span className="hidden sm:inline">Total Sales / Revenue</span>
               <span className="sm:hidden">Revenue</span>
             </span>
-            <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-500/10 text-emerald-600">
+            <div className="p-1.5 sm:p-2 rounded-md bg-emerald-500/10 text-emerald-600">
               <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
@@ -533,13 +533,13 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
         </div>
 
         {/* Total Purchases / Expenses */}
-        <div className="card-base p-3 sm:p-5 space-y-1.5 sm:space-y-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
+        <div className="card-base p-3 sm:p-5 space-y-1.5 sm:space-y-2 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-center text-slate-500">
             <span className="text-[10px] sm:text-xs font-semibold truncate">
               <span className="hidden sm:inline">Purchases & Expenses</span>
               <span className="sm:hidden">Expenses</span>
             </span>
-            <div className="p-1.5 sm:p-2 rounded-xl bg-rose-500/10 text-rose-600">
+            <div className="p-1.5 sm:p-2 rounded-md bg-rose-500/10 text-rose-600">
               <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
@@ -552,13 +552,13 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
         </div>
 
         {/* Net Profit */}
-        <div className="card-base p-3 sm:p-5 space-y-1.5 sm:space-y-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
+        <div className="card-base p-3 sm:p-5 space-y-1.5 sm:space-y-2 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-center text-slate-500">
             <span className="text-[10px] sm:text-xs font-semibold truncate">
               <span className="hidden sm:inline">Net Revenue Profit</span>
               <span className="sm:hidden">Net Profit</span>
             </span>
-            <div className="p-1.5 sm:p-2 rounded-xl bg-blue-500/10 text-blue-600">
+            <div className="p-1.5 sm:p-2 rounded-md bg-blue-500/10 text-blue-600">
               <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
@@ -571,13 +571,13 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
         </div>
 
         {/* Profit Margin % */}
-        <div className="card-base p-3 sm:p-5 space-y-1.5 sm:space-y-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
+        <div className="card-base p-3 sm:p-5 space-y-1.5 sm:space-y-2 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-center text-slate-500">
             <span className="text-[10px] sm:text-xs font-semibold truncate">
               <span className="hidden sm:inline">Net Profit Margin</span>
               <span className="sm:hidden">Margin</span>
             </span>
-            <div className="p-1.5 sm:p-2 rounded-xl bg-amber-500/10 text-amber-600">
+            <div className="p-1.5 sm:p-2 rounded-md bg-amber-500/10 text-amber-600">
               <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
@@ -600,7 +600,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 sm:flex-initial px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${activeTab === tab.id
+            className={`flex-1 sm:flex-initial px-3 py-2 sm:px-4 sm:py-2 rounded-md text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${activeTab === tab.id
               ? 'bg-blue-600 text-white shadow-sm font-black'
               : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
               }`}
@@ -661,8 +661,8 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
           </div>
 
           {/* AI Finance Assistant Insight */}
-          <div className="p-4 bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 border border-blue-500/20 rounded flex items-center gap-3">
-            <div className="p-2 rounded border-slate-300 bg-blue-600 text-white shrink-0">
+          <div className="p-4 bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 border border-blue-500/20 rounded-md flex items-center gap-3">
+            <div className="p-2 rounded-md border-slate-300 bg-blue-600 text-white shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
@@ -688,7 +688,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                   <span className="font-mono text-blue-600 dark:text-blue-400 flex items-center gap-2">
                     <span>{item.invoice_no}</span>
                     {item.isProject && (
-                      <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[9px] font-bold">
+                      <span className="px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[9px] font-bold">
                         📁 Project
                       </span>
                     )}
@@ -713,7 +713,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 header: 'Status',
                 sortable: true,
                 render: (item) => (
-                  <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs font-extrabold">
+                  <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-md-lg text-xs font-extrabold">
                     {item.status || 'PAID'}
                   </span>
                 )
@@ -726,7 +726,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 render: (item) => (
                   <button
                     onClick={() => handleDeleteSale(item.id)}
-                    className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                    className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md-lg cursor-pointer"
                     title="Delete Sale"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -742,13 +742,13 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleSyncSalesSheet}
-                  className="px-3.5 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 dark:text-blue-300 text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer border border-blue-200 dark:border-blue-800"
+                  className="px-3.5 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 dark:text-blue-300 text-xs font-extrabold rounded-md flex items-center gap-1.5 transition-all shadow-xs cursor-pointer border border-blue-200 dark:border-blue-800"
                 >
                   <span>Sync Google Sheet</span>
                 </button>
                 <button
                   onClick={() => setShowSaleModal(true)}
-                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-md flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Record New Sale</span>
@@ -809,13 +809,13 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                   const bal = parseFloat(item.balance_amount || 0);
                   const isReceived = rcv > exp;
                   const isPositive = bal >= 0;
-                  
+
                   return (
                     <div className="flex flex-col gap-1.5 min-w-[90px]">
-                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold max-w-max ${isReceived ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
+                      <span className={`px-2 py-0.5 rounded-md-lg text-[10px] font-extrabold max-w-max ${isReceived ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
                         {isReceived ? 'RECEIVED' : 'PAID'}
                       </span>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 max-w-max rounded border ${isPositive ? 'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20' : 'text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20'}`}>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 max-w-max rounded-md border ${isPositive ? 'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20' : 'text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20'}`}>
                         {isPositive ? 'Positive' : 'Negative'}
                       </span>
                     </div>
@@ -830,7 +830,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => handleDeletePurchase(item.id)}
-                      className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer transition-colors"
+                      className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md-lg cursor-pointer transition-colors"
                       title="Delete Record"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -847,13 +847,13 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleSyncPurchasesSheet}
-                  className="px-3.5 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 dark:text-blue-300 text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer border border-blue-200 dark:border-blue-800"
+                  className="px-3.5 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 dark:text-blue-300 text-xs font-extrabold rounded-md flex items-center gap-1.5 transition-all shadow-xs cursor-pointer border border-blue-200 dark:border-blue-800"
                 >
                   <span>Sync Google Sheet</span>
                 </button>
                 <button
                   onClick={() => setShowPurchaseModal(true)}
-                  className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                  className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-md flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Record New Purchase</span>
@@ -869,7 +869,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
       {/* ---------------------------------------------------- */}
       {showSaleModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded max-w-lg w-full p-6 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-md max-w-lg w-full p-6 rounded-md border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-base  text-slate-900 dark:text-white flex items-center gap-2">
                 <Receipt className="w-5 h-5 text-emerald-500" />
@@ -887,7 +887,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                   placeholder="e.g. Codigix Tech Solutions"
                   value={newSale.client_name}
                   onChange={(e) => setNewSale({ ...newSale, client_name: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
 
@@ -900,7 +900,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     placeholder="e.g. 250000"
                     value={newSale.amount}
                     onChange={(e) => setNewSale({ ...newSale, amount: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -910,7 +910,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     placeholder="e.g. 45000"
                     value={newSale.tax_amount}
                     onChange={(e) => setNewSale({ ...newSale, tax_amount: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -921,7 +921,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                   <select
                     value={newSale.category}
                     onChange={(e) => setNewSale({ ...newSale, category: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   >
                     <option value="Custom ERP Software">Custom ERP Software</option>
                     <option value="Mobile App Development">Mobile App Development</option>
@@ -937,7 +937,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     type="date"
                     value={newSale.sale_date}
                     onChange={(e) => setNewSale({ ...newSale, sale_date: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -946,13 +946,13 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 <button
                   type="button"
                   onClick={() => setShowSaleModal(false)}
-                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300  rounded border-slate-300"
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300  rounded-md border-slate-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white  rounded border-slate-300  cursor-pointer"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white  rounded-md border-slate-300  cursor-pointer"
                 >
                   Save Sale Invoice
                 </button>
@@ -967,7 +967,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
       {/* ---------------------------------------------------- */}
       {showPurchaseModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded max-w-lg w-full p-6 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-md max-w-lg w-full p-6 rounded-md border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-base  text-slate-900 dark:text-white flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5 text-rose-500" />
@@ -985,7 +985,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                   placeholder="e.g. Amazon Web Services / Staff Salaries"
                   value={newPurchase.vendor_name}
                   onChange={(e) => setNewPurchase({ ...newPurchase, vendor_name: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none"
                 />
               </div>
 
@@ -998,7 +998,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     placeholder="e.g. 45000"
                     value={newPurchase.amount}
                     onChange={(e) => setNewPurchase({ ...newPurchase, amount: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -1008,7 +1008,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     placeholder="e.g. 8100"
                     value={newPurchase.tax_amount}
                     onChange={(e) => setNewPurchase({ ...newPurchase, tax_amount: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -1019,7 +1019,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                   <select
                     value={newPurchase.category}
                     onChange={(e) => setNewPurchase({ ...newPurchase, category: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none"
                   >
                     <option value="Salaries & Payroll">Salaries & Payroll</option>
                     <option value="Marketing & Ads">Marketing & Ads</option>
@@ -1035,7 +1035,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     type="date"
                     value={newPurchase.purchase_date}
                     onChange={(e) => setNewPurchase({ ...newPurchase, purchase_date: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -1055,7 +1055,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                       });
                     }
                   }}
-                  className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 text-slate-600 dark:text-slate-300 text-xs"
+                  className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 text-slate-600 dark:text-slate-300 text-xs"
                 />
                 {newPurchase.bill_file_name && (
                   <p className="text-xs text-emerald-600  mt-1">
@@ -1068,13 +1068,13 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 <button
                   type="button"
                   onClick={() => setShowPurchaseModal(false)}
-                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300  rounded border-slate-300"
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300  rounded-md border-slate-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white  rounded border-slate-300  cursor-pointer"
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white  rounded-md border-slate-300  cursor-pointer"
                 >
                   Save Purchase Record
                 </button>
@@ -1089,12 +1089,12 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
       {/* ---------------------------------------------------- */}
       {showQuotationModal && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-          <div className="bg-slate-100 dark:bg-slate-950 rounded max-w-5xl w-full p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[94vh] overflow-y-auto text-slate-800 dark:text-slate-100">
+          <div className="bg-slate-100 dark:bg-slate-950 rounded-md max-w-5xl w-full p-4 sm:p-5 rounded-md border border-slate-200 dark:border-slate-800 space-y-4 max-h-[94vh] overflow-y-auto text-slate-800 dark:text-slate-100">
 
             {/* Modal Header */}
-            <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded border border-slate-200/80 dark:border-slate-800 shadow-sm">
+            <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-600 text-white rounded border-slate-300  shadow-indigo-600/30">
+                <div className="p-2 bg-indigo-600 text-white rounded-md border-slate-300  shadow-indigo-600/30">
                   <Calculator className="w-5 h-5" />
                 </div>
                 <div>
@@ -1111,7 +1111,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 <button
                   type="button"
                   onClick={handleResetCalculator}
-                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200  text-xs rounded border-slate-300 border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200  text-xs rounded-md border-slate-300 border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
                   <span>Reset</span>
@@ -1120,7 +1120,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white  text-xs rounded border-slate-300  shadow-indigo-600/20 transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white  text-xs rounded-md border-slate-300  shadow-indigo-600/20 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <span>Export</span>
                 </button>
@@ -1135,7 +1135,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
             </div>
 
             {/* Compact Step Wizard Bar */}
-            <div className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-x-auto">
+            <div className="bg-white dark:bg-slate-900 p-2.5 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-x-auto">
               <div className="flex items-center justify-between min-w-[650px] text-xs">
                 {[
                   { step: 1, title: 'Project Details' },
@@ -1168,7 +1168,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
               <div className="lg:col-span-7 space-y-4">
 
                 {/* 1. Project Details */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
                   <h3 className=" text-xs   text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                     <FileText className="w-4 h-4 text-indigo-600" />
                     <span>1. Project Details</span>
@@ -1182,7 +1182,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                         placeholder="Enter project name"
                         value={calcProjectName}
                         onChange={(e) => setCalcProjectName(e.target.value)}
-                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
                       />
                     </div>
 
@@ -1193,7 +1193,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                         placeholder="Enter client name"
                         value={calcClientName}
                         onChange={(e) => setCalcClientName(e.target.value)}
-                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
                       />
                     </div>
 
@@ -1202,7 +1202,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                       <select
                         value={calcProjectType}
                         onChange={(e) => setCalcProjectType(e.target.value)}
-                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
                       >
                         <option value="Web Application">Web Application</option>
                         <option value="Mobile App (iOS & Android)">Mobile App (iOS & Android)</option>
@@ -1220,7 +1220,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                           placeholder="e.g. 6"
                           value={calcDuration}
                           onChange={(e) => setCalcDuration(e.target.value)}
-                          className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                          className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
                         />
                       </div>
                       <div>
@@ -1228,7 +1228,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                         <select
                           value={calcDurationUnit}
                           onChange={(e) => setCalcDurationUnit(e.target.value)}
-                          className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded border-slate-300 font-medium"
+                          className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md border-slate-300 font-medium"
                         >
                           <option value="Months">Months</option>
                           <option value="Weeks">Weeks</option>
@@ -1240,7 +1240,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 </div>
 
                 {/* 2. Team Effort & Cost */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
                   <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
                     <h3 className=" text-xs   text-slate-900 dark:text-white flex items-center gap-2">
                       <UserPlus className="w-4 h-4 text-indigo-600" />
@@ -1249,7 +1249,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     <button
                       type="button"
                       onClick={() => setCalcTeamRoles(prev => [...prev, { id: Date.now(), role: 'Developer', monthlyCost: '', effortDays: '' }])}
-                      className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400  text-xs rounded-lg flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400  text-xs rounded-md-lg flex items-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                       <span>Add Role</span>
@@ -1283,7 +1283,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                                     const val = e.target.value;
                                     setCalcTeamRoles(prev => prev.map(r => r.id === item.id ? { ...r, role: val } : r));
                                   }}
-                                  className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 rounded  text-xs"
+                                  className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 rounded-md  text-xs"
                                 />
                               </td>
                               <td className="py-1.5 pr-2">
@@ -1295,7 +1295,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                                     const val = e.target.value;
                                     setCalcTeamRoles(prev => prev.map(r => r.id === item.id ? { ...r, monthlyCost: val } : r));
                                   }}
-                                  className="w-28 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 rounded  text-xs text-right"
+                                  className="w-28 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 rounded-md  text-xs text-right"
                                 />
                               </td>
                               <td className="py-1.5 pr-2">
@@ -1307,7 +1307,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                                     const val = e.target.value;
                                     setCalcTeamRoles(prev => prev.map(r => r.id === item.id ? { ...r, effortDays: val } : r));
                                   }}
-                                  className="w-16 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 rounded  text-xs text-right"
+                                  className="w-16 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 rounded-md  text-xs text-right"
                                 />
                               </td>
                               <td className="py-1.5 font-mono  text-right text-slate-900 dark:text-white text-xs">
@@ -1343,7 +1343,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 </div>
 
                 {/* 3. Direct Project Costs */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
                   <h3 className=" text-xs   text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                     <Layers className="w-4 h-4 text-indigo-600" />
                     <span>3. Direct Project Costs</span>
@@ -1357,7 +1357,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                         placeholder="e.g. 30,000"
                         value={calcThirdParty}
                         onChange={(e) => setCalcThirdParty(e.target.value)}
-                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300"
+                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300"
                       />
                     </div>
 
@@ -1368,7 +1368,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                         placeholder="e.g. 5,000"
                         value={calcPaymentGateway}
                         onChange={(e) => setCalcPaymentGateway(e.target.value)}
-                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300"
+                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300"
                       />
                     </div>
 
@@ -1379,7 +1379,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                         placeholder="e.g. 5,000"
                         value={calcDomainSsl}
                         onChange={(e) => setCalcDomainSsl(e.target.value)}
-                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300"
+                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300"
                       />
                     </div>
 
@@ -1390,7 +1390,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                         placeholder="e.g. 10,000"
                         value={calcNotifications}
                         onChange={(e) => setCalcNotifications(e.target.value)}
-                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300"
+                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300"
                       />
                     </div>
 
@@ -1401,7 +1401,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                         placeholder="e.g. 20,000"
                         value={calcCloudServer}
                         onChange={(e) => setCalcCloudServer(e.target.value)}
-                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300"
+                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300"
                       />
                     </div>
 
@@ -1412,7 +1412,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                         placeholder="e.g. 10,000"
                         value={calcLicenses}
                         onChange={(e) => setCalcLicenses(e.target.value)}
-                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300"
+                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300"
                       />
                     </div>
                   </div>
@@ -1431,7 +1431,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
               <div className="lg:col-span-5 space-y-4">
 
                 {/* 4. Overheads */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
                   <h3 className=" text-xs   text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                     <Calculator className="w-4 h-4 text-indigo-600" />
                     <span>4. Overheads</span>
@@ -1446,7 +1446,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                           placeholder="10"
                           value={calcOfficeOverheadPct}
                           onChange={(e) => setCalcOfficeOverheadPct(e.target.value)}
-                          className="w-14 p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300 text-right  text-xs"
+                          className="w-14 p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300 text-right  text-xs"
                         />
                         <span className=" text-slate-400">%</span>
                       </div>
@@ -1463,7 +1463,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                           placeholder="5"
                           value={calcAdminHrPct}
                           onChange={(e) => setCalcAdminHrPct(e.target.value)}
-                          className="w-14 p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300 text-right  text-xs"
+                          className="w-14 p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300 text-right  text-xs"
                         />
                         <span className=" text-slate-400">%</span>
                       </div>
@@ -1480,7 +1480,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                           placeholder="5"
                           value={calcMarketingSalesPct}
                           onChange={(e) => setCalcMarketingSalesPct(e.target.value)}
-                          className="w-14 p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300 text-right  text-xs"
+                          className="w-14 p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300 text-right  text-xs"
                         />
                         <span className=" text-slate-400">%</span>
                       </div>
@@ -1497,7 +1497,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                           placeholder="5"
                           value={calcMiscOverheadPct}
                           onChange={(e) => setCalcMiscOverheadPct(e.target.value)}
-                          className="w-14 p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300 text-right  text-xs"
+                          className="w-14 p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300 text-right  text-xs"
                         />
                         <span className=" text-slate-400">%</span>
                       </div>
@@ -1516,7 +1516,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 </div>
 
                 {/* 5. Profit Margin */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2.5">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2.5">
                   <h3 className=" text-xs   text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                     <TrendingUp className="w-4 h-4 text-emerald-500" />
                     <span>5. Profit Margin</span>
@@ -1530,7 +1530,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                         placeholder="20"
                         value={calcProfitMarginPct}
                         onChange={(e) => setCalcProfitMarginPct(e.target.value)}
-                        className="w-16 p-2 bg-slate-50 dark:bg-slate-800 border rounded border-slate-300 text-right  text-emerald-600 text-xs"
+                        className="w-16 p-2 bg-slate-50 dark:bg-slate-800 border rounded-md border-slate-300 text-right  text-emerald-600 text-xs"
                       />
                       <span className=" text-slate-400">%</span>
                     </div>
@@ -1544,7 +1544,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 </div>
 
                 {/* 6. Quotation Summary */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded border border-indigo-200 dark:border-indigo-900  space-y-3">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-md border border-indigo-200 dark:border-indigo-900  space-y-3">
                   <h3 className=" text-xs   text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                     <Receipt className="w-4 h-4 text-indigo-600" />
                     <span>6. Quotation Summary</span>
@@ -1573,7 +1573,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     </div>
                   </div>
 
-                  <div className="p-3 bg-indigo-50/80 dark:bg-indigo-950/60 rounded border-slate-300 border border-indigo-200 dark:border-indigo-800 text-center space-y-1">
+                  <div className="p-3 bg-indigo-50/80 dark:bg-indigo-950/60 rounded-md border-slate-300 border border-indigo-200 dark:border-indigo-800 text-center space-y-1">
                     <span className="text-xs    text-indigo-600 dark:text-indigo-400 block">
                       FINAL QUOTATION
                     </span>
@@ -1590,7 +1590,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
             </div>
 
             {/* Bottom Inlined Calculation Flow Breakdown */}
-            <div className="bg-white dark:bg-slate-900 p-3 rounded border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between gap-2 text-xs overflow-x-auto">
+            <div className="bg-white dark:bg-slate-900 p-3 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between gap-2 text-xs overflow-x-auto">
               <div className="flex items-center gap-2">
                 <span className=" text-slate-500">Team:</span>
                 <span className="font-mono  text-indigo-600">₹ {totalTeamCost.toLocaleString('en-IN')}</span>
@@ -1611,7 +1611,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 <span className="font-mono  text-emerald-600">₹ {calcProfitAmount.toLocaleString('en-IN')}</span>
               </div>
               <span className="text-slate-400 ">=</span>
-              <div className="px-2.5 py-1 bg-indigo-600 text-white font-mono  rounded-lg text-xs">
+              <div className="px-2.5 py-1 bg-indigo-600 text-white font-mono  rounded-md-lg text-xs">
                 Final: ₹ {finalQuotationAmount.toLocaleString('en-IN')}
               </div>
             </div>
@@ -1623,17 +1623,17 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
       {/* Period Filter Selection Modal */}
       {showPeriodFilterModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-5 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-4 relative overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="bg-white dark:bg-slate-900 rounded-md-3xl max-w-md w-full p-5 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-4 relative overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                <div className="p-2 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
                   <Filter className="w-4 h-4" />
                 </div>
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
                   Filter Financial Ledger Period
                 </h3>
               </div>
-              <button 
+              <button
                 onClick={() => setShowPeriodFilterModal(false)}
                 className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-xs font-bold cursor-pointer"
               >
@@ -1659,11 +1659,10 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     setSelectedPeriod(period.id);
                     setShowPeriodFilterModal(false);
                   }}
-                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                    selectedPeriod === period.id
-                      ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-600 dark:text-blue-400 shadow-sm font-black'
-                      : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
-                  }`}
+                  className={`p-3 rounded-md border text-left transition-all cursor-pointer flex flex-col justify-between ${selectedPeriod === period.id
+                    ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-600 dark:text-blue-400 shadow-sm font-black'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
+                    }`}
                 >
                   <span className="font-extrabold text-xs">{period.label}</span>
                   <span className="text-[9px] font-medium text-slate-400 mt-1">{period.desc}</span>
@@ -1674,7 +1673,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
             <div className="pt-2">
               <button
                 onClick={() => setShowPeriodFilterModal(false)}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-md shadow-md transition-all cursor-pointer"
               >
                 Close & View Results
               </button>
@@ -1695,7 +1694,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
       {/* ── Mobile Filters Drawer Modal ── */}
       {showMobileFilterModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-blue-600" />
@@ -1703,7 +1702,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
               </div>
               <button
                 onClick={() => setShowMobileFilterModal(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1720,7 +1719,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by client, invoice or category..."
-                    className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
                   />
                 </div>
               </div>
@@ -1737,11 +1736,10 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold border text-center cursor-pointer transition-all truncate ${
-                        activeTab === tab.id
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                      }`}
+                      className={`py-2 px-2 rounded-md text-xs font-bold border text-center cursor-pointer transition-all truncate ${activeTab === tab.id
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                        }`}
                     >
                       {tab.label}
                     </button>
@@ -1761,11 +1759,10 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     <button
                       key={period.id}
                       onClick={() => setSelectedPeriod(period.id)}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold border text-center cursor-pointer transition-all ${
-                        selectedPeriod === period.id
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                      }`}
+                      className={`py-2 px-2 rounded-md text-xs font-bold border text-center cursor-pointer transition-all ${selectedPeriod === period.id
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                        }`}
                     >
                       {period.label}
                     </button>
@@ -1781,13 +1778,13 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                   setActiveTab('overview');
                   setSelectedPeriod('2026');
                 }}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-md cursor-pointer"
               >
                 Reset Filters
               </button>
               <button
                 onClick={() => setShowMobileFilterModal(false)}
-                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-md cursor-pointer"
               >
                 Apply Filters
               </button>
