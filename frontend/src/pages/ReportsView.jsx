@@ -154,13 +154,13 @@ export default function ReportsView({ plannerTasks = [], meetings = [], clients 
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {[
-            { title: 'Sales Reports', count: `${categoryCounts.Sales} Reports`, icon: TrendingUp, color: 'bg-emerald-50 text-emerald-600' },
-            { title: 'Marketing Reports', count: `${categoryCounts.Marketing} Reports`, icon: PieChart, color: 'bg-purple-50 text-purple-600' },
-            { title: 'Finance Reports', count: `${categoryCounts.Finance} Reports`, icon: DollarSign, color: 'bg-amber-50 text-amber-600' },
-            { title: 'Project Reports', count: `${categoryCounts.Project} Reports`, icon: Briefcase, color: 'bg-blue-50 text-blue-600' },
-            { title: 'Team Reports', count: `${categoryCounts.Team} Reports`, icon: Users, color: 'bg-teal-50 text-teal-600' },
-            { title: 'Client Reports', count: `${categoryCounts.Client} Reports`, icon: Users, color: 'bg-rose-50 text-rose-600' },
-            { title: 'Execution Reports', count: `${categoryCounts.Execution} Reports`, icon: Bot, color: 'bg-indigo-50 text-indigo-600' },
+            { title: 'Sales Reports', count: `${categoryCounts.Sales} Reports`, icon: TrendingUp, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400' },
+            { title: 'Marketing Reports', count: `${categoryCounts.Marketing} Reports`, icon: PieChart, color: 'bg-purple-50 text-purple-600 dark:bg-purple-500/15 dark:text-purple-400' },
+            { title: 'Finance Reports', count: `${categoryCounts.Finance} Reports`, icon: DollarSign, color: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400' },
+            { title: 'Project Reports', count: `${categoryCounts.Project} Reports`, icon: Briefcase, color: 'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400' },
+            { title: 'Team Reports', count: `${categoryCounts.Team} Reports`, icon: Users, color: 'bg-teal-50 text-teal-600 dark:bg-teal-500/15 dark:text-teal-400' },
+            { title: 'Client Reports', count: `${categoryCounts.Client} Reports`, icon: Users, color: 'bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400' },
+            { title: 'Execution Reports', count: `${categoryCounts.Execution} Reports`, icon: Bot, color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400' },
           ].map((cat, i) => {
             const Icon = cat.icon;
             return (

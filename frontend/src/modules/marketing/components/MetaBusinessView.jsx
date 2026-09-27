@@ -279,7 +279,7 @@ export default function MetaBusinessView({
                         <div className="flex justify-between items-center">
                           <button
                             onClick={() => handleGenerateAI && handleGenerateAI('auto-reply')}
-                            className="px-2.5 py-1 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-bold rounded-md-lg flex items-center gap-1"
+                            className="px-2.5 py-1 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] font-bold rounded-lg flex items-center gap-1"
                           >
                             <Sparkles className="w-3 h-3" />
                             <span>AI Auto-Reply</span>
@@ -295,7 +295,7 @@ export default function MetaBusinessView({
                     </div>
                   ) : (
                     <div className="text-center py-12 text-slate-400 space-y-2">
-                      <Mail className="w-8 h-8 mx-auto text-slate-300" />
+                      <Mail className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600" />
                       <p className="text-xs font-bold">Select a message from the left inbox to view & reply.</p>
                     </div>
                   )}
@@ -350,7 +350,7 @@ export default function MetaBusinessView({
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-3">
                     <h3 className="text-lg font-black text-slate-900 dark:text-white">@{instagram.username}</h3>
-                    <span className="text-xs text-pink-600 font-bold px-2 py-0.5 bg-pink-50 dark:bg-pink-950/60 rounded-md-md">
+                    <span className="text-xs text-pink-600 font-bold px-2 py-0.5 bg-pink-50 dark:bg-pink-950/60 rounded-md">
                       {instagram.name || 'Codigix Infotech'}
                     </span>
                   </div>

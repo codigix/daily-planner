@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Utensils,
   Apple,
@@ -36,7 +36,11 @@ import {
   Search,
   BookOpen,
   Activity,
-  MoreVertical
+  MoreVertical,
+  Upload,
+  Pencil,
+  Trash2,
+  Repeat
 } from 'lucide-react';
 import {
   WEEKLY_DIET_PLAN,
@@ -51,11 +55,23 @@ import {
   sendSystemNotification,
   requestNotificationPermission,
   showNotificationToast,
+  claimAlertKey,
   openWhatsAppAlert,
   checkNotificationSupport
 } from '../../utils/notificationService';
 import { deduplicateTasks, deduplicateTimeline } from '../../utils/plannerDeduplication';
 import NextDayIngredientsModal from './NextDayIngredientsModal';
+import DietItemFormModal from './DietItemFormModal';
+import DietImportModal from './DietImportModal';
+import { getDietItemsAPI, deleteDietItemAPI } from '../../services/api';
+import {
+  customItemsForDate,
+  toDietPlanItem,
+  dateForWeekday,
+  weekdayOf,
+  repeatLabel,
+  notifyDietItemsChanged
+} from '../../utils/dietItems';
 
 // Audio chime helper using Web Audio API (smooth notification tone)
 function playDietChime() {
@@ -203,11 +219,11 @@ function SwipeableDietCard({ item, state, theme, onToggleDone, onOpenModal }) {
                )}
 
                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                 <span className={`px-2 py-0.5 rounded-md-lg text-[10px] font-bold border ${theme.bg} ${theme.text} ${theme.border}`}>
+                 <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${theme.bg} ${theme.text} ${theme.border}`}>
                    {item.category}
                  </span>
-                 {item.reminderMinutesBefore && (
-                   <span className="flex items-center gap-1 px-2 py-0.5 rounded-md-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+                 {item.reminderMinutesBefore > 0 && (
+                   <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
                      <Bell className="w-3 h-3" /> {item.reminderMinutesBefore}m
                    </span>
                  )}
@@ -283,7 +299,7 @@ function SwipeableDietCard({ item, state, theme, onToggleDone, onOpenModal }) {
               <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border ${theme.bg} ${theme.text} ${theme.border}`}>
                 {item.category}
               </span>
-              {item.reminderMinutesBefore && (
+              {item.reminderMinutesBefore > 0 && (
                 <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
                   <Bell className="w-3 h-3" /> {item.reminderMinutesBefore}m
                 </span>
@@ -358,6 +374,33 @@ export default function WeeklyDietManager({
     }
   }, [selectedPlannerDate]);
   const [selectedMealForModal, setSelectedMealForModal] = useState(null);
+
+  // ── User-added diet items (individual + Excel import), stored in the diet_items table ──
+  const [customItems, setCustomItems] = useState([]);
+  const [showItemForm, setShowItemForm] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+
+  // Calendar date shown for the selected weekday: the planner's picked date when it
+  // matches, otherwise that weekday in the same Monday–Sunday week
+  const effectiveDate = useMemo(() => {
+    const ref = selectedPlannerDate || new Date();
+    return weekdayOf(ref) === selectedDay ? ref : dateForWeekday(selectedDay, ref);
+  }, [selectedPlannerDate, selectedDay]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const res = await getDietItemsAPI();
+      if (!cancelled && res.ok && Array.isArray(res.data.items)) setCustomItems(res.data.items);
+    };
+    load();
+    window.addEventListener('app:diet-items-changed', load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('app:diet-items-changed', load);
+    };
+  }, []);
   const [skipModalItem, setSkipModalItem] = useState(null);
   const [skipReason, setSkipReason] = useState('Eating Out');
   const [rescheduleModalItem, setRescheduleModalItem] = useState(null);
@@ -435,12 +478,12 @@ export default function WeeklyDietManager({
     setNotificationPermissionGranted(isGranted);
 
     if (isGranted) {
-      playDietChime();
-      sendSystemNotification('Mobile Alert Test Successful 🔔', {
+      sendSystemNotification('🎉 Mobile alerts & sounds enabled', {
         body: 'Audio chime, vibration, and push notifications are active on this device!',
-        tag: 'diet-welcome-' + Date.now()
+        tag: 'diet-welcome-' + Date.now(),
+        toastType: 'success',
+        forceSystem: true
       });
-      showToast('🎉 Mobile alerts & sounds enabled successfully!');
     } else if (res.reason === 'denied') {
       alert('⚠️ Notifications are blocked in your mobile browser settings. To receive alerts on your phone, open Browser Settings > Site Settings > Notifications and select "Allow".');
     } else if (res.reason === 'unsupported') {
@@ -459,16 +502,16 @@ export default function WeeklyDietManager({
       setNotificationPermissionGranted(granted);
     }
     const testItem = nextUpcomingDietItem || dayDietItems[0] || WEEKLY_DIET_PLAN[0];
-    playDietChime();
 
     sendSystemNotification(`🔔 [Alert Test] ${testItem.taskTitle}`, {
       body: `Scheduled for ${testItem.timeFormatted || testItem.time} • Sound & Vibration active!`,
       mealId: testItem.id,
       day: testItem.day,
-      tag: 'test-reminder-' + Date.now()
+      url: `/planner?openDietMealId=${testItem.id}&openDay=${testItem.day}`,
+      tag: 'test-reminder-' + Date.now(),
+      forceSystem: true
     });
     setActiveInAppReminder({ item: testItem, minutesLeft: 5 });
-    showToast('🔔 Fired test alert to your device with chime & vibration!');
   };
 
   // Share today's schedule and 8:00 PM prep alert directly to WhatsApp
@@ -505,19 +548,18 @@ export default function WeeklyDietManager({
   const handleSendNextDayPrepNotification = async (targetPrep) => {
     let granted = notificationPermissionGranted;
     if (!granted) {
-      granted = await requestNotificationPermission();
+      granted = (await requestNotificationPermission()).granted;
       setNotificationPermissionGranted(granted);
     }
-    playDietChime();
     sendSystemNotification(`🛒 8:00 PM Prep: Tomorrow's Ingredients (${targetPrep.forNextDay})`, {
       body: `Pantry items needed for ${targetPrep.forNextDay}:\n${targetPrep.ingredients}\nTap to open detailed prep checklist.`,
       tag: `next-day-prep-${targetPrep.prepDay}`,
-      data: {
-        type: 'nextDayPrep',
-        day: targetPrep.prepDay
-      }
+      type: 'nextDayPrep',
+      day: targetPrep.prepDay,
+      url: `/planner?openNextDayPrep=1&openDay=${targetPrep.prepDay}`,
+      toastType: 'warning',
+      forceSystem: true
     });
-    showToast(`Sent ${targetPrep.forNextDay}'s ingredient prep alert to your phone!`);
   };
 
   // Copy grocery & ingredient prep checklist to clipboard (formatted for WhatsApp)
@@ -539,90 +581,34 @@ export default function WeeklyDietManager({
     }
   };
 
-  // ── REAL-TIME MOBILE NOTIFICATION & REMINDER RUNNER ──
-  // Checks scheduled meal times every 20 seconds.
-  // Sends notification (with vibration & sound) 10 min before meals or 5 min before routine tasks, and at scheduled time.
-  // Also triggers the official 8:00 PM Next Day Preparation & Ingredients alert.
+  // ── IN-APP MEAL REMINDER POPUP ──
+  // Alerts (sound, vibration, toast / system notification) and the 8:00 PM prep alert
+  // are sent by the global scheduler in App.jsx so they work on every tab and fire
+  // once. While the diet view is open this adds the richer in-app reminder card.
   useEffect(() => {
-    const firedReminders = new Set();
-
     const checkDietReminders = () => {
       const now = new Date();
-      const currentHours = now.getHours();
-      const currentMins = now.getMinutes();
-      const currentTotalMins = currentHours * 60 + currentMins;
+      const todayStr = now.toDateString();
+      const currentTotalMins = now.getHours() * 60 + now.getMinutes();
 
-      // Filter diet items for today
-      const todayItems = WEEKLY_DIET_PLAN.filter(item => item.day === realTodayName);
-
-      todayItems.forEach(item => {
+      WEEKLY_DIET_PLAN.filter(item => item.day === realTodayName).forEach(item => {
         const key = `${realTodayName}_${item.id}`;
-        // If already completed or skipped, skip reminder
         if (completions[key]?.status === 'completed' || completions[key]?.status === 'skipped') {
           return;
         }
 
         const [h, m] = item.time.split(':').map(Number);
-        const itemTotalMins = h * 60 + m;
-        const diff = itemTotalMins - currentTotalMins;
-
+        const diff = h * 60 + m - currentTotalMins;
         const reminderLead = item.reminderMinutesBefore || 10;
-        const reminderLeadKey = `${key}_lead_${reminderLead}`;
-        const reminderExactKey = `${key}_exact`;
 
-        // Extract ingredients list for notification preview
-        const ingList = item.description ? item.description.split(';').map(s => s.trim()).filter(Boolean) : [];
-        const ingPreview = ingList.length > 0 ? `\n🥗 Ingredients: ${ingList.slice(0, 3).join(', ')}${ingList.length > 3 ? '...' : ''}` : '';
-
-        // 1. Lead-time reminder window (within reminderLead and reminderLead - 4 mins)
-        // Strictly displays task heading only and time only
-        const isLeadWindow = diff <= reminderLead && diff >= Math.max(1, reminderLead - 4);
-        if (isLeadWindow && !firedReminders.has(reminderLeadKey)) {
-          firedReminders.add(reminderLeadKey);
-          sendSystemNotification(item.taskTitle, {
-            body: item.timeFormatted || item.time,
-            mealId: item.id,
-            day: realTodayName,
-            tag: `diet-lead-${item.id}`
-          });
-          setActiveInAppReminder({ item, minutesLeft: diff > 0 ? diff : reminderLead });
+        if (diff <= reminderLead && diff >= 1 && claimAlertKey(`diet-popup-lead-${todayStr}-${item.id}`)) {
+          setActiveInAppReminder({ item, minutesLeft: diff });
         }
 
-        // 2. Exact-time reminder window (0 to -15 mins)
-        // Strictly displays task heading only and time only
-        const isExactWindow = diff <= 0 && diff >= -15;
-        if (isExactWindow && !firedReminders.has(reminderExactKey)) {
-          firedReminders.add(reminderExactKey);
-          sendSystemNotification(item.taskTitle, {
-            body: item.timeFormatted || item.time,
-            mealId: item.id,
-            day: realTodayName,
-            tag: `diet-exact-${item.id}`
-          });
+        if (diff <= 0 && diff >= -15 && claimAlertKey(`diet-popup-exact-${todayStr}-${item.id}`)) {
           setActiveInAppReminder({ item, minutesLeft: 0 });
         }
       });
-
-      // 3. Official 8:00 PM (20:00) Next Day Ingredients Prep Alert
-      const todayPrep = NEXT_DAY_PREP_CHECKLIST[realTodayName];
-      if (todayPrep) {
-        const prepTotalMins = 20 * 60; // 20:00 = 1200 mins
-        const prepDiff = prepTotalMins - currentTotalMins;
-        const prepKey = `${realTodayName}_prep_2000`;
-        const isPrepWindow = prepDiff <= 0 && prepDiff >= -25;
-
-        if (isPrepWindow && !firedReminders.has(prepKey)) {
-          firedReminders.add(prepKey);
-          sendSystemNotification(`🛒 8:00 PM: Prepare Tomorrow's Ingredients (${todayPrep.forNextDay})!`, {
-            body: `Pantry checklist for ${todayPrep.forNextDay}:\n${todayPrep.ingredients.slice(0, 110)}...\nTap to check off ready items!`,
-            tag: `diet-prep-${realTodayName}`,
-            data: {
-              type: 'nextDayPrep',
-              day: realTodayName
-            }
-          });
-        }
-      }
     };
 
     checkDietReminders();
@@ -630,53 +616,67 @@ export default function WeeklyDietManager({
     return () => clearInterval(interval);
   }, [realTodayName, completions]);
 
-  // ── DEEP LINK & NOTIFICATION TAP TO OPEN DETAILED POPUP ──
+  // ── DEEP LINK & NOTIFICATION TAP TO OPEN MEAL DETAIL ──
+  // ?openDietMealId=…&openDay=… is set by App.jsx when a meal reminder is tapped.
+  // (?openNextDayPrep is handled by DailyPlannerView so only one prep modal opens.)
   useEffect(() => {
-    // 1. Check URL parameters (?openDietMealId=...&openDay=... or ?openNextDayPrep=1)
-    const params = new URLSearchParams(window.location.search);
-    const openDietMealId = params.get('openDietMealId');
-    const openDay = params.get('openDay');
-    const openNextDayPrep = params.get('openNextDayPrep');
+    const handleDeepLink = () => {
+      const params = new URLSearchParams(window.location.search);
+      const openDietMealId = params.get('openDietMealId');
+      if (!openDietMealId) return;
 
-    if (openNextDayPrep) {
-      setShowNextDayModal(true);
-    }
+      const openDay = params.get('openDay');
+      const staticMeal = WEEKLY_DIET_PLAN.find(m => String(m.id) === String(openDietMealId));
+      const custom = customItems.find(it => String(it.id) === String(openDietMealId));
+      // Custom items may still be loading; keep the params and retry when they arrive
+      if (!staticMeal && !custom) return;
+      if (openDay) setSelectedDay(openDay);
+      setSelectedMealForModal(staticMeal || toDietPlanItem(custom, openDay || weekdayOf(new Date())));
 
-    if (openDietMealId) {
-      if (openDay && openDay !== selectedDay) {
-        setSelectedDay(openDay);
-      }
-      const targetMeal = WEEKLY_DIET_PLAN.find(m => String(m.id) === String(openDietMealId));
-      if (targetMeal) {
-        setSelectedMealForModal(targetMeal);
-      }
-    }
-
-    // 2. Listen to postMessage from Service Worker when user taps the notification on their mobile phone
-    const handleSWMessage = (event) => {
-      if (event.data && event.data.type === 'NOTIFICATION_TASK_CLICKED') {
-        const { mealId, day, type } = event.data;
-        if (type === 'nextDayPrep') {
-          setShowNextDayModal(true);
-        } else if (mealId) {
-          if (day) setSelectedDay(day);
-          const targetMeal = WEEKLY_DIET_PLAN.find(m => String(m.id) === String(mealId));
-          if (targetMeal) {
-            setSelectedMealForModal(targetMeal);
-          }
-        }
-      }
+      // Consume the params so the modal doesn't reopen on later re-renders
+      params.delete('openDietMealId');
+      params.delete('openDay');
+      const rest = params.toString();
+      window.history.replaceState(window.history.state, '', window.location.pathname + (rest ? `?${rest}` : ''));
     };
 
-    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', handleSWMessage);
+    handleDeepLink();
+    window.addEventListener('app:deeplink', handleDeepLink);
+    return () => window.removeEventListener('app:deeplink', handleDeepLink);
+  }, [customItems]);
+
+  // Other items on a given date (built-in plan + user items) for the form's plan check
+  const dayItemsForPlanCheck = useCallback((ymd) => {
+    if (!ymd) return [];
+    const [y, m, d] = ymd.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const dayName = weekdayOf(date);
+    return [
+      ...WEEKLY_DIET_PLAN.filter(it => it.day === dayName),
+      ...customItemsForDate(customItems, date)
+    ].map(it => ({ id: it.isCustom ? it.customItem.id : it.id, time: it.time, title: it.taskTitle, category: it.category }));
+  }, [customItems]);
+
+  const handleCustomItemSaved = (item, mode) => {
+    setCustomItems(prev => mode === 'updated'
+      ? prev.map(it => (it.id === item.id ? item : it))
+      : [...prev, item]);
+    notifyDietItemsChanged();
+    showToast(mode === 'updated' ? `✏️ Updated: ${item.title}` : `✅ Added: ${item.title}`);
+  };
+
+  const handleDeleteCustomItem = async (item) => {
+    if (!window.confirm(`Delete "${item.title}" (${repeatLabel(item)})?`)) return;
+    const res = await deleteDietItemAPI(item.id);
+    if (!res.ok) {
+      showToast(res.data.error || 'Could not delete the item', 'error');
+      return;
     }
-    return () => {
-      if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-        navigator.serviceWorker.removeEventListener('message', handleSWMessage);
-      }
-    };
-  }, [selectedDay]);
+    setCustomItems(prev => prev.filter(it => it.id !== item.id));
+    setSelectedMealForModal(null);
+    notifyDietItemsChanged();
+    showToast(`🗑️ Deleted: ${item.title}`);
+  };
 
   const showToast = (msg, type = 'success') => {
     showNotificationToast({
@@ -722,10 +722,20 @@ export default function WeeklyDietManager({
       isDynamic: true
     }));
 
+    const customForDay = customItemsForDate(customItems, effectiveDate);
     const combined = [...staticItems, ...dynamicWellnessTasks];
     const unique = [];
     const seenIds = new Set();
     const seenTitles = new Set();
+
+    // User items are always shown (the server rejects duplicates); their titles also
+    // hide the "[🥗 Diet]" planner copies created by Sync Planner
+    for (const item of customForDay) {
+      seenIds.add(item.id);
+      seenIds.add(`diet_${item.id}`);
+      seenTitles.add(item.taskTitle.toLowerCase().trim());
+      unique.push(item);
+    }
 
     for (const item of combined) {
       const titleKey = item.taskTitle?.toLowerCase().trim() || '';
@@ -758,7 +768,7 @@ export default function WeeklyDietManager({
       };
       return parseTime(a.time) - parseTime(b.time);
     });
-  }, [selectedDay, plannerTasks]);
+  }, [selectedDay, plannerTasks, customItems, effectiveDate]);
 
   // ── FILTER & SEARCH STATE FOR DIET ITEMS ──
   const [dietFilter, setDietFilter] = useState('All');
@@ -1202,7 +1212,23 @@ export default function WeeklyDietManager({
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 shrink-0 self-start sm:self-center w-full sm:w-auto">
+        <div className="grid grid-cols-2 sm:flex items-center gap-2 shrink-0 self-start sm:self-center w-full sm:w-auto">
+          <button
+            onClick={() => { setEditingItem(null); setShowItemForm(true); }}
+            className="flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Item</span>
+          </button>
+
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
+          >
+            <Upload className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>Import Excel</span>
+          </button>
+
           <button
             onClick={() => {
               setIngredientsModalDay(selectedDay);
@@ -1334,7 +1360,7 @@ export default function WeeklyDietManager({
                   <button
                     key={i}
                     onClick={() => togglePrepItem(selectedDay, ing)}
-                    className={`px-2.5 py-1 rounded-md-lg text-[11px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer active:scale-95 ${isChecked
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer active:scale-95 ${isChecked
                       ? 'bg-emerald-100 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 line-through opacity-85'
                       : 'bg-white dark:bg-slate-800 border-purple-200 dark:border-purple-800/80 text-slate-800 dark:text-slate-200 hover:border-purple-400'
                       }`}
@@ -1401,6 +1427,21 @@ export default function WeeklyDietManager({
           <div className="flex flex-col items-center justify-center py-12 text-slate-400 text-center">
             <CheckCircle2 className="w-10 h-10 mb-2 opacity-40 text-emerald-600" />
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">No Wellness Tasks</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Add a meal or routine for {selectedDay}, or import your plan from Excel.</p>
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={() => { setEditingItem(null); setShowItemForm(true); }}
+                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-black flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />Add Item
+              </button>
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-md text-xs font-black flex items-center gap-1.5 cursor-pointer"
+              >
+                <Upload className="w-3.5 h-3.5" />Import Excel
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -1428,6 +1469,14 @@ export default function WeeklyDietManager({
                     <span>•</span>
                     <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{selectedMealForModal.category}</span>
                   </div>
+                  {selectedMealForModal.isCustom && (
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1">
+                      <Repeat className="w-3 h-3" />
+                      <span>{repeatLabel(selectedMealForModal.customItem)}</span>
+                      <span>•</span>
+                      <span>{selectedMealForModal.customItem.source === 'excel' ? 'Imported from Excel' : 'Added by you'}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1490,7 +1539,27 @@ export default function WeeklyDietManager({
             </div>
 
             {/* Modal Actions: Responsive thumb-friendly row */}
-            <div className="pt-2 flex items-center gap-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-slate-100 dark:border-slate-800">
+              {selectedMealForModal.isCustom && (
+                <>
+                  <button
+                    onClick={() => {
+                      setEditingItem(selectedMealForModal.customItem);
+                      setShowItemForm(true);
+                      setSelectedMealForModal(null);
+                    }}
+                    className="px-3 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md cursor-pointer min-h-[44px] flex items-center gap-1.5"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCustomItem(selectedMealForModal.customItem)}
+                    className="px-3 py-2.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-md cursor-pointer min-h-[44px] flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />Delete
+                  </button>
+                </>
+              )}
               <button
                 onClick={() => setSelectedMealForModal(null)}
                 className="flex-1 sm:flex-initial px-4 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md cursor-pointer text-center min-h-[44px]"
@@ -1645,6 +1714,26 @@ export default function WeeklyDietManager({
         </div>
       )}
 
+      <DietItemFormModal
+        open={showItemForm}
+        onClose={() => { setShowItemForm(false); setEditingItem(null); }}
+        editItem={editingItem}
+        defaultDate={effectiveDate}
+        onSaved={handleCustomItemSaved}
+        dayItemsFor={dayItemsForPlanCheck}
+      />
+
+      <DietImportModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImported={(count) => {
+          if (count > 0) {
+            notifyDietItemsChanged();
+            showToast(`📥 Imported ${count} diet item${count === 1 ? '' : 's'}`);
+          }
+        }}
+      />
+
       {/* ── Floating Undo Toast ── */}
       {undoState && (
         <div className="fixed bottom-28 sm:bottom-10 left-3 right-3 sm:right-10 sm:left-auto sm:w-96 z-[9999] animate-in slide-in-from-bottom-5 duration-200">
@@ -1690,7 +1779,7 @@ export default function WeeklyDietManager({
                   if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
                   setUndoState(null);
                 }}
-                className="p-1.5 text-slate-400 hover:text-white rounded-md-lg transition-colors cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
                 title="Dismiss"
               >
                 <X className="w-3.5 h-3.5" />

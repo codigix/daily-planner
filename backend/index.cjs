@@ -20,6 +20,7 @@ const webhookRoutes = require('./routes/webhooks.cjs');
 const googleRoutes = require('./routes/google.cjs');
 const linkedinRoutes = require('./routes/linkedin.cjs');
 const notificationsRoutes = require('./routes/notifications.cjs');
+const dietRoutes = require('./routes/diet.cjs');
 
 const { checkDbConnection } = require('./db_mysql.cjs');
 
@@ -41,7 +42,8 @@ function validateEnvironment() {
 validateEnvironment();
 
 app.use(cors());
-app.use(express.json());
+// 10mb allows base64-encoded Excel uploads for diet item import
+app.use(express.json({ limit: '10mb' }));
 
 // Enable permissive Content Security Policy & CORS headers for DevTools & local API connections
 app.use((req, res, next) => {
@@ -77,6 +79,7 @@ app.use('/api/google', googleRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/diet', dietRoutes);
 app.use('/api/ai', aiRoutes);
 
 // Health Check Endpoint

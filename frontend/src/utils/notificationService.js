@@ -164,64 +164,121 @@ export const showNotificationToast = (toast = {}) => {
   return item.id;
 };
 
-// Send Rich Native System Notification optimized for PWA Mobile Phones & Desktop
+// ── Cross-scheduler de-duplication ──
+// Several components schedule reminders independently (App, Planner, Diet manager).
+// A shared, persisted registry of fired keys guarantees each reminder alerts once,
+// even across re-renders, tab switches and page reloads.
+const FIRED_ALERTS_KEY = 'codigix_fired_alerts';
+const FIRED_ALERT_TTL_MS = 36 * 60 * 60 * 1000;
+
+const readFiredAlerts = () => {
+  try {
+    const raw = localStorage.getItem(FIRED_ALERTS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+};
+
+// Returns true the first time a key is claimed, false if it already fired.
+export const claimAlertKey = (key) => {
+  if (!key) return true;
+  const now = Date.now();
+  const fired = readFiredAlerts();
+  if (fired[key]) return false;
+  fired[key] = now;
+  // Prune old entries so storage stays small
+  Object.keys(fired).forEach((k) => {
+    if (now - fired[k] > FIRED_ALERT_TTL_MS) delete fired[k];
+  });
+  try {
+    localStorage.setItem(FIRED_ALERTS_KEY, JSON.stringify(fired));
+  } catch (e) {
+    // Storage unavailable: fall back to allowing the alert
+  }
+  return true;
+};
+
+const isAppInForeground = () =>
+  typeof document !== 'undefined' &&
+  document.visibilityState === 'visible' &&
+  (typeof document.hasFocus !== 'function' || document.hasFocus());
+
+// Send an alert: an in-app toast while the user is looking at the app, otherwise a
+// native system notification (lock screen / notification center).
+// Options:
+//   dedupeKey   – alert fires at most once per key (shared across schedulers)
+//   forceSystem – always also send the native notification (used by "Test Alert")
+//   toastType   – toaster style: 'task' | 'success' | 'error' | 'warning'
 export const sendSystemNotification = async (title, options = {}) => {
+  const { dedupeKey, forceSystem = false, toastType, ...notifOptions } = options;
+  if (dedupeKey && !claimAlertKey(dedupeKey)) return false;
+
   // Always trigger sound & phone vibration for audio/haptic alert
   playNotificationChime();
-  triggerPhoneVibration(options.vibrate || [300, 100, 300, 100, 400]);
+  triggerPhoneVibration(notifOptions.vibrate || [300, 100, 300, 100, 400]);
 
-  if (typeof window === 'undefined' || !('Notification' in window)) return;
+  const url = notifOptions.url || '/planner';
+  const canNotify = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
+  const foreground = isAppInForeground();
+
+  // In-app toast when visible, or whenever native notifications are unavailable
+  if (foreground || !canNotify) {
+    showNotificationToast({
+      title,
+      body: notifOptions.body || '',
+      time: notifOptions.body || '',
+      type: toastType || 'task',
+      taskId: notifOptions.taskId,
+      mealId: notifOptions.mealId,
+      url,
+      duration: 6000
+    });
+  }
+
+  if (!canNotify || (foreground && !forceSystem)) return true;
 
   try {
-    let perm = Notification.permission;
-    if (perm === 'default') {
+    const defaultOptions = {
+      icon: '/app-icon-192.png',
+      badge: '/app-icon-192.png',
+      vibrate: [300, 100, 300, 100, 400],
+      renotify: true,
+      requireInteraction: false,
+      ...notifOptions,
+      tag: notifOptions.tag || 'codigix-reminder-' + (notifOptions.taskId || notifOptions.mealId || Date.now()),
+      // Built last so caller-supplied `data` extends rather than replaces the routing fields
+      data: {
+        taskId: notifOptions.taskId || null,
+        mealId: notifOptions.mealId || null,
+        day: notifOptions.day || null,
+        type: notifOptions.type || null,
+        url,
+        ...notifOptions.data
+      }
+    };
+
+    // ServiceWorker registration.showNotification is REQUIRED for PWA on Android and mobile background
+    if ('serviceWorker' in navigator) {
       try {
-        perm = await Notification.requestPermission();
+        const registration = await Promise.race([
+          navigator.serviceWorker.ready,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('SW ready timeout')), 2000))
+        ]);
+        if (registration && typeof registration.showNotification === 'function') {
+          await registration.showNotification(title, defaultOptions);
+          return;
+        }
       } catch (e) {
-        // user may dismiss prompt
+        // Service worker timeout or failure, proceed to direct fallback
       }
     }
 
-    if (perm === 'granted') {
-      const defaultOptions = {
-        icon: '/app-icon.png',
-        badge: '/app-icon.png',
-        vibrate: [300, 100, 300, 100, 400],
-        tag: options.tag || 'codigix-reminder-' + (options.taskId || options.mealId || Date.now()),
-        renotify: true,
-        requireInteraction: false,
-        data: {
-          taskId: options.taskId || null,
-          mealId: options.mealId || null,
-          day: options.day || null,
-          url: options.url || '/planner',
-          ...options.data
-        },
-        ...options
-      };
-
-      // ServiceWorker registration.showNotification is REQUIRED for PWA on Android and mobile background
-      if ('serviceWorker' in navigator) {
-        try {
-          const registration = await Promise.race([
-            navigator.serviceWorker.ready,
-            new Promise((_, reject) => setTimeout(() => reject(new Error('SW ready timeout')), 2000))
-          ]);
-          if (registration && typeof registration.showNotification === 'function') {
-            await registration.showNotification(title, defaultOptions);
-            return;
-          }
-        } catch (e) {
-          // Service worker timeout or failure, proceed to direct fallback
-        }
-      }
-
-      // Direct Web Notification fallback (Desktop browser)
-      try {
-        new Notification(title, defaultOptions);
-      } catch (err) {
-        // Some mobile browsers forbid new Notification() without ServiceWorker
-      }
+    // Direct Web Notification fallback (Desktop browser)
+    try {
+      new Notification(title, defaultOptions);
+    } catch (err) {
+      // Some mobile browsers forbid new Notification() without ServiceWorker
     }
   } catch (err) {
     console.error('Error delivering native system notification:', err);

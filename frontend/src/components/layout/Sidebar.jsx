@@ -52,8 +52,7 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, collapsed, 
       <aside
         className={`fixed top-0 left-0 z-50 h-screen transition-transform lg:transition-all duration-300 flex flex-col border-r ${collapsed ? 'lg:w-20' : 'lg:w-64'
           } ${mobileOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'
-          } ${isDark ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-700'
-          } shadow-2xl lg:shadow-sm select-none`}
+          } bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-2xl lg:shadow-sm select-none`}
       >
         {/* Brand Top Header */}
         <div className="h-16 px-4 flex items-center justify-between border-b border-slate-100/80 dark:border-slate-800 shrink-0">
@@ -65,16 +64,16 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, collapsed, 
             className="flex items-center gap-3 cursor-pointer overflow-hidden py-1"
           >
             {collapsed ? (
-              <img src="/codigix-logo.svg" alt="Codigix" className="h-8 w-8 object-cover object-left" />
+              <img src="/codigix-logo.svg" alt="Codigix" className="h-8 w-8 object-cover object-left dark:brightness-0 dark:invert" />
             ) : (
-              <img src="/codigix-logo.svg" alt="Codigix Infotech" className="h-8 object-contain" />
+              <img src="/codigix-logo.svg" alt="Codigix Infotech" className="h-8 object-contain dark:brightness-0 dark:invert" />
             )}
           </div>
 
           {/* Desktop Collapse Button */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:flex p-1.5 rounded-md-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <Menu className="w-5 h-5" />
@@ -83,7 +82,7 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, collapsed, 
           {/* Mobile Close Drawer Button */}
           <button
             onClick={() => setMobileOpen && setMobileOpen(false)}
-            className="lg:hidden p-2 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="lg:hidden p-2 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="Close Menu"
           >
             <X className="w-5 h-5" />
@@ -103,18 +102,18 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, collapsed, 
                   setActiveTab(item.id);
                   if (setMobileOpen) setMobileOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-md text-sm transition-all duration-200 ${isActive
+                className={`group w-full flex items-center justify-between px-3.5 py-2.5 rounded-md text-sm transition-all duration-200 ${isActive
                   ? 'bg-[#2563eb] text-white shadow-md shadow-blue-500/30 font-bold'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 font-medium'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white font-medium'
                   }`}
                 title={collapsed ? item.label : undefined}
               >
                 <div className="flex items-center gap-3 truncate">
-                  <IconComponent className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                  <IconComponent className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-200'}`} />
                   {!collapsed && <span className="truncate">{item.label}</span>}
                 </div>
                 {!collapsed && item.badge !== undefined && (
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${isActive ? 'bg-white text-blue-700' : 'bg-blue-600 text-white'
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${isActive ? 'bg-white text-blue-700' : 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
                     }`}>
                     {item.badge}
                   </span>
@@ -128,10 +127,7 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, collapsed, 
         <div className="p-3 border-t border-slate-100 dark:border-slate-800 shrink-0">
           <button
             onClick={toggleTheme}
-            className={`w-full flex items-center ${collapsed ? 'justify-center p-2.5' : 'justify-between px-3.5 py-2.5'} rounded-md text-sm font-bold transition-all duration-200 cursor-pointer ${isDark
-              ? 'bg-slate-800/90 hover:bg-slate-700/80 text-amber-300 border border-slate-700/80'
-              : 'bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80'
-              }`}
+            className={`w-full flex items-center ${collapsed ? 'justify-center p-2.5' : 'justify-between px-3.5 py-2.5'} rounded-md text-sm font-bold transition-all duration-200 cursor-pointer bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/80 dark:hover:bg-slate-700 text-slate-700 dark:text-amber-300 border border-slate-200/80 dark:border-slate-700`}
             title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             aria-label="Toggle Dark and Light Mode"
           >
@@ -139,7 +135,7 @@ export default function Sidebar({ activeTab, setActiveTab, navItems, collapsed, 
               {isDark ? (
                 <Sun className="w-5 h-5 text-amber-400 shrink-0" />
               ) : (
-                <Moon className="w-5 h-5 text-indigo-600 shrink-0" />
+                <Moon className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
               )}
               {!collapsed && (
                 <span className="text-xs font-black text-slate-800 dark:text-slate-200">

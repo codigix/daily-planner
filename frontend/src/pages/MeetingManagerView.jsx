@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Video, Plus, Sparkles, Calendar, Clock, CheckCircle, Users,
   Search, X, MapPin, User, Edit, Trash2, MessageSquare,
@@ -149,7 +149,7 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
             <Video className="w-5 h-5 text-brand-600" />
             {isEdit ? 'Edit Meeting' : 'Schedule New Meeting'}
           </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-md-lg"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="p-5 space-y-4">
@@ -288,6 +288,7 @@ function MeetingFormModal({ open, onClose, onSave, initial = null }) {
 export default function MeetingManagerView({ meetings = [], setMeetings, onScheduleMeeting, onOpenAI }) {
   const [activeTab, setActiveTab] = useState('Upcoming');
   const [selectedMeetingId, setSelectedMeetingId] = useState('');
+  const detailsRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
   const [selectedDateFilter, setSelectedDateFilter] = useState(null);
@@ -481,7 +482,7 @@ ${actionText}`;
       </div>
 
       {/* ── KPI Metric Cards (Row of 4 Cards Side-by-Side on Mobile - Matches Screenshot) ── */}
-      <div className="grid grid-cols-4 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
         {[
           { label: 'Total Meetings', value: totalMeetings, sub: 'Recorded', icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/50' },
           { label: 'Upcoming', value: upcomingCount, sub: 'Scheduled', icon: Clock, color: 'text-sky-600', bg: 'bg-sky-50 dark:bg-sky-950/50' },
@@ -502,9 +503,9 @@ ${actionText}`;
       </div>
 
       {/* ── Main Tab Navigation Bar & Filters (Matches Screenshot) ── */}
-      <div className="space-y-3 flex w-full justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full justify-between">
         {/* Horizontal Tab Bar */}
-        <div className="flex border-b border-slate-200/80 dark:border-slate-800 text-xs font-bold overflow-x-auto no-scrollbar">
+        <div className="flex min-w-0 border-b border-slate-200/80 dark:border-slate-800 text-xs font-bold overflow-x-auto no-scrollbar">
           {TABS.map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`px-3 sm:px-4 py-2.5 whitespace-nowrap transition-all border-b-2 cursor-pointer ${activeTab === tab ? 'border-blue-600 text-blue-600 font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -538,8 +539,8 @@ ${actionText}`;
         </div>
       </div>
 
-      {/* ── 2 Main Cards Grid (2 Columns Side-by-Side on Mobile - Matches Screenshot) ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-6">
+      {/* ── Meetings list + details: stacked on phones, side by side on large screens ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6">
 
         {/* Left Card: Meetings List Panel (Col 1 on Mobile, 8 Cols on Desktop) */}
         <div className="lg:col-span-8">
@@ -595,7 +596,7 @@ ${actionText}`;
                 header: 'Status',
                 sortable: true,
                 render: (m) => (
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${statusStyles[m.status] || 'bg-slate-100 text-slate-600'}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${statusStyles[m.status] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
                     {m.status}
                   </span>
                 )
@@ -606,8 +607,8 @@ ${actionText}`;
                 align: 'right',
                 render: (m) => (
                   <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
-                    <button onClick={() => { setEditMeeting(m); setShowForm(true); }} className="p-1 rounded-md-lg text-slate-400 hover:text-blue-600" title="Edit"><Edit className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => setConfirmDeleteId(m.id)} className="p-1 rounded-md-lg text-slate-400 hover:text-rose-600" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => { setEditMeeting(m); setShowForm(true); }} className="p-1 rounded-lg text-slate-400 hover:text-blue-600" title="Edit"><Edit className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setConfirmDeleteId(m.id)} className="p-1 rounded-lg text-slate-400 hover:text-rose-600" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 )
               }
@@ -615,12 +616,18 @@ ${actionText}`;
             data={filteredMeetings}
             defaultPageSize={5}
             searchable={false}
-            onRowClick={(m) => setSelectedMeetingId(m.id)}
+            onRowClick={(m) => {
+              setSelectedMeetingId(m.id);
+              // Details sit below the list on phones/tablets — bring them into view
+              if (window.innerWidth < 1024) {
+                requestAnimationFrame(() => detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+              }
+            }}
           />
         </div>
 
         {/* Right Card: Selected Meeting Detail Panel (Col 2 on Mobile, 4 Cols on Desktop - Matches Screenshot) */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between p-4 sm:p-6 min-h-[320px]">
+        <div ref={detailsRef} className={`scroll-mt-20 lg:col-span-4 bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-sm flex-col justify-between p-4 sm:p-6 min-h-[320px] ${selectedMeeting ? 'flex' : 'hidden lg:flex'}`}>
           {selectedMeeting ? (
             <div className="space-y-4 my-auto">
               <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -628,7 +635,7 @@ ${actionText}`;
                   <h3 className="font-black text-slate-900 dark:text-white text-xs sm:text-sm leading-snug">{selectedMeeting.title}</h3>
                   <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 block mt-0.5">{selectedMeeting.client || 'Internal'}</span>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold shrink-0 ${statusStyles[selectedMeeting.status] || 'bg-slate-100 text-slate-600'}`}>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold shrink-0 ${statusStyles[selectedMeeting.status] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
                   {selectedMeeting.status}
                 </span>
               </div>

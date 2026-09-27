@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
 
   const notifyLoginSuccess = async (userData) => {
     try {
-      const granted = await requestNotificationPermission();
+      const { granted } = await requestNotificationPermission();
       if (granted) {
         sendSystemNotification('CODIGIX Executive OS Active 🚀', {
           body: `Welcome back, ${userData.fullName || userData.email}! Native system notifications are active for tasks & meetings.`,
@@ -40,7 +40,6 @@ export function AuthProvider({ children }) {
           const data = await res.json();
           if (data.user) {
             setUser(data.user);
-            requestNotificationPermission();
           } else {
             logout();
           }

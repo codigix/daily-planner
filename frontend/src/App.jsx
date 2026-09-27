@@ -19,6 +19,8 @@ import ProfileView from './pages/ProfileView';
 import NotificationsView from './pages/NotificationsView';
 import GenericModuleView from './pages/GenericModuleView';
 import ModalContainer from './components/modals/ModalContainer';
+import NotificationToaster from './components/common/NotificationToaster';
+import PageErrorBoundary from './components/common/PageErrorBoundary';
 import PWAInstallModal from './components/modals/PWAInstallModal';
 import { usePWAInstall } from './hooks/usePWAInstall';
 
@@ -33,8 +35,10 @@ import {
   getMeetingsAPI,
   createMeetingAPI,
   getClientsAPI,
-  createClientAPI
+  createClientAPI,
+  getDietItemsAPI
 } from './services/api';
+import { customItemsForDate } from './utils/dietItems';
 
 import { Lock, LogIn } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -68,8 +72,17 @@ function AppContent() {
   const [activeTab, setActiveTabState] = useState(() => getTabFromLocation());
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
   const [activeModal, setActiveModal] = useState(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [customDietItems, setCustomDietItems] = useState([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPWAInstallModal, setShowPWAInstallModal] = useState(false);
   const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
@@ -179,18 +192,20 @@ function AppContent() {
       return { ...item, badge: displayClients.length };
     }
     if (item.id === 'notifications') {
-      const pendingCount = displayPlannerTasks.filter(t => !t.completed).length;
-      return { ...item, badge: pendingCount };
+      // Same unread count the header bell shows (0 hides the badge)
+      return { ...item, badge: unreadNotifications || undefined };
     }
     return item;
   });
 
-  // Dark mode effect
+  // Dark mode effect with localStorage persistence
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
   }, [isDark]);
 
@@ -200,9 +215,10 @@ function AppContent() {
   const handleAddPlannerTask = async (newTask) => {
     setPlannerTasks(prev => [newTask, ...prev]);
     await createPlannerTaskAPI(newTask);
-    sendSystemNotification(newTask.title || 'New Task', {
+    sendSystemNotification(`✅ Task added: ${newTask.title || 'New Task'}`, {
       body: newTask.time || '',
-      tag: 'task-' + Date.now()
+      tag: 'task-' + Date.now(),
+      toastType: 'success'
     });
   };
 
@@ -211,7 +227,9 @@ function AppContent() {
     await createMeetingAPI(newMeeting);
     sendSystemNotification('Meeting Scheduled 📅', {
       body: `"${newMeeting.title || 'Meeting'}" with ${newMeeting.client || 'Client'}.`,
-      tag: 'meeting-' + Date.now()
+      tag: 'meeting-' + Date.now(),
+      url: '/meetings',
+      toastType: 'success'
     });
   };
 
@@ -220,114 +238,142 @@ function AppContent() {
     await createClientAPI(newClient);
     sendSystemNotification('Client Follow-up Logged 🤝', {
       body: `${newClient.name || 'Client'} added to Follow-ups.`,
-      tag: 'client-' + Date.now()
+      tag: 'client-' + Date.now(),
+      url: '/followups',
+      toastType: 'success'
     });
   };
 
   // ── Global Real-Time Background Notification Runner ──
-  // Continuously monitors task & diet meal schedules across ALL tabs (Dashboard, Planner, Meetings, etc.)
+  // The single scheduler for task & diet reminders, active on every tab.
+  // Every alert carries a dedupeKey, so it fires once per day even if this effect
+  // restarts (task list changes) or the page reloads inside a reminder window.
   useEffect(() => {
-    const firedKeys = new Set();
+    const parseStartMinutes = (timeStr) => {
+      if (!timeStr) return null;
+      // "09:45 AM – 10:45 AM" → use the start of the range
+      const startPart = String(timeStr).split('–')[0].split(' - ')[0].trim();
+      const match = startPart.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+      if (!match) return null;
+      let h = parseInt(match[1], 10);
+      const m = parseInt(match[2], 10);
+      const meridiem = match[3] ? match[3].toUpperCase() : null;
+      if (meridiem === 'PM' && h < 12) h += 12;
+      if (meridiem === 'AM' && h === 12) h = 0;
+      return h * 60 + m;
+    };
+
+    const isTaskDoneForDate = (task, dateStr) => {
+      if (task.completedDates && typeof task.completedDates[dateStr] === 'boolean') {
+        return task.completedDates[dateStr];
+      }
+      return task.status === 'Completed' || task.status === 'Done' || !!task.completed;
+    };
+
+    const isTaskForDate = (task, dateStr) => {
+      if (!task.date) return true; // undated tasks are daily routines
+      const d = new Date(task.date);
+      return isNaN(d.getTime()) ? true : d.toDateString() === dateStr;
+    };
 
     const checkGlobalReminders = () => {
       const now = new Date();
       const todayStr = now.toDateString();
       const todayDayName = now.toLocaleDateString('en-US', { weekday: 'long' });
-      const currentHours = now.getHours();
-      const currentMins = now.getMinutes();
-      const currentTotalMins = currentHours * 60 + currentMins;
+      const currentTotalMins = now.getHours() * 60 + now.getMinutes();
 
-      // 1. Check Weekly Diet Plan items for today
-      const todayDietItems = WEEKLY_DIET_PLAN.filter(item => item.day === todayDayName);
+      // 1. Weekly Diet Plan items for today
       let completions = {};
       try {
         const saved = localStorage.getItem('codigix_diet_completions_v2');
         if (saved) completions = JSON.parse(saved);
       } catch (e) { }
 
-      todayDietItems.forEach(item => {
-        const compKey = `${todayDayName}_${item.id}`;
-        if (completions[compKey]?.status === 'completed' || completions[compKey]?.status === 'skipped') {
-          return;
-        }
+      const todaysDietItems = [
+        ...WEEKLY_DIET_PLAN.filter(item => item.day === todayDayName),
+        ...customItemsForDate(customDietItems, now)
+      ];
+      todaysDietItems.forEach(item => {
+        const status = completions[`${todayDayName}_${item.id}`]?.status;
+        if (status === 'completed' || status === 'skipped') return;
 
-        const [h, m] = item.time.split(':').map(Number);
-        const itemTotalMins = h * 60 + m;
-        const diff = itemTotalMins - currentTotalMins;
-
+        const itemMins = parseStartMinutes(item.time);
+        if (itemMins === null) return;
+        const diff = itemMins - currentTotalMins;
         const reminderLead = item.reminderMinutesBefore || 10;
-        const leadKey = `${todayStr}_diet_lead_${item.id}`;
-        const exactKey = `${todayStr}_diet_exact_${item.id}`;
+        const dietUrl = `/planner?openDietMealId=${item.id}&openDay=${todayDayName}`;
 
-        // Lead-time window (1 to reminderLead mins before)
-        if (diff <= reminderLead && diff >= 1 && !firedKeys.has(leadKey)) {
-          firedKeys.add(leadKey);
+        if (diff <= reminderLead && diff >= 1) {
           sendSystemNotification(item.taskTitle, {
-            body: `In ${diff}m • ${item.timeFormatted || item.time}`,
+            body: `In ${diff} min • ${item.timeFormatted || item.time}`,
             mealId: item.id,
             day: todayDayName,
-            url: `/planner?openDietMealId=${item.id}&openDay=${todayDayName}`,
-            tag: `diet-lead-${item.id}`
+            url: dietUrl,
+            tag: `diet-lead-${item.id}`,
+            dedupeKey: `diet-lead-${todayStr}-${item.id}`
           });
         }
 
-        // Exact-time window (0 to -15 mins)
-        if (diff <= 0 && diff >= -15 && !firedKeys.has(exactKey)) {
-          firedKeys.add(exactKey);
+        if (diff <= 0 && diff >= -15) {
           sendSystemNotification(`🔔 NOW: ${item.taskTitle}`, {
             body: item.timeFormatted || item.time,
             mealId: item.id,
             day: todayDayName,
-            url: `/planner?openDietMealId=${item.id}&openDay=${todayDayName}`,
-            tag: `diet-exact-${item.id}`
+            url: dietUrl,
+            tag: `diet-exact-${item.id}`,
+            dedupeKey: `diet-exact-${todayStr}-${item.id}`
           });
         }
       });
 
       // 2. 8:00 PM Next Day Ingredients Prep Alert
       const todayPrep = NEXT_DAY_PREP_CHECKLIST[todayDayName];
-      if (todayPrep) {
-        const prepTotalMins = 20 * 60; // 20:00
-        const prepDiff = prepTotalMins - currentTotalMins;
-        const prepKey = `${todayStr}_prep_2000`;
-        if (prepDiff <= 0 && prepDiff >= -30 && !firedKeys.has(prepKey)) {
-          firedKeys.add(prepKey);
-          sendSystemNotification(`🛒 8:00 PM: Prepare Tomorrow's Ingredients (${todayPrep.forNextDay})!`, {
-            body: `Pantry checklist for ${todayPrep.forNextDay}:\n${todayPrep.ingredients.slice(0, 100)}...\nTap to open detailed prep checklist!`,
-            tag: `diet-prep-${todayDayName}`,
-            type: 'nextDayPrep',
-            day: todayDayName,
-            url: `/planner?openNextDayPrep=1&openDay=${todayDayName}`
-          });
-        }
+      const prepDiff = 20 * 60 - currentTotalMins;
+      if (todayPrep && prepDiff <= 0 && prepDiff >= -30) {
+        sendSystemNotification(`🛒 8:00 PM: Prepare Tomorrow's Ingredients (${todayPrep.forNextDay})`, {
+          body: `Pantry checklist for ${todayPrep.forNextDay} is ready — tap to open.`,
+          tag: `diet-prep-${todayDayName}`,
+          type: 'nextDayPrep',
+          day: todayDayName,
+          url: `/planner?openNextDayPrep=1&openDay=${todayDayName}`,
+          toastType: 'warning',
+          dedupeKey: `prep-${todayStr}`
+        });
       }
 
-      // 3. Regular Planner Tasks with scheduled times for today
+      // 3. Planner tasks scheduled for today: 5 min before, at start, then every
+      //    5 min while still pending (up to 3 hours)
       (plannerTasks || []).forEach(t => {
-        if (t.status === 'Completed' || t.status === 'Done' || t.completed) return;
-        const tTime = t.time || t.scheduled_time;
-        if (!tTime) return;
+        if (!isTaskForDate(t, todayStr) || isTaskDoneForDate(t, todayStr)) return;
+        const taskMins = parseStartMinutes(t.time || t.scheduled_time);
+        if (taskMins === null) return;
+        const diff = taskMins - currentTotalMins;
+        const base = {
+          body: t.time || t.scheduled_time,
+          taskId: t.id,
+          url: `/planner?openTaskId=${t.id}`
+        };
 
-        const timeMatch = tTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-        if (timeMatch) {
-          let [_, hStr, mStr, meridiem] = timeMatch;
-          let h = parseInt(hStr, 10);
-          const m = parseInt(mStr, 10);
-          if (meridiem) {
-            if (meridiem.toUpperCase() === 'PM' && h < 12) h += 12;
-            if (meridiem.toUpperCase() === 'AM' && h === 12) h = 0;
-          }
-          const taskMins = h * 60 + m;
-          const diff = taskMins - currentTotalMins;
-          const taskExactKey = `${todayStr}_task_${t.id}`;
-
-          if (diff <= 0 && diff >= -15 && !firedKeys.has(taskExactKey)) {
-            firedKeys.add(taskExactKey);
-            sendSystemNotification(`📋 Task Reminder: ${t.title}`, {
-              body: tTime,
-              taskId: t.id,
-              url: `/planner?openTaskId=${t.id}`,
-              tag: `task-reminder-${t.id}`
+        if (diff <= 5 && diff >= 1) {
+          sendSystemNotification(`⏰ Starting in ${diff} min: ${t.title}`, {
+            ...base,
+            tag: `task-${t.id}`,
+            dedupeKey: `task-lead-${todayStr}-${t.id}`
+          });
+        } else if (diff <= 0 && diff >= -2) {
+          sendSystemNotification(`📋 Now: ${t.title}`, {
+            ...base,
+            tag: `task-${t.id}`,
+            dedupeKey: `task-exact-${todayStr}-${t.id}`
+          });
+        } else if (diff < -2 && diff >= -180) {
+          const bucket = Math.floor(Math.abs(diff) / 5) * 5;
+          if (bucket >= 5) {
+            sendSystemNotification(`⚠️ Still pending: ${t.title}`, {
+              ...base,
+              tag: `task-${t.id}`,
+              toastType: 'warning',
+              dedupeKey: `task-overdue-${todayStr}-${t.id}-${bucket}`
             });
           }
         }
@@ -335,9 +381,52 @@ function AppContent() {
     };
 
     checkGlobalReminders();
-    const timerId = setInterval(checkGlobalReminders, 25000);
+    const timerId = setInterval(checkGlobalReminders, 20000);
     return () => clearInterval(timerId);
-  }, [plannerTasks]);
+  }, [plannerTasks, customDietItems]);
+
+  // User-added diet items feed the reminder scheduler; reload whenever they change
+  useEffect(() => {
+    if (!user) {
+      setCustomDietItems([]);
+      return;
+    }
+    const loadDietItems = async () => {
+      const res = await getDietItemsAPI();
+      if (res.ok && Array.isArray(res.data.items)) setCustomDietItems(res.data.items);
+    };
+    loadDietItems();
+    window.addEventListener('app:diet-items-changed', loadDietItems);
+    return () => window.removeEventListener('app:diet-items-changed', loadDietItems);
+  }, [user]);
+
+  // Open the screen a notification points at (toast tap or native notification tap).
+  // The query string (e.g. ?openTaskId=12) is left in the URL for the target view to
+  // consume; views also listen for `app:deeplink` in case they are already mounted.
+  const openNotificationTarget = (url = '/planner') => {
+    let target;
+    try {
+      target = new URL(url, window.location.origin);
+    } catch (e) {
+      target = new URL('/planner', window.location.origin);
+    }
+    const tab = normalizeTab(target.pathname.replace(/^\//, '') || 'dashboard');
+    window.history.pushState({ tab }, '', target.pathname + target.search);
+    setActiveTabState(tab);
+    window.dispatchEvent(new CustomEvent('app:deeplink'));
+  };
+
+  // Native notification taps are relayed by the service worker as postMessage
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+    const handleSWMessage = (event) => {
+      if (event.data?.type === 'NOTIFICATION_TASK_CLICKED') {
+        openNotificationTarget(event.data.url || '/planner');
+      }
+    };
+    navigator.serviceWorker.addEventListener('message', handleSWMessage);
+    return () => navigator.serviceWorker.removeEventListener('message', handleSWMessage);
+  }, []);
 
   if (authLoading) {
     return (
@@ -351,7 +440,7 @@ function AppContent() {
   }
 
   return (
-    <div className={`min-h-screen bg-[#f4f6fa] dark:bg-slate-950 transition-colors duration-300 font-sans ${isDark ? 'dark text-slate-100' : 'text-slate-800'}`}>
+    <div className={`min-h-screen bg-[#f4f6fa] dark:bg-[#070a12] transition-colors duration-300 font-sans ${isDark ? 'dark text-slate-100' : 'text-slate-800'}`}>
       {/* Common Sidebar */}
       <Sidebar
         activeTab={activeTab}
@@ -377,6 +466,7 @@ function AppContent() {
         onOpenAuthModal={() => setShowAuthModal(true)}
         onNavigate={(tab) => setActiveTab(tab)}
         onOpenPWAInstall={() => setShowPWAInstallModal(true)}
+        onUnreadCountChange={setUnreadNotifications}
         isPWAInstalled={isInstalled}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
@@ -390,7 +480,7 @@ function AppContent() {
         <div className="max-w-7xl mx-auto">
           {!user ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 text-center">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md-3xl shadow-xl p-8 max-w-md w-full space-y-6 relative overflow-hidden animate-in fade-in zoom-in-95">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl p-8 max-w-md w-full space-y-6 relative overflow-hidden animate-in fade-in zoom-in-95">
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
 
                 <div className="mx-auto w-16 h-16 bg-blue-50 dark:bg-blue-950/30 rounded-md flex items-center justify-center text-blue-600 dark:text-blue-400">
@@ -414,7 +504,7 @@ function AppContent() {
               </div>
             </div>
           ) : (
-            <>
+            <PageErrorBoundary key={activeTab} onGoHome={() => setActiveTab('dashboard')}>
               {activeTab === 'dashboard' && (
                 <DashboardView
                   user={user}
@@ -563,10 +653,13 @@ function AppContent() {
                   onOpenAI={() => setActiveModal('ai')}
                 />
               )}
-            </>
+            </PageErrorBoundary>
           )}
         </div>
       </main>
+
+      {/* In-app alert toasts (reminders, confirmations) */}
+      <NotificationToaster onNavigate={openNotificationTarget} />
 
       {/* Modals Container */}
       <ModalContainer

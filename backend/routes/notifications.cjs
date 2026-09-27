@@ -130,11 +130,23 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/notifications/mark-read - Mark notification IDs as read
-router.post('/mark-read', (req, res) => {
+router.post('/mark-read', async (req, res) => {
   const { ids, all } = req.body;
   if (all) {
-    readNotificationIds.clear();
-    res.json({ success: true, message: 'All notifications marked as read' });
+    // Mark every current task notification as read (previously this cleared the
+    // set, which flipped everything back to unread)
+    try {
+      const pool = await getPool();
+      if (pool) {
+        const [tasks] = await pool.query('SELECT id FROM planner_tasks');
+        tasks.forEach((t) => readNotificationIds.add(`task_notif_${t.id}`));
+      }
+      if (Array.isArray(ids)) ids.forEach((id) => readNotificationIds.add(id));
+      res.json({ success: true, message: 'All notifications marked as read' });
+    } catch (err) {
+      console.error('[NotificationsRoute] mark-read error:', err.message);
+      res.status(500).json({ success: false, error: err.message });
+    }
   } else if (Array.isArray(ids)) {
     ids.forEach((id) => readNotificationIds.add(id));
     res.json({ success: true });

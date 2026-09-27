@@ -30,7 +30,7 @@ export default function PWAInstallModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-lg overflow-hidden bg-white dark:bg-slate-900 rounded-md-3xl shadow-2xl border border-slate-200 dark:border-slate-800 transition-all">
+      <div className="relative w-full max-w-lg overflow-hidden bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 transition-all">
         {/* Decorative Top Banner */}
         <div className="relative h-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 flex flex-col justify-end overflow-hidden">
           <div className="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />

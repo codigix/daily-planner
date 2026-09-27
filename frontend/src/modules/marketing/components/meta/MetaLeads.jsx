@@ -61,13 +61,13 @@ export default function MetaLeads({ leads = [], onSyncCRM }) {
                   <td className="p-3.5 font-mono text-slate-600 dark:text-slate-300">{lead.phone || 'N/A'}</td>
                   <td className="p-3.5 text-slate-800 dark:text-slate-200 font-semibold">{lead.company || 'Enterprise Client'}</td>
                   <td className="p-3.5">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${(lead.lead_score || 85) >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-700'
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${(lead.lead_score || 85) >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
                       }`}>
                       {(lead.lead_score || 85)} / 100
                     </span>
                   </td>
                   <td className="p-3.5">
-                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${lead.crm_sync_status === 'SYNCED' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-700'
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${lead.crm_sync_status === 'SYNCED' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                       }`}>
                       {lead.crm_sync_status || 'PENDING'}
                     </span>
@@ -76,7 +76,7 @@ export default function MetaLeads({ leads = [], onSyncCRM }) {
                     <button
                       onClick={() => handleSync(lead.lead_id || lead.id)}
                       disabled={syncingId === (lead.lead_id || lead.id)}
-                      className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] rounded-md-lg shadow transition-all flex items-center gap-1"
+                      className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] rounded-lg shadow transition-all flex items-center gap-1"
                     >
                       {syncingId === (lead.lead_id || lead.id) ? (
                         <RefreshCw className="w-3 h-3 animate-spin" />

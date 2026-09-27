@@ -118,7 +118,7 @@ function FollowupFormModal({ open, onClose, onSave, initial = null }) {
             <Users className="w-5 h-5 text-brand-600 shrink-0" />
             <span>{isEdit ? 'Edit Follow-up Record' : 'Add New Client Follow-up'}</span>
           </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-md-lg cursor-pointer"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg cursor-pointer"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="p-4 sm:p-5 space-y-4">
@@ -457,7 +457,7 @@ export default function ClientFollowupsView({ onOpenAI }) {
       </div>
 
       {/* ── 4 KPI Overview Cards (Matches Screenshot 4-Column Card Grid on Mobile) ── */}
-      <div className="grid grid-cols-4 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
         {/* Card 1: Total Deals */}
         <div className="card-base p-2.5 sm:p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left justify-between">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 mb-1">
@@ -519,7 +519,7 @@ export default function ClientFollowupsView({ onOpenAI }) {
               <button
                 key={tab.id}
                 onClick={() => { setActiveTab(tab.id); setStatusFilter('All Status'); }}
-                className={`px-3 py-1.5 rounded-md-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === tab.id
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === tab.id
                   ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
@@ -596,7 +596,7 @@ export default function ClientFollowupsView({ onOpenAI }) {
                   sortable: true,
                   render: (client) => (
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-md-lg bg-blue-600 text-white font-black flex items-center justify-center text-[10px] shrink-0">
+                      <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-black flex items-center justify-center text-[10px] shrink-0">
                         {client.company ? client.company[0].toUpperCase() : 'C'}
                       </div>
                       <div className="min-w-0">
@@ -618,7 +618,7 @@ export default function ClientFollowupsView({ onOpenAI }) {
                   header: 'Priority',
                   sortable: true,
                   render: (c) => (
-                    <span className={`px-2 py-0.5 rounded-md-md border text-[10px] font-bold ${getPriorityStyle(c.priority)}`}>
+                    <span className={`px-2 py-0.5 rounded-md border text-[10px] font-bold ${getPriorityStyle(c.priority)}`}>
                       {c.priority}
                     </span>
                   )
@@ -702,7 +702,7 @@ export default function ClientFollowupsView({ onOpenAI }) {
                     </div>
 
                     <button onClick={(e) => toggleStar(client.id, e)} className="p-1">
-                      <Star className={`w-3.5 h-3.5 ${client.starred ? 'text-amber-400 fill-amber-400' : 'text-slate-300'}`} />
+                      <Star className={`w-3.5 h-3.5 ${client.starred ? 'text-amber-400 fill-amber-400' : 'text-slate-300 dark:text-slate-600'}`} />
                     </button>
 
                     <div className="flex items-center gap-1 font-black text-slate-900 dark:text-white">
@@ -809,7 +809,7 @@ export default function ClientFollowupsView({ onOpenAI }) {
                     <span>{selectedClient.source || 'CRM Integration'}</span>
                   </div>
                   <div className="flex items-center gap-2 pt-1">
-                    <span className={`px-2.5 py-0.5 rounded-md-md border text-[10px] font-extrabold ${getPriorityStyle(selectedClient.priority)}`}>
+                    <span className={`px-2.5 py-0.5 rounded-md border text-[10px] font-extrabold ${getPriorityStyle(selectedClient.priority)}`}>
                       {selectedClient.priority}
                     </span>
                   </div>

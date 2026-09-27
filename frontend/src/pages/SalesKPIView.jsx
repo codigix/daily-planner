@@ -120,7 +120,7 @@ export default function SalesKPIView({ clients = [], setClients, plannerTasks = 
     name: c.company || `Opportunity ${i + 1}`,
     company: c.contactPerson || 'Manager',
     stage: c.status || (c.priority === 'High' ? 'Negotiation' : 'Qualified'),
-    stageColor: c.status === 'Closed Won' || c.status === 'Completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : c.status === 'Overdue' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+    stageColor: c.status === 'Closed Won' || c.status === 'Completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : c.status === 'Overdue' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
     owner: c.owner || 'Ashwini K.',
     ownerAvatar: c.ownerAvatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
     val: c.expectedValue || '₹20,000',
@@ -218,7 +218,7 @@ export default function SalesKPIView({ clients = [], setClients, plannerTasks = 
             <button
               key={item.id}
               onClick={() => setSelectedPeriod(item.id)}
-              className={`flex-1 sm:flex-initial py-1.5 px-3 rounded-md-lg transition-all cursor-pointer whitespace-nowrap text-center text-xs ${selectedPeriod === item.id
+              className={`flex-1 sm:flex-initial py-1.5 px-3 rounded-lg transition-all cursor-pointer whitespace-nowrap text-center text-xs ${selectedPeriod === item.id
                 ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-black'
                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
@@ -379,13 +379,13 @@ export default function SalesKPIView({ clients = [], setClients, plannerTasks = 
                     value={oppSearchQuery}
                     onChange={e => setOppSearchQuery(e.target.value)}
                     placeholder="Search deals..."
-                    className="pl-7 pr-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
+                    className="pl-7 pr-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
                   />
                 </div>
                 <select
                   value={oppStageFilter}
                   onChange={e => setOppStageFilter(e.target.value)}
-                  className="px-2.5 py-1 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-slate-700 dark:text-slate-200 cursor-pointer"
+                  className="px-2.5 py-1 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 cursor-pointer"
                 >
                   <option value="All">All Stages</option>
                   <option value="Pending">Pending</option>
@@ -411,7 +411,7 @@ export default function SalesKPIView({ clients = [], setClients, plannerTasks = 
                       <select
                         value={op.stage}
                         onChange={e => op.id && handleUpdateStage(op.id, e.target.value)}
-                        className={`px-2 py-0.5 rounded-md-md text-[10px] font-bold border-none cursor-pointer focus:outline-none ${op.stageColor}`}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border-none cursor-pointer focus:outline-none ${op.stageColor}`}
                       >
                         <option value="Pending">Pending</option>
                         <option value="Qualified">Qualified</option>
@@ -566,7 +566,7 @@ export default function SalesKPIView({ clients = [], setClients, plannerTasks = 
                   value={targetInput}
                   onChange={e => setTargetInput(e.target.value)}
                   placeholder="e.g. 3000000"
-                  className="w-full px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             )}

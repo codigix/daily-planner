@@ -909,7 +909,7 @@ export default function CreateQuotationView({ onNavigate }) {
         <div className="flex items-center gap-2.5 shrink-0">
           <button
             onClick={() => onNavigate && onNavigate('finance')}
-            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md-lg transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
+            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
             title="Back to Finance"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -917,7 +917,7 @@ export default function CreateQuotationView({ onNavigate }) {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-black text-slate-900 dark:text-white tracking-wide uppercase">QUOTATION BUILDER</span>
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md-md bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50">
+              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50">
                 {currentTheme.name}
               </span>
             </div>
@@ -928,7 +928,7 @@ export default function CreateQuotationView({ onNavigate }) {
         <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-md border border-slate-200 dark:border-slate-700/80 gap-1 shrink-0">
           <button
             onClick={() => setMainWorkflowTab('fill')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'fill'
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'fill'
               ? 'bg-red-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
               }`}
@@ -939,7 +939,7 @@ export default function CreateQuotationView({ onNavigate }) {
 
           <button
             onClick={() => setMainWorkflowTab('theme')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'theme'
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'theme'
               ? 'bg-purple-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
               }`}
@@ -950,7 +950,7 @@ export default function CreateQuotationView({ onNavigate }) {
 
           <button
             onClick={() => setMainWorkflowTab('arrange')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'arrange'
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'arrange'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
               }`}
@@ -961,7 +961,7 @@ export default function CreateQuotationView({ onNavigate }) {
 
           <button
             onClick={() => setMainWorkflowTab('download')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'download'
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${mainWorkflowTab === 'download'
               ? 'bg-emerald-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
               }`}
@@ -975,7 +975,7 @@ export default function CreateQuotationView({ onNavigate }) {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={handleSaveQuotation}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-md-lg text-xs font-bold border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer"
             title="Save changes to browser storage"
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
@@ -984,7 +984,7 @@ export default function CreateQuotationView({ onNavigate }) {
           <button
             onClick={handleDownloadPDF}
             disabled={isGeneratingPDF}
-            className="px-3.5 py-1.5 text-white rounded-md-lg text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer hover:opacity-90 disabled:opacity-50"
+            className="px-3.5 py-1.5 text-white rounded-lg text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer hover:opacity-90 disabled:opacity-50"
             style={{ backgroundColor: currentTheme.accentColor }}
           >
             {isGeneratingPDF ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
@@ -1015,14 +1015,14 @@ export default function CreateQuotationView({ onNavigate }) {
               <div className="px-4 pt-3 flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3 bg-slate-50/50 dark:bg-slate-900/50">
                 <button
                   onClick={handleLoadSampleData}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-md-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                   <span>Fill Sample Data</span>
                 </button>
                 <button
                   onClick={handleClearForm}
-                  className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+                  className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
                   title="Clear inputs to start with placeholders"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -1051,7 +1051,7 @@ export default function CreateQuotationView({ onNavigate }) {
                         <input
                           type="text" value={quotationData.logoUrl} onChange={(e) => handleInputChange('logoUrl', e.target.value)}
                           placeholder="Leave empty to use official Codigix logo SVG"
-                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
                         />
                       </div>
                       <div>
@@ -1059,7 +1059,7 @@ export default function CreateQuotationView({ onNavigate }) {
                         <input
                           type="text" value={quotationData.page2ImageUrl} onChange={(e) => handleInputChange('page2ImageUrl', e.target.value)}
                           placeholder="e.g. https://images.unsplash.com/photo-..."
-                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
                         />
                       </div>
                       <div>
@@ -1067,7 +1067,7 @@ export default function CreateQuotationView({ onNavigate }) {
                         <input
                           type="text" value={quotationData.page3ImageUrl} onChange={(e) => handleInputChange('page3ImageUrl', e.target.value)}
                           placeholder="e.g. https://images.unsplash.com/photo-..."
-                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
                         />
                       </div>
                     </div>
@@ -1092,14 +1092,14 @@ export default function CreateQuotationView({ onNavigate }) {
                         <label className="text-[11px] font-semibold text-slate-500 uppercase">Proposal Title</label>
                         <input
                           type="text" value={quotationData.proposalTitle} onChange={(e) => handleInputChange('proposalTitle', e.target.value)}
-                          placeholder="e.g. FitRack Platform Proposal" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                          placeholder="e.g. FitRack Platform Proposal" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
                         />
                       </div>
                       <div>
                         <label className="text-[11px] font-semibold text-slate-500 uppercase">Proposal Subtitle / Scope</label>
                         <input
                           type="text" value={quotationData.subtitle} onChange={(e) => handleInputChange('subtitle', e.target.value)}
-                          placeholder="e.g. Web & Mobile App Development Scope" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                          placeholder="e.g. Web & Mobile App Development Scope" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -1107,14 +1107,14 @@ export default function CreateQuotationView({ onNavigate }) {
                           <label className="text-[11px] font-semibold text-slate-500 uppercase">Proposal Date</label>
                           <input
                             type="text" value={quotationData.date} onChange={(e) => handleInputChange('date', e.target.value)}
-                            placeholder="e.g. 11 Aug 2026" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                            placeholder="e.g. 11 Aug 2026" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
                           />
                         </div>
                         <div>
                           <label className="text-[11px] font-semibold text-slate-500 uppercase">Client Name</label>
                           <input
                             type="text" value={quotationData.clientName} onChange={(e) => handleInputChange('clientName', e.target.value)}
-                            placeholder="e.g. Mr. Santosh Manchare" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                            placeholder="e.g. Mr. Santosh Manchare" className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
                           />
                         </div>
                       </div>
@@ -1140,14 +1140,14 @@ export default function CreateQuotationView({ onNavigate }) {
                         <label className="text-[11px] font-semibold text-slate-500 uppercase">Company Name</label>
                         <input
                           type="text" value={quotationData.companyName} onChange={(e) => handleInputChange('companyName', e.target.value)}
-                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
                         />
                       </div>
                       <div>
                         <label className="text-[11px] font-semibold text-slate-500 uppercase">About Us Paragraph</label>
                         <textarea
                           rows="4" value={quotationData.aboutText} onChange={(e) => handleInputChange('aboutText', e.target.value)}
-                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs leading-relaxed"
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs leading-relaxed"
                         />
                       </div>
                     </div>
@@ -1172,14 +1172,14 @@ export default function CreateQuotationView({ onNavigate }) {
                         <label className="text-[11px] font-semibold text-slate-500 uppercase">Executive Summary Text</label>
                         <textarea
                           rows="4" value={quotationData.execSummary} onChange={(e) => handleInputChange('execSummary', e.target.value)}
-                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs leading-relaxed"
+                          className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs leading-relaxed"
                         />
                       </div>
 
                       <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <div className="flex items-center justify-between">
                           <label className="text-[11px] font-semibold text-slate-500 uppercase">Solution Cards</label>
-                          <button onClick={addSolutionCard} className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-md text-[10px] font-bold flex items-center gap-1">
+                          <button onClick={addSolutionCard} className="px-2 py-1 bg-purple-50 hover:bg-purple-100 dark:bg-purple-500/15 dark:hover:bg-purple-500/25 text-purple-600 dark:text-purple-300 rounded-md text-[10px] font-bold flex items-center gap-1">
                             <Plus className="w-3 h-3" /> Add Solution
                           </button>
                         </div>
@@ -1193,24 +1193,24 @@ export default function CreateQuotationView({ onNavigate }) {
                             <div className="grid grid-cols-2 gap-2 pr-6">
                               <input
                                 type="text" value={card.badge} onChange={(e) => handleSolutionCardChange(index, 'badge', e.target.value)}
-                                placeholder="Badge (e.g. SOLUTION 01)" className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                                placeholder="Badge (e.g. SOLUTION 01)" className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
                               />
                               <input
                                 type="text" value={card.icon} onChange={(e) => handleSolutionCardChange(index, 'icon', e.target.value)}
-                                placeholder="Icon (e.g. 📱)" className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                                placeholder="Icon (e.g. 📱)" className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
                               />
                             </div>
                             <input
                               type="text" value={card.title} onChange={(e) => handleSolutionCardChange(index, 'title', e.target.value)}
-                              placeholder="Solution Title" className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                              placeholder="Solution Title" className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
                             />
                             <textarea
                               rows="2" value={card.description} onChange={(e) => handleSolutionCardChange(index, 'description', e.target.value)}
-                              placeholder="Solution Description..." className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                              placeholder="Solution Description..." className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
                             />
                             <input
                               type="text" value={card.footer} onChange={(e) => handleSolutionCardChange(index, 'footer', e.target.value)}
-                              placeholder="Footer Text (e.g. • Android & iOS Apps)" className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs text-slate-500"
+                              placeholder="Footer Text (e.g. • Android & iOS Apps)" className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-500"
                             />
                           </div>
                         ))}
@@ -1264,7 +1264,7 @@ export default function CreateQuotationView({ onNavigate }) {
                               sowContentRef.current = quotationData.scopeOfWorkHtml;
                               setShowSowModal(true);
                             }}
-                            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-md-lg shadow-sm transition-all flex items-center gap-2"
+                            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow-sm transition-all flex items-center gap-2"
                           >
                             <Layout className="w-4 h-4" /> Open Full-Page Editor
                           </button>
@@ -1282,18 +1282,18 @@ export default function CreateQuotationView({ onNavigate }) {
                                   <div className="flex-1">
                                     <input
                                       type="text" value={title.replace('## ', '')} onChange={(e) => handleDeliverableChange(index, { title: '## ' + e.target.value, description: '' })}
-                                      placeholder={`Section Heading`} className="w-full px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-md-lg text-xs font-bold text-blue-700 dark:text-blue-400"
+                                      placeholder={`Section Heading`} className="w-full px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-400"
                                     />
                                   </div>
                                 ) : (
-                                  <div className="flex-1 space-y-1.5 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg">
+                                  <div className="flex-1 space-y-1.5 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
                                     <input
                                       type="text" value={title} onChange={(e) => handleDeliverableChange(index, { title: e.target.value, description })}
-                                      placeholder={`Deliverable Title`} className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs font-bold"
+                                      placeholder={`Deliverable Title`} className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold"
                                     />
                                     <textarea
                                       rows="2" value={description} onChange={(e) => handleDeliverableChange(index, { title, description: e.target.value })}
-                                      placeholder={`Summary of deliverables...`} className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[10px]"
+                                      placeholder={`Summary of deliverables...`} className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[10px]"
                                     />
                                   </div>
                                 )}
@@ -1304,10 +1304,10 @@ export default function CreateQuotationView({ onNavigate }) {
                             )
                           })}
                           <div className="flex gap-2 pt-2">
-                            <button onClick={addDeliverable} className="flex-1 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-md-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
+                            <button onClick={addDeliverable} className="flex-1 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
                               + Add Item
                             </button>
-                            <button onClick={() => setQuotationData(prev => ({ ...prev, deliverables: [...prev.deliverables, { title: '## New Heading', description: '' }] }))} className="flex-1 py-2 border border-dashed border-blue-300 dark:border-blue-700 rounded-md-lg text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50">
+                            <button onClick={() => setQuotationData(prev => ({ ...prev, deliverables: [...prev.deliverables, { title: '## New Heading', description: '' }] }))} className="flex-1 py-2 border border-dashed border-blue-300 dark:border-blue-700 rounded-lg text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50">
                               + Add Heading
                             </button>
                           </div>
@@ -1335,22 +1335,22 @@ export default function CreateQuotationView({ onNavigate }) {
                         <div key={index} className="grid grid-cols-12 gap-2 items-center">
                           <input
                             type="text" value={member.role} onChange={(e) => handleTeamChange(index, 'role', e.target.value)}
-                            placeholder="Role" className="col-span-5 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                            placeholder="Role" className="col-span-5 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
                           />
                           <input
                             type="text" value={member.count} onChange={(e) => handleTeamChange(index, 'count', e.target.value)}
-                            placeholder="Count" className="col-span-2 px-2 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs text-center font-bold"
+                            placeholder="Count" className="col-span-2 px-2 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-center font-bold"
                           />
                           <input
                             type="text" value={member.details} onChange={(e) => handleTeamChange(index, 'details', e.target.value)}
-                            placeholder="Details" className="col-span-4 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                            placeholder="Details" className="col-span-4 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
                           />
                           <button onClick={() => removeTeamMember(index)} className="col-span-1 text-red-500 hover:text-red-700 p-1 flex justify-center">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       ))}
-                      <button onClick={addTeamMember} className="w-full py-1.5 border border-dashed border-slate-300 dark:border-slate-700 rounded-md-lg text-xs font-bold text-slate-600 dark:text-slate-400">
+                      <button onClick={addTeamMember} className="w-full py-1.5 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400">
                         + Add Team Member
                       </button>
                     </div>
@@ -1377,18 +1377,18 @@ export default function CreateQuotationView({ onNavigate }) {
                           <button onClick={() => {
                             const current = quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }];
                             handleInputChange('pricingOptions', [...current, { title: 'NEW INVESTMENT PHASE', cost: '', gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]);
-                          }} className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md-md">
+                          }} className="text-[10px] font-bold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/15 px-2 py-1 rounded-md">
                             + Add Block
                           </button>
                         </div>
                         {(quotationData.pricingOptions || [{ title: 'TOTAL PROJECT INVESTMENT', cost: quotationData.totalCost, gst: quotationData.gstPercent || '18', suffix: 'Applicable GST' }]).map((priceObj, index) => (
-                          <div key={index} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md-lg border border-slate-200 dark:border-slate-700 space-y-2 relative group">
+                          <div key={index} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2 relative group">
                             {((quotationData.pricingOptions?.length || 1) > 1) && (
                               <button onClick={() => {
                                 const updated = [...(quotationData.pricingOptions || [])];
                                 updated.splice(index, 1);
                                 handleInputChange('pricingOptions', updated);
-                              }} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 border border-red-200 shadow-sm hover:bg-red-200 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                              }} className="absolute -top-2 -right-2 bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-300 rounded-full p-1 border border-red-200 dark:border-red-900 shadow-sm hover:bg-red-200 dark:hover:bg-red-900 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Trash2 className="w-3 h-3" />
                               </button>
                             )}
@@ -1399,7 +1399,7 @@ export default function CreateQuotationView({ onNavigate }) {
                                 updated[index].title = e.target.value;
                                 handleInputChange('pricingOptions', updated);
                               }}
-                              placeholder="Title (e.g. TOTAL PROJECT INVESTMENT)" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[11px] font-bold uppercase tracking-wider text-slate-700"
+                              placeholder="Title (e.g. TOTAL PROJECT INVESTMENT)" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-bold uppercase tracking-wider text-slate-700"
                             />
                             <div className="grid grid-cols-12 gap-2">
                               <div className="col-span-5">
@@ -1410,7 +1410,7 @@ export default function CreateQuotationView({ onNavigate }) {
                                     updated[index].cost = e.target.value;
                                     handleInputChange('pricingOptions', updated);
                                   }}
-                                  placeholder="7,80,000" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[11px] font-bold"
+                                  placeholder="7,80,000" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-bold"
                                 />
                               </div>
                               <div className="col-span-3">
@@ -1421,7 +1421,7 @@ export default function CreateQuotationView({ onNavigate }) {
                                     updated[index].gst = e.target.value;
                                     handleInputChange('pricingOptions', updated);
                                   }}
-                                  placeholder="18" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[11px]"
+                                  placeholder="18" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px]"
                                 />
                               </div>
                               <div className="col-span-4">
@@ -1432,7 +1432,7 @@ export default function CreateQuotationView({ onNavigate }) {
                                     updated[index].suffix = e.target.value;
                                     handleInputChange('pricingOptions', updated);
                                   }}
-                                  placeholder="Applicable GST" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[11px]"
+                                  placeholder="Applicable GST" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px]"
                                 />
                               </div>
                             </div>
@@ -1443,15 +1443,15 @@ export default function CreateQuotationView({ onNavigate }) {
                       <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <label className="text-[11px] font-semibold text-slate-500 uppercase block mb-1">Particulars & Terms</label>
                         {quotationData.particulars.map((item, index) => (
-                          <div key={index} className="flex gap-2 items-start bg-slate-50 dark:bg-slate-800/50 p-2 rounded-md-lg border border-slate-200 dark:border-slate-700">
+                          <div key={index} className="flex gap-2 items-start bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
                             <div className="flex-1 space-y-1.5">
                               <input
                                 type="text" value={item.name} onChange={(e) => handleParticularChange(index, 'name', e.target.value)}
-                                placeholder="Particular (e.g. AMC)" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs font-bold"
+                                placeholder="Particular (e.g. AMC)" className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold"
                               />
                               <textarea
                                 rows="2" value={item.value} onChange={(e) => handleParticularChange(index, 'value', e.target.value)}
-                                placeholder="Details / Terms..." className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-md text-[11px]"
+                                placeholder="Details / Terms..." className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-[11px]"
                               />
                             </div>
                             <button onClick={() => removeParticular(index)} className="text-red-400 hover:text-red-600 p-1 mt-0.5">
@@ -1459,7 +1459,7 @@ export default function CreateQuotationView({ onNavigate }) {
                             </button>
                           </div>
                         ))}
-                        <button onClick={addParticular} className="w-full mt-2 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-md-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
+                        <button onClick={addParticular} className="w-full mt-2 py-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50">
                           + Add Particular
                         </button>
                       </div>
@@ -1468,24 +1468,24 @@ export default function CreateQuotationView({ onNavigate }) {
                         <label className="text-[11px] font-semibold text-slate-500 uppercase block">Bank Details</label>
                         <input
                           type="text" value={quotationData.bankAccountName} onChange={(e) => handleInputChange('bankAccountName', e.target.value)}
-                          placeholder="Account Name" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs font-bold"
+                          placeholder="Account Name" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold"
                         />
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="text" value={quotationData.bankAccountNo} onChange={(e) => handleInputChange('bankAccountNo', e.target.value)}
-                            placeholder="Account No" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs"
+                            placeholder="Account No" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
                           />
                           <input
                             type="text" value={quotationData.bankIFSC} onChange={(e) => handleInputChange('bankIFSC', e.target.value)}
-                            placeholder="IFSC Code" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs"
+                            placeholder="IFSC Code" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
                           />
                           <input
                             type="text" value={quotationData.bankBranch} onChange={(e) => handleInputChange('bankBranch', e.target.value)}
-                            placeholder="Branch Name" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs"
+                            placeholder="Branch Name" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
                           />
                           <input
                             type="text" value={quotationData.bankGST} onChange={(e) => handleInputChange('bankGST', e.target.value)}
-                            placeholder="GST Number" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-md text-xs"
+                            placeholder="GST Number" className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs"
                           />
                         </div>
                       </div>
@@ -1548,7 +1548,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       </div>
 
                       {/* PPT Slide Mini Thumbnail Mockup */}
-                      <div className="w-full aspect-[16/9] rounded-md-lg bg-slate-950 p-2.5 relative border border-slate-800 overflow-hidden shadow-inner flex flex-col justify-between group-hover:border-purple-500/40 transition-colors">
+                      <div className="w-full aspect-[16/9] rounded-lg bg-slate-950 p-2.5 relative border border-slate-800 overflow-hidden shadow-inner flex flex-col justify-between group-hover:border-purple-500/40 transition-colors">
                         {/* Slide Top Banner */}
                         <div className="w-full h-4 rounded-md px-2 flex items-center justify-between" style={{ backgroundColor: t.primaryColor }}>
                           <div className="w-12 h-1 bg-white/70 rounded-full"></div>
@@ -1558,7 +1558,7 @@ export default function CreateQuotationView({ onNavigate }) {
                         {/* Slide Body Layout Mockup */}
                         <div className="flex-1 my-1.5 flex gap-1.5 items-stretch">
                           {t.layoutStyle === 'modern_sidebar' && (
-                            <div className="w-2 rounded-md-sm" style={{ backgroundColor: t.accentColor }}></div>
+                            <div className="w-2 rounded-sm" style={{ backgroundColor: t.accentColor }}></div>
                           )}
                           <div className="flex-1 flex flex-col justify-between py-1">
                             <div className="space-y-1">
@@ -1581,7 +1581,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px]">
                         <span className="font-bold text-slate-500 uppercase tracking-wider">Color Palette</span>
                         <div className="flex items-center gap-1.5">
-                          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md-md border border-slate-200 dark:border-slate-700">
+                          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
                             <span className="w-2.5 h-2.5 rounded-full border border-black/20" style={{ backgroundColor: t.primaryColor }} title="Primary Color" />
                             <span className="w-2.5 h-2.5 rounded-full border border-black/20" style={{ backgroundColor: t.accentColor }} title="Accent Color" />
                             <span className="w-2.5 h-2.5 rounded-full border border-black/20" style={{ backgroundColor: t.barcodeColor }} title="Highlight Color" />
@@ -1623,7 +1623,7 @@ export default function CreateQuotationView({ onNavigate }) {
                     { num: 6, title: 'Budget, Particulars & Bank' },
                     { num: 7, title: 'Terms, Notes & Thank You' }
                   ].map((p) => (
-                    <div key={p.num} className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-md-lg flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-200">
+                    <div key={p.num} className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-200">
                       <span className="flex items-center gap-2">
                         <span className="w-5 h-5 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px]">{p.num}</span>
                         <span>{p.title}</span>
@@ -1640,7 +1640,7 @@ export default function CreateQuotationView({ onNavigate }) {
                   <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Custom Section Pages ({quotationData.customPages?.length || 0})</span>
                   <button
                     onClick={addCustomPage}
-                    className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md-lg text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer"
+                    className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" /> <span>Add Page</span>
                   </button>
@@ -1667,7 +1667,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       <label className="text-[10px] font-semibold text-slate-500 uppercase">Section Title</label>
                       <input
                         type="text" value={cp.title} onChange={(e) => handleCustomPageChange(cpIdx, 'title', e.target.value)} placeholder="e.g. Past Projects & Portfolio"
-                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold"
+                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
                       />
                     </div>
 
@@ -1675,7 +1675,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       <label className="text-[10px] font-semibold text-slate-500 uppercase">Section Subtitle</label>
                       <input
                         type="text" value={cp.subtitle} onChange={(e) => handleCustomPageChange(cpIdx, 'subtitle', e.target.value)} placeholder="e.g. Proven Track Record"
-                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
                       />
                     </div>
 
@@ -1683,7 +1683,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       <label className="text-[10px] font-semibold text-slate-500 uppercase">Content Paragraph</label>
                       <textarea
                         rows="2" value={cp.content} onChange={(e) => handleCustomPageChange(cpIdx, 'content', e.target.value)} placeholder="Custom section details..."
-                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs leading-relaxed"
+                        className="w-full mt-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs leading-relaxed"
                       />
                     </div>
                   </div>
@@ -1776,7 +1776,7 @@ export default function CreateQuotationView({ onNavigate }) {
           <div className="print-area flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-8 space-y-8 flex flex-col items-center min-h-0">
 
             {/* ================= PAGE 1: COVER PAGE (LAYOUT ADAPTIVE) ================= */}
-            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
 
               {currentTheme.layoutStyle === 'modern_sidebar' && (
                 <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-b from-[#0F172A] via-[#047857] to-[#10B981] z-10"></div>
@@ -1804,7 +1804,7 @@ export default function CreateQuotationView({ onNavigate }) {
                     </p>
                   </div>
 
-                  <div className="bg-[#0F172A] text-white p-5 rounded-md-lg border-t-2 border-[#D97706] grid grid-cols-2 text-center">
+                  <div className="bg-[#0F172A] text-white p-5 rounded-lg border-t-2 border-[#D97706] grid grid-cols-2 text-center">
                     <div>
                       <div className="text-[10px] uppercase font-bold text-[#FBBF24]">PREPARED FOR</div>
                       <div className="text-base font-black mt-0.5">{quotationData.clientName}</div>
@@ -1873,7 +1873,7 @@ export default function CreateQuotationView({ onNavigate }) {
 
 
             {/* ================= PAGE 2: ABOUT US (LAYOUT ADAPTIVE) ================= */}
-            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
 
               {/* Header section (Logo & Date) */}
               <div className="p-8 pb-4 flex justify-between items-start shrink-0 border-b border-[#F1F5F9]">
@@ -2056,7 +2056,7 @@ export default function CreateQuotationView({ onNavigate }) {
               }
 
               return chunks.map((chunk, pageIndex) => (
-                <div key={`page3-chunk-${pageIndex}`} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+                <div key={`page3-chunk-${pageIndex}`} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
 
                   {/* Header section (Logo & Date) */}
                   <div className="p-8 pb-4 flex justify-between items-start shrink-0 border-b border-[#F1F5F9]">
@@ -2091,7 +2091,7 @@ export default function CreateQuotationView({ onNavigate }) {
                         </div>
 
                         {quotationData.execSummary && (
-                          <div className="bg-[#F8FAFC] p-4 rounded-md-r-xl space-y-1.5 shadow-sm shrink-0" style={{ borderLeft: `4px solid ${currentTheme.primaryColor}` }}>
+                          <div className="bg-[#F8FAFC] p-4 rounded-r-xl space-y-1.5 shadow-sm shrink-0" style={{ borderLeft: `4px solid ${currentTheme.primaryColor}` }}>
                             <p className="text-xs text-[#334155] leading-relaxed font-normal whitespace-pre-wrap">
                               {quotationData.execSummary}
                             </p>
@@ -2196,7 +2196,7 @@ export default function CreateQuotationView({ onNavigate }) {
             {/* ================= PAGE 4+: SCOPE OF WORK (LAYOUT ADAPTIVE & DYNAMIC PAGINATION) ================= */}
             {quotationData.sowMode === 'advanced' ? (
               /* ADVANCED SOW: HTML WYSIWYG Content Output */
-              <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+              <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
                 <div className="p-8 space-y-4 flex-1">
                   <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                     <div>
@@ -2245,7 +2245,7 @@ export default function CreateQuotationView({ onNavigate }) {
               if (currentChunk.length > 0) chunks.push(currentChunk);
 
               return chunks.map((chunk, chunkIdx) => (
-                <div key={`sow-page-${chunkIdx}`} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+                <div key={`sow-page-${chunkIdx}`} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
                   <div className="p-8 space-y-6 flex-1">
                     <div>
                       <h2 className="text-2xl font-black" style={{ color: currentTheme.primaryColor }}>{chunkIdx === 0 ? 'Scope of Work' : 'Scope of Work (Continued)'}</h2>
@@ -2302,7 +2302,7 @@ export default function CreateQuotationView({ onNavigate }) {
             })()}
 
             {/* ================= PAGE 5: TEAM & INTEGRATIONS (LAYOUT ADAPTIVE) ================= */}
-            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
               <div className="p-8 space-y-6 flex-1 relative">
 
                 {/* Header Title Row */}
@@ -2366,7 +2366,7 @@ export default function CreateQuotationView({ onNavigate }) {
             </div>
 
             {/* ================= PAGE 6: BUDGET & TIMELINE (LAYOUT ADAPTIVE) ================= */}
-            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
               <div className="p-8 space-y-6 flex-1 relative">
 
                 <div className="absolute top-6 right-8">
@@ -2453,7 +2453,7 @@ export default function CreateQuotationView({ onNavigate }) {
 
 
             {/* ================= PAGE 7: TERMS & THANK YOU (SQUARE 1:1) ================= */}
-            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+            <div className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
 
               {/* Background Office Watermark Image */}
               {quotationData.page7BgImageUrl && (
@@ -2547,7 +2547,7 @@ export default function CreateQuotationView({ onNavigate }) {
 
             {/* ================= PAGES 8+: DYNAMIC CUSTOM PAGES / SLIDES ================= */}
             {quotationData.customPages && quotationData.customPages.map((cp, cpIdx) => (
-              <div key={cp.id || cpIdx} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-md-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
+              <div key={cp.id || cpIdx} className="proposal-page w-full max-w-[800px] aspect-square min-h-[800px] bg-white text-[#1E293B] shadow-2xl rounded-sm overflow-hidden flex flex-col justify-between relative border border-[#E2E8F0] shrink-0">
 
                 {/* Header section (Logo & Date) */}
                 <div className="p-8 pb-4 flex justify-between items-start shrink-0 border-b border-[#F1F5F9]">
@@ -2628,7 +2628,7 @@ export default function CreateQuotationView({ onNavigate }) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowSowModal(false)}
-                    className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md-lg transition-colors cursor-pointer"
+                    className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -2637,7 +2637,7 @@ export default function CreateQuotationView({ onNavigate }) {
                       setQuotationData(prev => ({ ...prev, scopeOfWorkHtml: sowContentRef.current }));
                       setShowSowModal(false);
                     }}
-                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-md-lg shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-lg shadow-md transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <Check className="w-4 h-4" /> Save Content
                   </button>
@@ -2645,13 +2645,13 @@ export default function CreateQuotationView({ onNavigate }) {
               </div>
 
               {/* Modal Body & Editor Viewport */}
-              <div className="flex-1 p-3 sm:p-5 overflow-hidden flex flex-col bg-slate-100 dark:bg-slate-950 text-slate-900">
+              <div className="flex-1 p-3 sm:p-5 overflow-hidden flex flex-col bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
                 <div className="max-w-[1250px] w-full mx-auto h-full flex flex-col space-y-2.5 flex-1 min-h-0">
-                  <div className="flex items-center justify-between text-xs text-slate-600 bg-white dark:bg-slate-900 px-4 py-2 rounded-md-lg border border-slate-200 dark:border-slate-800 shrink-0 shadow-2xs">
+                  <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shrink-0 shadow-2xs">
                     <span className="font-semibold">💡 Tip: Use the <strong>Format (Paragraph/Heading)</strong> dropdown for Headings & Subheadings. Use the <strong>Table</strong> tools for grid deliverables and <strong>Lists</strong> for structured scope items.</span>
                   </div>
 
-                  <div className="flex-1 min-h-0 bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                  <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-md shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
                     <KendoEditor
                       tools={[
                         [FormatBlock, FontSize, FontName],

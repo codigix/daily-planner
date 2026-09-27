@@ -156,7 +156,7 @@ export default function DataTable({
                           <ArrowDown className="w-3 h-3 text-blue-600" />
                         )
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-60 hover:opacity-100" />
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 dark:text-slate-500 opacity-60 hover:opacity-100" />
                       )
                     )}
                   </div>
@@ -172,7 +172,7 @@ export default function DataTable({
                 <tr key={rIdx} className="animate-pulse">
                   {columns.map((_, cIdx) => (
                     <td key={cIdx} className="p-3">
-                      <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md-md w-3/4" />
+                      <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4" />
                     </td>
                   ))}
                 </tr>
@@ -219,7 +219,7 @@ export default function DataTable({
           <select
             value={pageSize}
             onChange={handlePageSizeChange}
-            className="px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs text-slate-700 dark:text-slate-200 font-bold focus:outline-none cursor-pointer"
+            className="px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 font-bold focus:outline-none cursor-pointer"
           >
             {[5, 10, 25, 50].map(sz => (
               <option key={sz} value={sz}>{sz}</option>
@@ -235,7 +235,7 @@ export default function DataTable({
           <button
             onClick={() => setCurrentPage(1)}
             disabled={safeCurrentPage === 1 || loading}
-            className="p-1.5 rounded-md-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
             title="First Page"
           >
             <ChevronsLeft className="w-4 h-4" />
@@ -243,7 +243,7 @@ export default function DataTable({
           <button
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={safeCurrentPage === 1 || loading}
-            className="p-1.5 rounded-md-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
             title="Previous Page"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -256,7 +256,7 @@ export default function DataTable({
           <button
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={safeCurrentPage === totalPages || loading}
-            className="p-1.5 rounded-md-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
             title="Next Page"
           >
             <ChevronRight className="w-4 h-4" />
@@ -264,7 +264,7 @@ export default function DataTable({
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={safeCurrentPage === totalPages || loading}
-            className="p-1.5 rounded-md-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
             title="Last Page"
           >
             <ChevronsRight className="w-4 h-4" />

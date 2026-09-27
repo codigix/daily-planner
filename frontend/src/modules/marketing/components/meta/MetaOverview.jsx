@@ -42,7 +42,7 @@ export default function MetaOverview({
     <div className="space-y-4 sm:space-y-6">
 
       {/* ── Business Portfolio Dark Card Banner (Matches Screenshot Dark Portfolio Card) ── */}
-      <div className="bg-black p-4 sm:p-6 text-white border-none rounded-md-3xl space-y-4 shadow-xl">
+      <div className="bg-black p-4 sm:p-6 text-white border-none rounded-3xl space-y-4 shadow-xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -340,7 +340,7 @@ export default function MetaOverview({
             <span className="text-[8px] font-bold text-emerald-600">Live</span>
           </div>
 
-          <ArrowRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+          <ArrowRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
 
           {/* Node 2 */}
           <div className="flex flex-col items-center shrink-0 min-w-[65px]">
@@ -352,7 +352,7 @@ export default function MetaOverview({
             <span className="text-[8px] font-bold text-emerald-600">Active</span>
           </div>
 
-          <ArrowRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+          <ArrowRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
 
           {/* Node 3 */}
           <div className="flex flex-col items-center shrink-0 min-w-[65px]">
@@ -364,7 +364,7 @@ export default function MetaOverview({
             <span className="text-[8px] font-bold text-emerald-600">Running</span>
           </div>
 
-          <ArrowRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+          <ArrowRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
 
           {/* Node 4 */}
           <div className="flex flex-col items-center shrink-0 min-w-[65px]">
@@ -376,7 +376,7 @@ export default function MetaOverview({
             <span className="text-[8px] font-bold text-emerald-600">Verified</span>
           </div>
 
-          <ArrowRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+          <ArrowRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
 
           {/* Node 5 */}
           <div className="flex flex-col items-center shrink-0 min-w-[65px]">
@@ -388,7 +388,7 @@ export default function MetaOverview({
             <span className="text-[8px] font-bold text-emerald-600">Synced</span>
           </div>
 
-          <ArrowRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+          <ArrowRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
 
           {/* Node 6 */}
           <div className="flex flex-col items-center shrink-0 min-w-[65px]">

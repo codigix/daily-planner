@@ -148,9 +148,9 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
     setDuration('1');
     setDurationUnit('Months');
     setTeamMembers([
-      { id: '1', role: 'Project Manager', code: 'PM', monthlyRate: 50000, days: 31, color: 'bg-purple-100 text-purple-700' },
-      { id: '2', role: 'Frontend Developer', code: 'FD', monthlyRate: 50000, days: 31, color: 'bg-blue-100 text-blue-700' },
-      { id: '3', role: 'Backend Developer', code: 'BD', monthlyRate: 50000, days: 31, color: 'bg-emerald-100 text-emerald-700' }
+      { id: '1', role: 'Project Manager', code: 'PM', monthlyRate: 50000, days: 31, color: 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300' },
+      { id: '2', role: 'Frontend Developer', code: 'FD', monthlyRate: 50000, days: 31, color: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' },
+      { id: '3', role: 'Backend Developer', code: 'BD', monthlyRate: 50000, days: 31, color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' }
     ]);
     setDirectCosts({
       integrations: 0,
@@ -360,7 +360,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                 return (
                   <div key={m.id} className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-md flex items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={`w-8 h-8 rounded-md font-black text-xs flex items-center justify-center shrink-0 ${m.color || 'bg-blue-100 text-blue-700'}`}>
+                      <div className={`w-8 h-8 rounded-md font-black text-xs flex items-center justify-center shrink-0 ${m.color || 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'}`}>
                         {m.code || 'DEV'}
                       </div>
                       <div className="min-w-0">
@@ -370,7 +370,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-md-lg">
+                      <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-lg">
                         <input
                           type="number"
                           value={m.days}
@@ -432,7 +432,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                 return (
                   <div key={item.key} className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 rounded-md space-y-1.5">
                     <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                      <div className="w-5 h-5 rounded-md-md bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                      <div className="w-5 h-5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                         <Icon className="w-3 h-3" />
                       </div>
                       <span className="font-extrabold text-[11px] truncate">{item.label}</span>
@@ -447,7 +447,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                           setDirectCosts(prev => ({ ...prev, [item.key]: val }));
                         }}
                         placeholder={item.placeholder}
-                        className="w-full pl-6 pr-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full pl-6 pr-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -484,7 +484,7 @@ export default function ProjectQuotationCalculatorModal({ isOpen, onClose }) {
                 <div key={item.key} className="flex items-center justify-between gap-2 p-2 bg-slate-50 dark:bg-slate-800/60 rounded-md border border-slate-200/50 dark:border-slate-700/50">
                   <span className="font-bold text-slate-700 dark:text-slate-300 text-xs">{item.label}</span>
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-md-lg">
+                    <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-lg">
                       <input
                         type="number"
                         value={item.val}

@@ -46,9 +46,9 @@ export default function NotificationToaster({ onNavigate }) {
   };
 
   const handleToastClick = (toast) => {
+    // Pass the full URL (path + query) so deep links like ?openTaskId= survive
     if (toast.url && onNavigate) {
-      const target = toast.url.replace(/^\//, '');
-      onNavigate(target || 'planner');
+      onNavigate(toast.url);
     }
     removeToast(toast.id);
   };
@@ -108,29 +108,29 @@ function ToastItem({ toast, isPaused, onDismiss, onClick }) {
   const isWarning = toast.type === 'warning';
 
   // Accent styling based on alert type in LIGHT theme
-  let accentBorder = 'border-blue-100 hover:border-blue-200 shadow-blue-500/10';
-  let badgeColor = 'bg-blue-50 text-blue-600 border-blue-200/80';
-  let glowColor = 'from-blue-50/70 to-indigo-50/40';
-  let iconComponent = <Clock className="w-4 h-4 text-blue-600 shrink-0" />;
+  let accentBorder = 'border-blue-100 hover:border-blue-200 dark:border-blue-500/30 dark:hover:border-blue-500/50 shadow-blue-500/10';
+  let badgeColor = 'bg-blue-50 text-blue-600 border-blue-200/80 dark:bg-blue-500/15 dark:border-blue-500/30';
+  let glowColor = 'from-blue-50/70 to-indigo-50/40 dark:from-blue-500/10 dark:to-indigo-500/5';
+  let iconComponent = <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />;
   let progressBarBg = 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600';
 
   if (isSuccess) {
-    accentBorder = 'border-emerald-100 hover:border-emerald-200 shadow-emerald-500/10';
-    badgeColor = 'bg-emerald-50 text-emerald-600 border-emerald-200/80';
-    glowColor = 'from-emerald-50/70 to-teal-50/40';
-    iconComponent = <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />;
+    accentBorder = 'border-emerald-100 hover:border-emerald-200 dark:border-emerald-500/30 dark:hover:border-emerald-500/50 shadow-emerald-500/10';
+    badgeColor = 'bg-emerald-50 text-emerald-600 border-emerald-200/80 dark:bg-emerald-500/15 dark:border-emerald-500/30';
+    glowColor = 'from-emerald-50/70 to-teal-50/40 dark:from-emerald-500/10 dark:to-teal-500/5';
+    iconComponent = <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />;
     progressBarBg = 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600';
   } else if (isError) {
-    accentBorder = 'border-rose-100 hover:border-rose-200 shadow-rose-500/10';
-    badgeColor = 'bg-rose-50 text-rose-600 border-rose-200/80';
-    glowColor = 'from-rose-50/70 to-red-50/40';
-    iconComponent = <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />;
+    accentBorder = 'border-rose-100 hover:border-rose-200 dark:border-rose-500/30 dark:hover:border-rose-500/50 shadow-rose-500/10';
+    badgeColor = 'bg-rose-50 text-rose-600 border-rose-200/80 dark:bg-rose-500/15 dark:border-rose-500/30';
+    glowColor = 'from-rose-50/70 to-red-50/40 dark:from-rose-500/10 dark:to-red-500/5';
+    iconComponent = <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />;
     progressBarBg = 'bg-gradient-to-r from-rose-500 via-red-500 to-rose-600';
   } else if (isWarning) {
-    accentBorder = 'border-amber-100 hover:border-amber-200 shadow-amber-500/10';
-    badgeColor = 'bg-amber-50 text-amber-600 border-amber-200/80';
-    glowColor = 'from-amber-50/70 to-orange-50/40';
-    iconComponent = <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />;
+    accentBorder = 'border-amber-100 hover:border-amber-200 dark:border-amber-500/30 dark:hover:border-amber-500/50 shadow-amber-500/10';
+    badgeColor = 'bg-amber-50 text-amber-600 border-amber-200/80 dark:bg-amber-500/15 dark:border-amber-500/30';
+    glowColor = 'from-amber-50/70 to-orange-50/40 dark:from-amber-500/10 dark:to-orange-500/5';
+    iconComponent = <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />;
     progressBarBg = 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600';
   }
 
@@ -140,7 +140,7 @@ function ToastItem({ toast, isPaused, onDismiss, onClick }) {
 
   return (
     <div
-      className={`pointer-events-auto relative overflow-hidden rounded-md bg-white/95 backdrop-blur-xl text-slate-900 border ${accentBorder} shadow-[0_12px_32px_-4px_rgba(15,23,42,0.12),0_4px_12px_-2px_rgba(15,23,42,0.06)] transition-all duration-300 animate-in slide-in-from-top-3 fade-in group cursor-pointer active:scale-[0.99]`}
+      className={`pointer-events-auto relative overflow-hidden rounded-md bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl text-slate-900 dark:text-slate-100 border ${accentBorder} shadow-[0_12px_32px_-4px_rgba(15,23,42,0.12),0_4px_12px_-2px_rgba(15,23,42,0.06)] transition-all duration-300 animate-in slide-in-from-top-3 fade-in group cursor-pointer active:scale-[0.99]`}
       onClick={onClick}
     >
       {/* Subtle Light Glow Tint */}
@@ -155,20 +155,20 @@ function ToastItem({ toast, isPaused, onDismiss, onClick }) {
 
           <div className="min-w-0 flex-1 space-y-0.5">
             {/* Heading / Task Title Only */}
-            <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight leading-snug truncate">
+            <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug truncate">
               {headingText}
             </h4>
 
             {/* Time Only (for Tasks) or Message (for generic alerts) */}
             {isTask ? (
               timeText ? (
-                <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-blue-600">
-                  <Clock className="w-3 h-3 text-blue-600 shrink-0" />
+                <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-blue-600 dark:text-blue-400">
+                  <Clock className="w-3 h-3 text-blue-600 dark:text-blue-400 shrink-0" />
                   <span className="truncate">{timeText}</span>
                 </div>
               ) : null
             ) : (
-              <p className="text-[11px] sm:text-xs text-slate-600 font-medium truncate">
+              <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 font-medium truncate">
                 {toast.body || toast.message || ''}
               </p>
             )}
@@ -182,7 +182,7 @@ function ToastItem({ toast, isPaused, onDismiss, onClick }) {
               e.stopPropagation();
               onDismiss();
             }}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md-lg hover:bg-slate-100 active:bg-slate-200 transition-all cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 transition-all cursor-pointer"
             aria-label="Dismiss notification"
           >
             <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -191,7 +191,7 @@ function ToastItem({ toast, isPaused, onDismiss, onClick }) {
       </div>
 
       {/* Auto-dismiss progress countdown bar */}
-      <div className="w-full bg-slate-100 h-1 overflow-hidden">
+      <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 overflow-hidden">
         <div
           className={`h-full ${progressBarBg} transition-all duration-75 ease-linear`}
           style={{ width: `${progress}%` }}

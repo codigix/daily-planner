@@ -17,9 +17,10 @@ import {
   LogOut,
   LogIn,
   UserPlus,
-  Download
+  Download,
+  Zap
 } from 'lucide-react';
-import { fetchNotificationsAPI } from '../../services/api';
+import { fetchNotificationsAPI, markNotificationsReadAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { sendSystemNotification, requestNotificationPermission } from '../../utils/notificationService';
 
@@ -34,6 +35,7 @@ export default function Header({
   onOpenAuthModal,
   onNavigate,
   onOpenPWAInstall,
+  onUnreadCountChange,
   isPWAInstalled,
   mobileOpen,
   setMobileOpen,
@@ -85,18 +87,53 @@ export default function Header({
   const [selectedDate, setSelectedDate] = useState(todayFormatted);
   const [notifications, setNotifications] = useState([]);
 
+  // Load notifications, then keep them fresh: every minute, when the window regains
+  // focus, and whenever another view (e.g. Notifications page) changes read state.
   useEffect(() => {
-    fetchNotificationsAPI().then(res => {
-      if (res && res.success && res.notifications) {
-        setNotifications(res.notifications);
-      }
-    }).catch(console.error);
-  }, []);
+    const loadNotifications = () => {
+      fetchNotificationsAPI().then(res => {
+        if (res && res.success && Array.isArray(res.notifications)) {
+          setNotifications(res.notifications);
+        }
+      }).catch(console.error);
+    };
+    loadNotifications();
+    const intervalId = setInterval(loadNotifications, 60000);
+    window.addEventListener('focus', loadNotifications);
+    window.addEventListener('app:notifications-changed', loadNotifications);
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', loadNotifications);
+      window.removeEventListener('app:notifications-changed', loadNotifications);
+    };
+  }, [plannerTasks.length]);
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
-  const markAllRead = () => {
+  useEffect(() => {
+    if (onUnreadCountChange) onUnreadCountChange(unreadCount);
+  }, [unreadCount, onUnreadCountChange]);
+
+  const markAllRead = async () => {
+    const ids = notifications.filter(n => n.unread).map(n => n.id);
+    if (ids.length === 0) return;
     setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    try {
+      await markNotificationsReadAPI(ids);
+      window.dispatchEvent(new CustomEvent('app:notifications-changed'));
+    } catch (e) {
+      console.error('Failed to mark notifications read:', e);
+    }
+  };
+
+  const markOneRead = async (id) => {
+    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, unread: false } : n)));
+    try {
+      await markNotificationsReadAPI([id]);
+      window.dispatchEvent(new CustomEvent('app:notifications-changed'));
+    } catch (e) {
+      console.error('Failed to mark notification read:', e);
+    }
   };
 
   // Live search filtering across tasks, meetings, and clients
@@ -147,7 +184,7 @@ export default function Header({
             onClick={() => onNavigate && onNavigate('dashboard')}
             className="flex items-center gap-2 cursor-pointer lg:hidden"
           >
-            <img src="/codigix-logo.svg" alt="Codigix Infotech" className="h-7 object-contain" />
+            <img src="/codigix-logo.svg" alt="Codigix Infotech" className="h-7 object-contain dark:brightness-0 dark:invert" />
           </div>
 
           {/* Desktop Search Bar */}
@@ -163,7 +200,7 @@ export default function Header({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -213,7 +250,7 @@ export default function Header({
 
           {/* Live Date Pill (Desktop) */}
           <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 bg-slate-100/90 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm transition-colors">
-            <CalendarIcon className="w-4 h-4 text-blue-600" />
+            <CalendarIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span>{selectedDate}</span>
           </div>
 
@@ -259,7 +296,9 @@ export default function Header({
                       onClick={async () => {
                         await requestNotificationPermission();
                         sendSystemNotification('Phone Alert Test', {
-                          body: 'Audio chime & push notification active on your phone!'
+                          body: 'Audio chime & push notification active on your phone!',
+                          toastType: 'success',
+                          forceSystem: true
                         });
                       }}
                       className="text-[10px] font-extrabold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 flex items-center gap-1 cursor-pointer"
@@ -292,6 +331,7 @@ export default function Header({
                       <div
                         key={n.id}
                         onClick={() => {
+                          if (n.unread) markOneRead(n.id);
                           setShowNotifications(false);
                           if (onNavigate) onNavigate('notifications');
                         }}
@@ -456,7 +496,7 @@ export default function Header({
                 setShowMobileSearch(false);
                 setSearchQuery('');
               }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
               <X className="w-4 h-4" />
             </button>
@@ -472,13 +512,13 @@ export default function Header({
                       setShowMobileSearch(false);
                       setSearchQuery('');
                     }}
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md-lg cursor-pointer flex justify-between items-center text-xs"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg cursor-pointer flex justify-between items-center text-xs"
                   >
                     <div>
                       <span className="font-bold text-slate-800 dark:text-slate-200 block">{item.title}</span>
                       <span className="text-[10px] text-slate-400">{item.subtitle}</span>
                     </div>
-                    <span className="px-2 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-600 rounded-full">{item.type}</span>
+                    <span className="px-2 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 rounded-full">{item.type}</span>
                   </div>
                 ))}
               </div>
@@ -511,10 +551,10 @@ export default function Header({
                   <Keyboard className="w-4 h-4 text-blue-600" /> Platform Shortcuts:
                 </span>
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-md-lg"><strong>Search:</strong> Use top search bar</div>
-                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-md-lg"><strong>Theme:</strong> Sidebar toggle</div>
-                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-md-lg"><strong>AI Assistant:</strong> Header button</div>
-                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-md-lg"><strong>Sidebar:</strong> Collapse arrow</div>
+                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg"><strong>Search:</strong> Use top search bar</div>
+                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg"><strong>Theme:</strong> Sidebar toggle</div>
+                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg"><strong>AI Assistant:</strong> Header button</div>
+                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg"><strong>Sidebar:</strong> Collapse arrow</div>
                 </div>
               </div>
             </div>

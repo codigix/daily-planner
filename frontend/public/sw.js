@@ -1,5 +1,5 @@
 // CODIGIX EXECUTIVE OS - Service Worker
-const CACHE_NAME = 'codigix-exec-os-v3';
+const CACHE_NAME = 'codigix-exec-os-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -100,8 +100,10 @@ self.addEventListener('notificationclick', (event) => {
         if ('focus' in client) {
           client.focus();
           if (client.postMessage) {
+            // App.jsx listens for this single message type and routes to `url`
             client.postMessage({
-              type: data.type === 'nextDayPrep' ? 'nextDayPrep' : 'NOTIFICATION_TASK_CLICKED',
+              type: 'NOTIFICATION_TASK_CLICKED',
+              url: targetUrl,
               taskId: data.taskId,
               mealId: data.mealId,
               day: data.day,
@@ -135,8 +137,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: payload.body,
-    icon: '/app-icon.png',
-    badge: '/app-icon.png',
+    icon: '/app-icon-192.png',
+    badge: '/app-icon-192.png',
     vibrate: [300, 100, 300, 100, 300],
     data: payload.data || {},
     requireInteraction: true

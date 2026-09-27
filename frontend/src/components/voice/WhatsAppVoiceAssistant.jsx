@@ -328,7 +328,7 @@ export default function WhatsAppVoiceAssistant({
       {/* ── WHATSAPP-STYLE LIVE AUDIO RECORDING OVERLAY (MOBILE HUD) ── */}
       {isHolding && (
         <div className="fixed inset-x-0 bottom-0 z-50 p-3 sm:p-4 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent backdrop-blur-md animate-in fade-in slide-in-from-bottom-6 select-none pointer-events-none">
-          <div className="max-w-md mx-auto bg-slate-900/95 border border-slate-700/80 rounded-md-3xl p-4 shadow-2xl space-y-3 pointer-events-auto">
+          <div className="max-w-md mx-auto bg-slate-900/95 border border-slate-700/80 rounded-3xl p-4 shadow-2xl space-y-3 pointer-events-auto">
 
             {/* Top Status & Soundwave Indicator */}
             <div className="flex items-center justify-between gap-3">
@@ -337,7 +337,7 @@ export default function WhatsAppVoiceAssistant({
                 <span className="text-xs font-black uppercase tracking-wider text-rose-400">
                   {isCancelled ? 'Release to Cancel' : 'Recording Task'}
                 </span>
-                <span className="px-2 py-0.5 rounded-md-lg bg-slate-800 text-slate-200 text-xs font-mono font-bold">
+                <span className="px-2 py-0.5 rounded-lg bg-slate-800 text-slate-200 text-xs font-mono font-bold">
                   {formatTimer(recordingSeconds)}
                 </span>
               </div>

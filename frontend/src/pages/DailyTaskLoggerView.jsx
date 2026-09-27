@@ -359,24 +359,24 @@ export default function DailyTaskLoggerView({
 
         {/* Right Side Date Navigator Controls */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          <button onClick={handlePrevDay} className="p-1.5 sm:p-2 rounded-md-lg sm:rounded-md border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Previous day">
+          <button onClick={handlePrevDay} className="p-1.5 sm:p-2 rounded-lg sm:rounded-md border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Previous day">
             <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 dark:text-slate-300" />
           </button>
 
-          <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-slate-50 dark:bg-slate-800/80 rounded-md-lg sm:rounded-md border border-slate-200/60 dark:border-slate-700/60 max-w-[130px] sm:max-w-none">
+          <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-slate-50 dark:bg-slate-800/80 rounded-lg sm:rounded-md border border-slate-200/60 dark:border-slate-700/60 max-w-[130px] sm:max-w-none">
             <Calendar className="w-3.5 h-3.5 text-blue-600 shrink-0" />
             <span className="font-extrabold text-[11px] sm:text-xs text-slate-900 dark:text-white truncate">
               {loggerDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </span>
           </div>
 
-          <button onClick={handleNextDay} className="p-1.5 sm:p-2 rounded-md-lg sm:rounded-md border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Next day">
+          <button onClick={handleNextDay} className="p-1.5 sm:p-2 rounded-lg sm:rounded-md border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Next day">
             <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 dark:text-slate-300" />
           </button>
 
           <button
             onClick={() => setLoggerDate(new Date())}
-            className="px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-md-lg sm:rounded-md text-[11px] sm:text-xs font-extrabold hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition-all cursor-pointer hidden sm:block"
+            className="px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-lg sm:rounded-md text-[11px] sm:text-xs font-extrabold hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition-all cursor-pointer hidden sm:block"
           >
             Today
           </button>
@@ -419,7 +419,7 @@ export default function DailyTaskLoggerView({
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white truncate">{domain.name}</span>
-                        <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md-md shrink-0">
+                        <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md shrink-0">
                           {domain.tasks.length} tasks
                         </span>
                       </div>
@@ -470,10 +470,10 @@ export default function DailyTaskLoggerView({
                       onChange={e => setNewTaskInput({ ...newTaskInput, [domain.id]: e.target.value })}
                       onKeyDown={e => e.key === 'Enter' && handleAddDomainTask(domain.id)}
                       placeholder={`Add task under ${domain.name}…`}
-                      className="flex-1 px-2.5 py-1 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+                      className="flex-1 px-2.5 py-1 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
                       autoFocus
                     />
-                    <button onClick={() => handleAddDomainTask(domain.id)} className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-md-lg cursor-pointer">Save</button>
+                    <button onClick={() => handleAddDomainTask(domain.id)} className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-lg cursor-pointer">Save</button>
                     <button onClick={() => setAddingDomainId(null)} className="p-1 text-slate-400 hover:text-slate-600"><X className="w-3.5 h-3.5" /></button>
                   </div>
                 )}
@@ -519,7 +519,7 @@ export default function DailyTaskLoggerView({
                           <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1 rounded-md">
                             <button
                               onClick={() => handleSetTaskStatus(task.id, 'DONE')}
-                              className={`px-2 py-1 rounded-md-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${task.status === 'DONE'
+                              className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${task.status === 'DONE'
                                 ? 'bg-emerald-600 text-white shadow-sm'
                                 : 'text-slate-500 hover:text-emerald-600'
                                 }`}
@@ -531,7 +531,7 @@ export default function DailyTaskLoggerView({
 
                             <button
                               onClick={() => handleSetTaskStatus(task.id, 'NOT DONE')}
-                              className={`px-2 py-1 rounded-md-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${task.status === 'NOT DONE'
+                              className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${task.status === 'NOT DONE'
                                 ? 'bg-amber-500 text-white shadow-sm'
                                 : 'text-slate-500 hover:text-amber-600'
                                 }`}
@@ -543,7 +543,7 @@ export default function DailyTaskLoggerView({
 
                             <button
                               onClick={() => handleSetTaskStatus(task.id, 'OFF')}
-                              className={`px-2 py-1 rounded-md-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${task.status === 'OFF'
+                              className={`px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 transition-all cursor-pointer ${task.status === 'OFF'
                                 ? 'bg-slate-600 text-white shadow-sm'
                                 : 'text-slate-500 hover:text-slate-700'
                                 }`}
@@ -556,7 +556,7 @@ export default function DailyTaskLoggerView({
 
                           <button
                             onClick={() => setNoteModalTask(task)}
-                            className="p-1 sm:p-1.5 rounded-md-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                            className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                             title="Notes"
                           >
                             <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

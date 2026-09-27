@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Tailwind v4 defaults `dark:` to the OS media query. The app toggles a `.dark`
+   class on <html>, so bind the variant to that class instead. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
   --color-brand-50: #eff6ff;
@@ -19,6 +23,22 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    color-scheme: light;
+  }
+
+  /* Native controls (date pickers, selects, checkboxes, autofill) follow the theme */
+  html.dark {
+    color-scheme: dark;
+  }
+
+  ::selection {
+    background-color: #2563eb;
+    color: #ffffff;
+  }
+
+  :focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
   }
 
   body {
@@ -34,6 +54,11 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  .dark body {
+    background-color: #070a12;
+    color: #e2e8f0;
+  }
 }
 
 /* Custom scrollbar */
@@ -42,7 +67,7 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
@@ -50,6 +75,93 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* ==========================================================================
+   CONTRAST SAFETY NET
+   Utilities written without a theme-specific counterpart get nudged to an
+   accessible shade. Anything with an explicit dark:/hover: text class keeps
+   its own styling, and printable proposal pages are never touched.
+   ========================================================================== */
+
+/* Light mode: slate-400 body text on white is ~2.6:1; lift it to slate-500
+   (~4.8:1) unless it sits on a dark or saturated surface. */
+:root:not(.dark) .text-slate-400:not([class*="hover:text-"]):not(:is(
+    [class^="bg-slate-7"], [class*=" bg-slate-7"],
+    [class^="bg-slate-8"], [class*=" bg-slate-8"],
+    [class^="bg-slate-9"], [class*=" bg-slate-9"],
+    [class^="bg-gradient-"], [class*=" bg-gradient-"],
+    [class^="bg-[#0"], [class*=" bg-[#0"],
+    [class^="bg-[#1"], [class*=" bg-[#1"],
+    [class^="bg-black"], [class*=" bg-black"],
+    .proposal-page) *) {
+  color: var(--color-slate-500);
+}
+
+/* Dark mode: slate-500 on slate-900 is ~3.7:1; lift to slate-400. */
+.dark .text-slate-500:not([class*="dark:text-"]):not([class*="hover:text-"]):not(.proposal-page *) {
+  color: var(--color-slate-400);
+}
+
+/* Dark mode: saturated 600/700 accents are too dim on dark surfaces
+   (indigo-600 on slate-900 is ~3:1); lift them to the 400 shade. */
+.dark :is(.text-blue-600, .text-blue-700, .text-brand-600):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-blue-400); }
+.dark :is(.text-indigo-600, .text-indigo-700):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-indigo-400); }
+.dark :is(.text-purple-600, .text-purple-700):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-purple-400); }
+.dark :is(.text-violet-600, .text-violet-700):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-violet-400); }
+.dark :is(.text-emerald-600, .text-emerald-700):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-emerald-400); }
+.dark :is(.text-green-600, .text-green-700):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-green-400); }
+.dark :is(.text-teal-600, .text-teal-700):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-teal-400); }
+.dark :is(.text-cyan-600, .text-sky-600):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-sky-400); }
+.dark :is(.text-rose-600, .text-rose-700):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-rose-400); }
+.dark :is(.text-red-600, .text-red-700):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-red-400); }
+.dark .text-pink-600:not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-pink-400); }
+.dark :is(.text-amber-600, .text-amber-700):not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-amber-400); }
+.dark .text-orange-600:not([class*="dark:text-"], [class*="hover:text-"], [class*="bg-white"], .proposal-page *) { color: var(--color-orange-400); }
+
+
+/* ==========================================================================
+   RECHARTS THEMING
+   Charts set colors via inline props; give tooltips, axes and grid lines
+   theme-aware values so they read on both white and slate-900 cards.
+   ========================================================================== */
+.recharts-default-tooltip {
+  border-radius: 10px !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25) !important;
+}
+.dark .recharts-default-tooltip {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+  color: #f1f5f9 !important;
+}
+.dark .recharts-tooltip-label {
+  color: #f1f5f9 !important;
+}
+.dark .recharts-cartesian-axis-tick-value,
+.dark .recharts-polar-angle-axis-tick-value,
+.dark .recharts-polar-radius-axis-tick-value {
+  fill: #94a3b8;
+}
+.dark .recharts-cartesian-axis-line,
+.dark .recharts-cartesian-axis-tick-line {
+  stroke: #334155;
+}
+.dark .recharts-cartesian-grid line,
+.dark .recharts-polar-grid line,
+.dark .recharts-polar-grid polygon {
+  stroke: #1e293b;
+}
+.dark .recharts-legend-item-text {
+  color: #cbd5e1 !important;
+}
+.dark .recharts-tooltip-cursor {
+  fill: rgba(148, 163, 184, 0.08);
 }
 
 /* Custom utility styles */
@@ -312,4 +424,96 @@ div[style*="z-index: 100000"] {
 .k-editor-content .ProseMirror {
   min-height: 100% !important;
   outline: none !important;
+}
+
+/* ==========================================================================
+   DARK MODE OVERRIDES FOR EDITORS & PREVIEWS
+   ========================================================================== */
+.dark .jodit-wysiwyg,
+.dark .jodit-preview-content,
+.dark .k-editor,
+.dark .k-editor-content,
+.dark .k-content {
+  background-color: #0d131f !important;
+  color: #f8fafc !important;
+}
+
+.dark .jodit-wysiwyg h1,
+.dark .jodit-preview-content h1,
+.dark .k-editor-content h1,
+.dark .k-content h1 {
+  color: #ffffff !important;
+  border-bottom-color: #1e293b !important;
+}
+
+.dark .jodit-wysiwyg h2,
+.dark .jodit-preview-content h2,
+.dark .k-editor-content h2,
+.dark .k-content h2 {
+  color: #f8fafc !important;
+}
+
+.dark .jodit-wysiwyg h3,
+.dark .jodit-preview-content h3,
+.dark .k-editor-content h3,
+.dark .k-content h3 {
+  color: #f1f5f9 !important;
+}
+
+.dark .jodit-wysiwyg p,
+.dark .jodit-preview-content p,
+.dark .k-editor-content p,
+.dark .k-content p,
+.dark .jodit-wysiwyg li,
+.dark .jodit-preview-content li,
+.dark .k-editor-content li,
+.dark .k-content li {
+  color: #cbd5e1 !important;
+}
+
+.dark .k-editor {
+  border-color: #1e293b !important;
+  background-color: #0d131f !important;
+}
+
+.dark .k-editor-toolbar {
+  background-color: #161e2e !important;
+  border-bottom-color: #1e293b !important;
+}
+
+.dark .k-editor-content,
+.dark .k-editor-content iframe,
+.dark .k-editor-content .ProseMirror {
+  background-color: #0d131f !important;
+}
+
+.dark .jodit-wysiwyg table,
+.dark .jodit-preview-content table,
+.dark .k-editor-content table,
+.dark .k-content table {
+  border-color: #334155 !important;
+}
+
+.dark .jodit-wysiwyg th,
+.dark .jodit-preview-content th,
+.dark .k-editor-content th,
+.dark .k-content th {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+.dark .jodit-wysiwyg td,
+.dark .jodit-preview-content td,
+.dark .k-editor-content td,
+.dark .k-content td {
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+.dark .jodit-wysiwyg tr:nth-child(even),
+.dark .jodit-preview-content tr:nth-child(even),
+.dark .k-editor-content tr:nth-child(even),
+.dark .k-content tr:nth-child(even) {
+  background-color: #161e2e !important;
 }

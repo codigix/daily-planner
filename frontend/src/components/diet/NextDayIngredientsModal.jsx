@@ -362,7 +362,7 @@ export default function NextDayIngredientsModal({
                 <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
                   Ingredients & Weights
                 </h3>
-                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
                   Prep
                 </span>
               </div>
@@ -462,7 +462,7 @@ export default function NextDayIngredientsModal({
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setViewMode('meal')}
-                  className={`px-2.5 py-1 rounded-md-lg text-[10px] font-extrabold cursor-pointer transition-all ${viewMode === 'meal'
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold cursor-pointer transition-all ${viewMode === 'meal'
                     ? 'bg-emerald-600 text-white shadow-2xs'
                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
@@ -471,7 +471,7 @@ export default function NextDayIngredientsModal({
                 </button>
                 <button
                   onClick={() => setViewMode('consolidated')}
-                  className={`px-2.5 py-1 rounded-md-lg text-[10px] font-extrabold cursor-pointer transition-all ${viewMode === 'consolidated'
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold cursor-pointer transition-all ${viewMode === 'consolidated'
                     ? 'bg-emerald-600 text-white shadow-2xs'
                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
@@ -498,7 +498,7 @@ export default function NextDayIngredientsModal({
                 {overnightSoakList.map((ing, i) => (
                   <div key={i} className="px-2.5 py-1.5 rounded-md bg-white dark:bg-slate-800 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-between gap-2 text-xs">
                     <span className="font-extrabold text-amber-950 dark:text-amber-100 truncate">{ing.name}</span>
-                    <span className="font-black text-[11px] text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-md-md shrink-0">
+                    <span className="font-black text-[11px] text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-md shrink-0">
                       {ing.quantity || 'Standard portion'}
                     </span>
                   </div>
@@ -537,7 +537,7 @@ export default function NextDayIngredientsModal({
                       </div>
                     </div>
 
-                    <span className="text-xs font-black px-2.5 py-1 rounded-md-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shrink-0">
+                    <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shrink-0">
                       {ing.quantity}
                     </span>
                   </div>
@@ -556,7 +556,7 @@ export default function NextDayIngredientsModal({
                   <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-base">{meal.icon}</span>
-                      <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md-md border border-emerald-200/60 dark:border-emerald-800/60 shrink-0">
+                      <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/60 shrink-0">
                         {meal.timeFormatted}
                       </span>
                       <h4 className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-100 truncate">
@@ -602,7 +602,7 @@ export default function NextDayIngredientsModal({
                           </div>
 
                           {ing.quantity && (
-                            <span className="text-xs font-black px-2.5 py-1 rounded-md-lg bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/80 shrink-0">
+                            <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/80 shrink-0">
                               {ing.quantity}
                             </span>
                           )}

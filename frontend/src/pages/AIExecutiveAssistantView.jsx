@@ -288,7 +288,7 @@ export default function AIExecutiveAssistantView({
                   <span className="font-bold text-slate-800 dark:text-slate-200 block text-[11px]">{sa.text}</span>
                   <span className="text-[9px] text-slate-400">{sa.desc}</span>
                 </div>
-                <button onClick={onOpenAI} className="px-2 py-1 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-[10px] rounded-md-lg hover:bg-purple-100 cursor-pointer">
+                <button onClick={onOpenAI} className="px-2 py-1 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-[10px] rounded-lg hover:bg-purple-100 cursor-pointer">
                   Apply
                 </button>
               </div>
@@ -345,7 +345,7 @@ export default function AIExecutiveAssistantView({
             const Icon = tool.icon;
             return (
               <div key={idx} className="card-base p-3 space-y-2 hover:shadow-card cursor-pointer">
-                <div className="w-8 h-8 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-md bg-purple-50 text-purple-600 dark:bg-purple-500/15 dark:text-purple-400 flex items-center justify-center">
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="font-bold text-xs text-slate-900 dark:text-white">{tool.title}</div>

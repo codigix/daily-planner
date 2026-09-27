@@ -425,7 +425,7 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
       )}
 
       {/* Executive SaaS Header Ribbon (Matches Screenshot Header) */}
-      <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md-3xl p-4 sm:p-6 shadow-sm space-y-4">
+      <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-start gap-3">
             <div className="w-11 h-11 rounded-md bg-blue-500/10 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
@@ -533,7 +533,7 @@ export default function MarketingDashboardView({ clients = [], onOpenAI }) {
 
         {/* Right Side: Navigation Tabs Sidebar (Horizontal pill bar on mobile, vertical sidebar on desktop) */}
         <div className="w-full lg:w-80 shrink-0 lg:sticky lg:top-6 space-y-3 order-first lg:order-last">
-          <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md-3xl p-3.5 sm:p-5 shadow-sm space-y-3">
+          <div className="card-base border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-3.5 sm:p-5 shadow-sm space-y-3">
             <div className="hidden sm:flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
               <div>
                 <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Navigation Tabs</h3>

@@ -201,6 +201,29 @@ async function initializeTables() {
     );
   `);
 
+  // User-defined Diet & Wellness items (added individually or imported from Excel).
+  // repeat_type: 'once' → only on item_date; 'weekly' → every day_of_week; 'daily' → every day
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS diet_items (
+      id VARCHAR(64) PRIMARY KEY,
+      user_id VARCHAR(255) NOT NULL,
+      item_date DATE NULL,
+      day_of_week VARCHAR(20) NULL,
+      repeat_type VARCHAR(20) NOT NULL DEFAULT 'once',
+      time VARCHAR(5) NOT NULL,
+      category VARCHAR(50) NOT NULL DEFAULT 'Nutrition',
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      instructions TEXT,
+      reminder_minutes INT NOT NULL DEFAULT 10,
+      source VARCHAR(20) NOT NULL DEFAULT 'manual',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_diet_items_user (user_id),
+      INDEX idx_diet_items_user_date (user_id, item_date)
+    );
+  `);
+
   // Dynamic schema migration — add missing columns to existing tables
   try {
     const [userCols] = await pool.query('SHOW COLUMNS FROM users');

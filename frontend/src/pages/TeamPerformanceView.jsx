@@ -52,7 +52,8 @@ export default function TeamPerformanceView({ domains = [], plannerTasks = [], o
         const res = await fetch('/api/team');
         if (res.ok) {
           const json = await res.json();
-          setCrmData(json);
+          // Only trust a well-formed payload; anything else falls back to planner data
+          if (json && Array.isArray(json.members)) setCrmData(json);
         }
       } catch (err) {
         console.error('Failed to load CRM team performance details:', err);
@@ -372,7 +373,7 @@ export default function TeamPerformanceView({ domains = [], plannerTasks = [], o
       {/* ── Detailed Progress Report Modal ── */}
       {selectedEmployeeForReport && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md-3xl shadow-2xl w-full max-w-lg p-6 space-y-5">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg p-6 space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-3">
                 {selectedEmployeeForReport.avatar ? (

@@ -114,14 +114,18 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
     );
     try {
       await markNotificationsReadAPI([id]);
+      window.dispatchEvent(new CustomEvent('app:notifications-changed'));
     } catch (e) { }
   };
 
   // Handle Mark All as Read
   const handleMarkAllRead = async () => {
+    const ids = notifications.filter((n) => n.unread).map((n) => n.id);
+    if (ids.length === 0) return;
     setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
     try {
-      await markNotificationsReadAPI([], true);
+      await markNotificationsReadAPI(ids);
+      window.dispatchEvent(new CustomEvent('app:notifications-changed'));
     } catch (e) { }
   };
 
@@ -135,8 +139,8 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
     const matchesCategory =
       selectedCategory === 'all' || n.category === selectedCategory;
     const matchesSearch =
-      n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.message.toLowerCase().includes(searchQuery.toLowerCase());
+      (n.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (n.message || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -172,10 +176,12 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={async () => {
-                const granted = await requestNotificationPermission();
+                const { granted } = await requestNotificationPermission();
                 if (granted) {
                   sendSystemNotification('System Push Notifications Active 🔔', {
-                    body: 'You will receive real-time push alerts on Mobile & Desktop for tasks & meetings.'
+                    body: 'You will receive real-time push alerts on Mobile & Desktop for tasks & meetings.',
+                    toastType: 'success',
+                    forceSystem: true
                   });
                 } else {
                   alert('Please allow notification permission in browser or mobile phone settings.');
@@ -298,7 +304,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
                 {item.unread && (
                   <button
                     onClick={() => handleMarkAsRead(item.id)}
-                    className="px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-md-lg text-[10px] sm:text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
+                    className="px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] sm:text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
                   >
                     Mark Read
                   </button>
@@ -306,7 +312,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
 
                 <button
                   onClick={() => handleClear(item.id)}
-                  className="p-1 text-slate-400 hover:text-rose-500 hover:bg-white dark:hover:bg-slate-900 rounded-md-lg cursor-pointer transition-all"
+                  className="p-1 text-slate-400 hover:text-rose-500 hover:bg-white dark:hover:bg-slate-900 rounded-lg cursor-pointer transition-all"
                   title="Dismiss notification"
                 >
                   <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

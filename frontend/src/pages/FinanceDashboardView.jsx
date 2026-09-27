@@ -440,7 +440,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
             >
               <Plus className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">Record Sale</span>
-              <span className="sm:hidden">+ Sale</span>
+              <span className="sm:hidden">Sale</span>
             </button>
 
             <button
@@ -713,7 +713,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 header: 'Status',
                 sortable: true,
                 render: (item) => (
-                  <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-md-lg text-xs font-extrabold">
+                  <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs font-extrabold">
                     {item.status || 'PAID'}
                   </span>
                 )
@@ -726,7 +726,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 render: (item) => (
                   <button
                     onClick={() => handleDeleteSale(item.id)}
-                    className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md-lg cursor-pointer"
+                    className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
                     title="Delete Sale"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -812,7 +812,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
 
                   return (
                     <div className="flex flex-col gap-1.5 min-w-[90px]">
-                      <span className={`px-2 py-0.5 rounded-md-lg text-[10px] font-extrabold max-w-max ${isReceived ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
+                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold max-w-max ${isReceived ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
                         {isReceived ? 'RECEIVED' : 'PAID'}
                       </span>
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 max-w-max rounded-md border ${isPositive ? 'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20' : 'text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20'}`}>
@@ -830,7 +830,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => handleDeletePurchase(item.id)}
-                      className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md-lg cursor-pointer transition-colors"
+                      className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer transition-colors"
                       title="Delete Record"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1249,7 +1249,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                     <button
                       type="button"
                       onClick={() => setCalcTeamRoles(prev => [...prev, { id: Date.now(), role: 'Developer', monthlyCost: '', effortDays: '' }])}
-                      className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400  text-xs rounded-md-lg flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400  text-xs rounded-lg flex items-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                       <span>Add Role</span>
@@ -1611,7 +1611,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
                 <span className="font-mono  text-emerald-600">₹ {calcProfitAmount.toLocaleString('en-IN')}</span>
               </div>
               <span className="text-slate-400 ">=</span>
-              <div className="px-2.5 py-1 bg-indigo-600 text-white font-mono  rounded-md-lg text-xs">
+              <div className="px-2.5 py-1 bg-indigo-600 text-white font-mono  rounded-lg text-xs">
                 Final: ₹ {finalQuotationAmount.toLocaleString('en-IN')}
               </div>
             </div>
@@ -1623,7 +1623,7 @@ export default function FinanceDashboardView({ clients = [], plannerTasks = [], 
       {/* Period Filter Selection Modal */}
       {showPeriodFilterModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-md-3xl max-w-md w-full p-5 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-4 relative overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-5 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-4 relative overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">

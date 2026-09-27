@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 // 1. Meta Infinity Loop Logo
 export const MetaLogo = ({ className = "w-5 h-5" }) => (
@@ -23,10 +23,13 @@ export const FacebookLogo = ({ className = "w-5 h-5" }) => (
 );
 
 // 3. Instagram Brand Logo
-export const InstagramLogo = ({ className = "w-5 h-5" }) => (
+export const InstagramLogo = ({ className = "w-5 h-5" }) => {
+  // Unique per instance: a shared id breaks the gradient when the first copy is hidden
+  const gradId = `igGrad-${useId().replace(/:/g, '')}`;
+  return (
   <svg className={className} viewBox="0 0 24 24" fill="none">
     <defs>
-      <linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <linearGradient id={gradId} x1="0%" y1="100%" x2="100%" y2="0%">
         <stop offset="0%" stopColor="#FFDC80" />
         <stop offset="25%" stopColor="#F77737" />
         <stop offset="50%" stopColor="#F1356D" />
@@ -34,12 +37,13 @@ export const InstagramLogo = ({ className = "w-5 h-5" }) => (
         <stop offset="100%" stopColor="#833AB4" />
       </linearGradient>
     </defs>
-    <rect width="24" height="24" rx="6" fill="url(#igGrad)" />
+    <rect width="24" height="24" rx="6" fill={`url(#${gradId})`} />
     <rect x="5" y="5" width="14" height="14" rx="4" stroke="white" strokeWidth="1.8" fill="none" />
     <circle cx="12" cy="12" r="3.5" stroke="white" strokeWidth="1.8" fill="none" />
     <circle cx="15.5" cy="8.5" r="1" fill="white" />
   </svg>
-);
+  );
+};
 
 // 4. WhatsApp Brand Logo
 export const WhatsAppLogo = ({ className = "w-5 h-5" }) => (

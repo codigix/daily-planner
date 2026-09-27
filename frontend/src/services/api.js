@@ -292,6 +292,59 @@ export async function syncDietToPlannerAPI(items, targetDate, targetDay) {
   });
 }
 
+// ── Custom Diet & Wellness items (add / edit / delete / Excel import) ──
+// Unlike fetchAPI these return { ok, status, data } so forms can show the server's
+// validation messages instead of a silent null.
+async function dietRequest(endpoint, options = {}) {
+  const token = localStorage.getItem('codigix_auth_token') || '';
+  const init = {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    }
+  };
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${endpoint}`, init);
+  } catch (err) {
+    try {
+      res = await fetch(`${BACKEND_FALLBACK}/api${endpoint}`, init);
+    } catch (fallbackErr) {
+      return { ok: false, status: 0, data: { error: 'Cannot reach the server. Check your connection and try again.' } };
+    }
+  }
+  let data = {};
+  try {
+    data = await res.json();
+  } catch (e) { }
+  return { ok: res.ok, status: res.status, data };
+}
+
+export function getDietItemsAPI() {
+  return dietRequest('/diet/items');
+}
+
+export function createDietItemAPI(item) {
+  return dietRequest('/diet/items', { method: 'POST', body: JSON.stringify(item) });
+}
+
+export function updateDietItemAPI(id, item) {
+  return dietRequest(`/diet/items/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(item) });
+}
+
+export function deleteDietItemAPI(id) {
+  return dietRequest(`/diet/items/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+// dryRun=true returns a row-by-row preview without saving
+export function importDietItemsAPI(fileName, fileBase64, dryRun = false) {
+  return dietRequest('/diet/items/import', {
+    method: 'POST',
+    body: JSON.stringify({ fileName, fileBase64, dryRun })
+  });
+}
+
 export async function deduplicatePlannerTasksAPI() {
   return await fetchAPI('/planner/deduplicate', {
     method: 'POST'

@@ -392,11 +392,11 @@ export default function ModalContainer({
                       value={apiKeyInput}
                       onChange={(e) => setApiKeyInput(e.target.value)}
                       placeholder="sk-ant-api03-..."
-                      className="flex-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md-lg text-xs"
+                      className="flex-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
                     />
                     <button
                       onClick={handleSaveApiKey}
-                      className="px-3 py-1.5 bg-purple-600 text-white font-bold rounded-md-lg"
+                      className="px-3 py-1.5 bg-purple-600 text-white font-bold rounded-lg"
                     >
                       Save Key
                     </button>
@@ -413,8 +413,8 @@ export default function ModalContainer({
                       </div>
                     )}
                     <div className={`p-3 rounded-md text-xs max-w-[80%] leading-relaxed ${msg.role === 'user'
-                      ? 'bg-purple-600 text-white font-medium rounded-md-br-none'
-                      : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm rounded-md-bl-none'
+                      ? 'bg-purple-600 text-white font-medium rounded-br-none'
+                      : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm rounded-bl-none'
                       }`}>
                       {msg.text}
                     </div>
@@ -568,7 +568,7 @@ export default function ModalContainer({
                   <button
                     type="button"
                     onClick={handleVoiceToggle}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md-lg transition-colors cursor-pointer ${isVoiceListening
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors cursor-pointer ${isVoiceListening
                       ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/50 animate-pulse'
                       : 'text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-700'
                       }`}

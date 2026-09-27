@@ -430,7 +430,7 @@ export default function VoiceAssistantModal({
           <div className="space-y-3">
             {transcript && (
               <div className="flex justify-end animate-in fade-in slide-in-from-right-4">
-                <div className="max-w-[85%] bg-blue-600 text-white p-3 rounded-md-2xl rounded-md-tr-sm shadow-md space-y-1">
+                <div className="max-w-[85%] bg-blue-600 text-white p-3 rounded-2xl rounded-tr-sm shadow-md space-y-1">
                   <p className="text-xs font-semibold leading-relaxed">"{transcript}"</p>
                   <div className="flex justify-end">
                     <button
@@ -453,13 +453,13 @@ export default function VoiceAssistantModal({
                 onChange={(e) => setTranscript(e.target.value)}
                 placeholder="Type your task/diet plan here, or tap the mic to speak..."
                 rows={2}
-                className="w-full p-3 pr-12 rounded-md-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none shadow-inner"
+                className="w-full p-3 pr-12 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none shadow-inner"
               />
 
               {!isListening && transcript.trim().length > 2 && !analyzedTask && !isAnalyzing && (
                 <button
                   onClick={() => handleAnalyzeSpeech(transcript)}
-                  className="absolute bottom-2.5 right-2.5 p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md-lg font-black shadow-md flex items-center justify-center cursor-pointer transition-all active:scale-95"
+                  className="absolute bottom-2.5 right-2.5 p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-black shadow-md flex items-center justify-center cursor-pointer transition-all active:scale-95"
                   title="Analyze text"
                 >
                   <ArrowRight className="w-4 h-4" />
@@ -485,7 +485,7 @@ export default function VoiceAssistantModal({
                   AI Structured Task
                 </span>
 
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md-md ${analyzedTask.priority === 'High'
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${analyzedTask.priority === 'High'
                   ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
                   : analyzedTask.priority === 'Low'
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
@@ -570,7 +570,7 @@ export default function VoiceAssistantModal({
                   </span>
                   <div className="space-y-1">
                     {analyzedTask.checkpoints.map((cp, idx) => (
-                      <div key={idx} className="flex items-center gap-2 p-1.5 bg-white dark:bg-slate-900 rounded-md-lg text-xs font-semibold text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-800">
+                      <div key={idx} className="flex items-center gap-2 p-1.5 bg-white dark:bg-slate-900 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-800">
                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
                         <span className="truncate flex-1">{typeof cp === 'string' ? cp : cp.text}</span>
                       </div>

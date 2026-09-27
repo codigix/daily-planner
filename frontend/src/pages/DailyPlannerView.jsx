@@ -62,7 +62,6 @@ import VoiceAssistantModal from '../components/voice/VoiceAssistantModal';
 import WhatsAppVoiceAssistant from '../components/voice/WhatsAppVoiceAssistant';
 import { WEEKLY_DIET_PLAN } from '../data/weeklyDietData';
 import {
-  sendSystemNotification,
   requestNotificationPermission,
   playNotificationChime,
   triggerPhoneVibration,
@@ -267,10 +266,10 @@ function SwipeableTaskCard({
               </p>
 
               <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-md-lg">
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-lg">
                   {task.category || 'Work'}
                 </span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md-lg flex items-center gap-1 ${pStyle.badge}`}>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-1 ${pStyle.badge}`}>
                   {task.priority || 'Medium'}
                 </span>
               </div>
@@ -428,7 +427,7 @@ function SwipeableTaskCard({
               onChange={e => {
                 if (e.target.value) postponeTask(task.id, new Date(e.target.value + 'T00:00:00'));
               }}
-              className="w-full px-2 py-1 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md-lg focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-slate-700 dark:text-slate-200"
+              className="w-full px-2 py-1 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-slate-700 dark:text-slate-200"
             />
           </div>
         </div>
@@ -503,174 +502,47 @@ export default function DailyPlannerView({
     setUndoState(null);
   };
 
-  // ── DEEP LINK & NOTIFICATION TAP LISTENER TO OPEN DETAILED TASK POPUP ──
+  // ── DEEP LINK & NOTIFICATION TAP TO OPEN DETAILED TASK POPUP ──
+  // App.jsx routes notification taps to /planner?openTaskId=… (or openDietMealId /
+  // openNextDayPrep) and fires `app:deeplink`. Handled params are removed from the URL
+  // so the popup doesn't reopen whenever the task list changes.
+  // Task reminders themselves are scheduled globally in App.jsx.
   useEffect(() => {
-    // 1. Check URL parameters (?openTaskId=... or ?openDietMealId=... or ?openNextDayPrep=1)
-    const params = new URLSearchParams(window.location.search);
-    const openTaskId = params.get('openTaskId');
-    const openDietMealId = params.get('openDietMealId');
-    const openNextDayPrep = params.get('openNextDayPrep') || params.get('openIngredients');
+    const handleDeepLink = () => {
+      const params = new URLSearchParams(window.location.search);
+      const openTaskId = params.get('openTaskId');
+      const openDietMealId = params.get('openDietMealId');
+      const openNextDayPrep = params.get('openNextDayPrep') || params.get('openIngredients');
+      const consumed = [];
 
-    if (openNextDayPrep) {
-      setShowIngredientsModal(true);
-      if (params.get('openDay')) setIngredientsTargetDay(params.get('openDay'));
-    } else if (openTaskId) {
-      setActiveMainTab('tasks');
-      const targetTask = plannerTasks.find(t => String(t.id) === String(openTaskId));
-      if (targetTask) {
+      if (openNextDayPrep) {
+        setShowIngredientsModal(true);
+        if (params.get('openDay')) setIngredientsTargetDay(params.get('openDay'));
+        consumed.push('openNextDayPrep', 'openIngredients', 'openDay');
+      } else if (openTaskId) {
+        const targetTask = plannerTasks.find(t => String(t.id) === String(openTaskId));
+        // Tasks may still be loading; keep the param and retry when they arrive
+        if (!targetTask) return;
+        setActiveMainTab('tasks');
         setSelectedTaskModal(targetTask);
         setTaskNotes(targetTask.notes || '');
         setTaskCheckpoints(targetTask.checkpoints || []);
+        consumed.push('openTaskId');
+      } else if (openDietMealId) {
+        // WeeklyDietManager mounts on the diet tab and consumes the meal params itself
+        setActiveMainTab('diet');
       }
-    } else if (openDietMealId) {
-      setActiveMainTab('diet');
-    }
 
-    // 2. Listen to postMessage from Service Worker when user taps notification on mobile
-    const handleSWMessage = (event) => {
-      if (event.data && (event.data.type === 'NOTIFICATION_TASK_CLICKED' || event.data.type === 'nextDayPrep')) {
-        const { taskId, mealId, type, openNextDayPrep } = event.data;
-        if (event.data.type === 'nextDayPrep' || type === 'nextDayPrep' || openNextDayPrep) {
-          setShowIngredientsModal(true);
-          if (event.data.day) setIngredientsTargetDay(event.data.day);
-        } else if (taskId) {
-          setActiveMainTab('tasks');
-          const targetTask = plannerTasks.find(t => String(t.id) === String(taskId));
-          if (targetTask) {
-            setSelectedTaskModal(targetTask);
-            setTaskNotes(targetTask.notes || '');
-            setTaskCheckpoints(targetTask.checkpoints || []);
-          }
-        } else if (mealId) {
-          setActiveMainTab('diet');
-        }
+      if (consumed.length > 0) {
+        consumed.forEach(key => params.delete(key));
+        const rest = params.toString();
+        window.history.replaceState(window.history.state, '', window.location.pathname + (rest ? `?${rest}` : ''));
       }
     };
 
-    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', handleSWMessage);
-    }
-    return () => {
-      if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-        navigator.serviceWorker.removeEventListener('message', handleSWMessage);
-      }
-    };
-  }, [plannerTasks]);
-
-  // ── REAL-TIME MOBILE REMINDERS FOR EACH AND EVERY TASK ──
-  // - 5 Minutes Before Task starts
-  // - Exactly at start time
-  // - Every 5 Minutes interval while task is NOT DONE (pending)
-  // - 8:00 PM Evening Next-Day Ingredients Prep reminder
-  useEffect(() => {
-    const firedReminders = new Set();
-
-    const checkTaskReminders = () => {
-      const now = new Date();
-      const currentHours = now.getHours();
-      const currentMins = now.getMinutes();
-      const currentTotalMins = currentHours * 60 + currentMins;
-      const todayDateStr = now.toDateString();
-
-      // Check tasks scheduled for today that are NOT YET COMPLETED
-      const activePendingTasks = plannerTasks.filter(t => {
-        const isDone = isTaskCompletedForDate(t, todayDateStr);
-        if (isDone) return false;
-        if (!t.date) return true;
-        try {
-          return new Date(t.date).toDateString() === todayDateStr;
-        } catch (e) {
-          return true;
-        }
-      });
-
-      activePendingTasks.forEach(task => {
-        if (!task.time) return;
-        const timePart = task.time.split('–')[0].split('-')[0].trim();
-        const match = timePart.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-        if (!match) return;
-
-        let hours = parseInt(match[1], 10);
-        const mins = parseInt(match[2], 10);
-        const meridiem = match[3] ? match[3].toUpperCase() : null;
-
-        if (meridiem === 'PM' && hours < 12) hours += 12;
-        if (meridiem === 'AM' && hours === 12) hours = 0;
-
-        const taskStartMins = hours * 60 + mins;
-        const diff = taskStartMins - currentTotalMins; // >0 is before start; <0 is overdue
-
-        // Extract notes preview or ingredients snippet (internal reference)
-        const notesPreview = task.notes ? `\n📝 ${task.notes.slice(0, 80)}${task.notes.length > 80 ? '...' : ''}` : '';
-
-        // 1. LEAD REMINDER: Exactly 5 minutes before start (diff between 5 and 3 mins)
-        // Strictly displays task heading only and time only
-        const keyLead5m = `${task.id}_lead5m`;
-        if (diff <= 5 && diff >= 3 && !firedReminders.has(keyLead5m)) {
-          firedReminders.add(keyLead5m);
-          sendSystemNotification(task.title, {
-            body: task.time,
-            taskId: task.id,
-            tag: `task-lead-${task.id}`
-          });
-        }
-
-        // 2. EXACT START TIME REMINDER (diff between 0 and -2 mins)
-        // Strictly displays task heading only and time only
-        const keyExact = `${task.id}_exact`;
-        if (diff <= 0 && diff >= -2 && !firedReminders.has(keyExact)) {
-          firedReminders.add(keyExact);
-          sendSystemNotification(task.title, {
-            body: task.time,
-            taskId: task.id,
-            tag: `task-exact-${task.id}`
-          });
-        }
-
-        // 3. RECURRING 5-MINUTE REMINDER WHILE TASK IS NOT DONE (diff < -2)
-        // Reminds user every 5 minutes until marked complete - strictly task heading only and time only
-        if (diff < -2 && diff >= -180) {
-          const overdueMinutes = Math.abs(diff);
-          const intervalBucket = Math.floor(overdueMinutes / 5) * 5;
-          if (intervalBucket >= 5) {
-            const keyOverdue = `${task.id}_overdue_${intervalBucket}`;
-            if (!firedReminders.has(keyOverdue)) {
-              firedReminders.add(keyOverdue);
-              sendSystemNotification(task.title, {
-                body: task.time,
-                taskId: task.id,
-                tag: `task-overdue-${task.id}-${intervalBucket}`
-              });
-            }
-          }
-        }
-      });
-
-      // 4. EVENING 8:00 PM NEXT-DAY INGREDIENTS PREP REMINDER (20:00 to 20:15)
-      if (currentHours === 20 && currentMins >= 0 && currentMins <= 15) {
-        const tomorrow = new Date(now);
-        tomorrow.setDate(now.getDate() + 1);
-        const tomorrowName = tomorrow.toLocaleDateString('en-US', { weekday: 'long' });
-        const keyPrep = `evening_prep_${todayDateStr}`;
-
-        if (!firedReminders.has(keyPrep)) {
-          firedReminders.add(keyPrep);
-          sendSystemNotification(`Tomorrow's Ingredients Prep (${tomorrowName})`, {
-            body: '8:00 PM',
-            data: {
-              type: 'nextDayPrep',
-              day: tomorrowName,
-              openNextDayPrep: '1'
-            },
-            tag: `prep-${todayDateStr}`
-          });
-        }
-      }
-    };
-
-    checkTaskReminders();
-    const interval = setInterval(checkTaskReminders, 15000); // Check every 15 seconds
-    return () => clearInterval(interval);
+    handleDeepLink();
+    window.addEventListener('app:deeplink', handleDeepLink);
+    return () => window.removeEventListener('app:deeplink', handleDeepLink);
   }, [plannerTasks]);
 
   // Real-time Search & Filter State
@@ -2187,7 +2059,7 @@ No office calls unless it's a true emergency.`);
         <div>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+              <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
                 <Utensils className="w-4 h-4" />
               </div>
               <div>
@@ -2671,7 +2543,7 @@ No office calls unless it's a true emergency.`);
                 {/* Quick Status Filter Tabs with Icons & Color Badges (Desktop Only, mobile has dedicated status dropdown) */}
                 <div className="hidden lg:flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2.5 mb-3 border-b border-slate-100 dark:border-slate-800/80">
                   {[
-                    { id: 'All', label: 'All Tasks', icon: List, count: totalTasks, activeColor: 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' },
+                    { id: 'All', label: 'All Tasks', icon: List, count: totalTasks, activeColor: 'bg-slate-900 text-white dark:bg-blue-600 dark:text-white' },
                     { id: 'Pending', label: 'Pending', icon: Clock, count: pendingCount, activeColor: 'bg-amber-500 text-white shadow-amber-500/20' },
                     { id: 'Completed', label: 'Done', icon: CheckCircle2, count: completedCount, activeColor: 'bg-emerald-600 text-white shadow-emerald-600/20' },
                     { id: 'High', label: 'High Priority', icon: Flame, count: highPriorityCount, activeColor: 'bg-rose-600 text-white shadow-rose-600/20' },
@@ -2814,7 +2686,7 @@ No office calls unless it's a true emergency.`);
                       </p>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 bg-purple-200 dark:bg-purple-800 text-purple-900 dark:text-purple-100 font-black rounded-md-lg text-[10px]">
+                  <span className="px-2.5 py-1 bg-purple-200 dark:bg-purple-800 text-purple-900 dark:text-purple-100 font-black rounded-lg text-[10px]">
                     {extractedPreviewTasks.filter(t => t.selected).length}/{extractedPreviewTasks.length} Selected
                   </span>
                 </div>
@@ -2864,7 +2736,7 @@ No office calls unless it's a true emergency.`);
                           const val = e.target.value;
                           setExtractedPreviewTasks(prev => prev.map(t => t.id === task.id ? { ...t, priority: val } : t));
                         }}
-                        className="text-[10px] font-bold px-2 py-1 rounded-md-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer border border-slate-200 dark:border-slate-600"
+                        className="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer border border-slate-200 dark:border-slate-600"
                       >
                         <option value="High">High</option>
                         <option value="Medium">Medium</option>
@@ -2900,7 +2772,7 @@ No office calls unless it's a true emergency.`);
                 <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-md text-xs font-bold gap-1">
                   <button
                     onClick={() => setModalTab('file')}
-                    className={`flex-1 py-2 px-2 rounded-md-lg flex items-center justify-center gap-1.5 transition-all text-center ${modalTab === 'file'
+                    className={`flex-1 py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all text-center ${modalTab === 'file'
                       ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm font-extrabold'
                       : 'text-slate-500 hover:text-slate-800'
                       }`}
@@ -2910,7 +2782,7 @@ No office calls unless it's a true emergency.`);
                   </button>
                   <button
                     onClick={() => setModalTab('paste')}
-                    className={`flex-1 py-2 px-2 rounded-md-lg flex items-center justify-center gap-1.5 transition-all text-center ${modalTab === 'paste'
+                    className={`flex-1 py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all text-center ${modalTab === 'paste'
                       ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm font-extrabold'
                       : 'text-slate-500 hover:text-slate-800'
                       }`}
@@ -3000,7 +2872,7 @@ No office calls unless it's a true emergency.`);
                       <Calendar className="w-4 h-4 text-emerald-600 shrink-0" />
                       <span>Target Scheduled Date & Weekday:</span>
                     </label>
-                    <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/40 px-2 py-0.5 rounded-md-md border border-emerald-200/60 dark:border-emerald-800/60 self-start sm:self-auto">
+                    <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/40 px-2 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/60 self-start sm:self-auto">
                       📅 {targetExecutionDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                   </div>
@@ -3035,7 +2907,7 @@ No office calls unless it's a true emergency.`);
                             setTargetExecutionDate(new Date(y, m - 1, d));
                           }
                         }}
-                        className="px-2.5 py-1 text-xs bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md-lg font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
+                        className="px-2.5 py-1 text-xs bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
                       />
                     </div>
                   </div>
@@ -3050,7 +2922,7 @@ No office calls unless it's a true emergency.`);
                       <button
                         type="button"
                         onClick={() => setIsRecurringMode(false)}
-                        className={`px-2.5 py-1.5 rounded-md-lg text-[11px] font-extrabold transition-all border text-center ${!isRecurringMode
+                        className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold transition-all border text-center ${!isRecurringMode
                           ? 'bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-900 shadow-sm'
                           : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-slate-100'
                           }`}
@@ -3061,7 +2933,7 @@ No office calls unless it's a true emergency.`);
                       <button
                         type="button"
                         onClick={() => setIsRecurringMode(true)}
-                        className={`px-2.5 py-1.5 rounded-md-lg text-[11px] font-extrabold transition-all border text-center truncate ${isRecurringMode
+                        className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold transition-all border text-center truncate ${isRecurringMode
                           ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
                           : 'bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 border-slate-200 dark:border-slate-600 hover:bg-slate-100'
                           }`}
@@ -3122,7 +2994,7 @@ No office calls unless it's a true emergency.`);
 
             <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand-600 bg-brand-50 dark:bg-brand-900/30 px-2 py-0.5 rounded-md-md">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand-600 bg-brand-50 dark:bg-brand-900/30 px-2 py-0.5 rounded-md">
                   {selectedTaskModal.category || 'Executive Task'}
                 </span>
                 <h3 className="font-extrabold text-slate-900 dark:text-white text-base mt-1.5 leading-snug">
@@ -3324,7 +3196,7 @@ No office calls unless it's a true emergency.`);
                   if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
                   setUndoState(null);
                 }}
-                className="p-1.5 text-slate-400 hover:text-white rounded-md-lg transition-colors cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
                 title="Dismiss"
               >
                 <X className="w-3.5 h-3.5" />
@@ -3479,7 +3351,7 @@ No office calls unless it's a true emergency.`);
 
       {/* Mobile Push-To-Talk Floating Active Hold HUD */}
       {isHoldingVoice && (
-        <div className="fixed inset-x-3 bottom-20 z-50 p-4 rounded-md-3xl bg-slate-900/95 text-white backdrop-blur-xl border border-rose-500/50 shadow-2xl animate-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed inset-x-3 bottom-20 z-50 p-4 rounded-3xl bg-slate-900/95 text-white backdrop-blur-xl border border-rose-500/50 shadow-2xl animate-in slide-in-from-bottom-5 duration-200">
           <div className="flex items-center gap-3">
             <div className="relative w-12 h-12 rounded-md bg-rose-500 flex items-center justify-center shrink-0 shadow-lg shadow-rose-500/50 animate-pulse">
               <Mic className="w-6 h-6 text-white animate-bounce" />

@@ -101,7 +101,10 @@ export default function DashboardView({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-            Good Morning, {greetingName} <span className="animate-bounce inline-block">👋</span>
+            {(() => {
+              const h = new Date().getHours();
+              return h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening';
+            })()}, {greetingName} <span className="animate-bounce inline-block">👋</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
             Here's your executive daily plan & business overview.
@@ -227,7 +230,7 @@ export default function DashboardView({
         <div className="card-base p-4 rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">Monthly Execution Trend</h3>
-            <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300 text-[10px] font-bold rounded-md-md">Live</span>
+            <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300 text-[10px] font-bold rounded-md">Live</span>
           </div>
 
           <div className="h-44 w-full pt-2">
