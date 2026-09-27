@@ -16,13 +16,13 @@
   ],
   "icons": [
     {
-      "src": "/app-icon.png",
+      "src": "/app-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/app-icon.png",
+      "src": "/app-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -36,7 +36,7 @@
       "url": "/#planner",
       "icons": [
         {
-          "src": "/app-icon.png",
+          "src": "/app-icon-192.png",
           "sizes": "192x192"
         }
       ]
@@ -48,7 +48,7 @@
       "url": "/#meetings",
       "icons": [
         {
-          "src": "/app-icon.png",
+          "src": "/app-icon-192.png",
           "sizes": "192x192"
         }
       ]
@@ -60,7 +60,7 @@
       "url": "/#followups",
       "icons": [
         {
-          "src": "/app-icon.png",
+          "src": "/app-icon-192.png",
           "sizes": "192x192"
         }
       ]

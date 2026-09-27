@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const authRoutes = require('./routes/auth.cjs');
+const { router: authRoutes, verifyToken } = require('./routes/auth.cjs');
 const dashboardRoutes = require('./routes/dashboard.cjs');
 const plannerRoutes = require('./routes/planner.cjs');
 const loggerRoutes = require('./routes/logger.cjs');

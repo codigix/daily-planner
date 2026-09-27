@@ -1,10 +1,11 @@
 // CODIGIX EXECUTIVE OS - Service Worker
-const CACHE_NAME = 'codigix-exec-os-v2';
+const CACHE_NAME = 'codigix-exec-os-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/app-icon.png'
+  '/app-icon-192.png',
+  '/app-icon-512.png'
 ];
 
 // Install Event - Precache core static shell

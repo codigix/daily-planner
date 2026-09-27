@@ -138,6 +138,7 @@ async function initializeTables() {
       email VARCHAR(255),
       phone VARCHAR(100),
       status VARCHAR(100) DEFAULT 'New',
+      user_email VARCHAR(255),
       notes TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
@@ -149,6 +150,7 @@ async function initializeTables() {
       title VARCHAR(255) NOT NULL,
       category VARCHAR(100) NOT NULL,
       priority VARCHAR(50) NOT NULL,
+      user_email VARCHAR(255),
       status VARCHAR(50) NOT NULL DEFAULT 'Pending',
       time VARCHAR(50),
       date VARCHAR(100),
@@ -192,6 +194,7 @@ async function initializeTables() {
       duration VARCHAR(50) NOT NULL,
       title VARCHAR(255) NOT NULL,
       subtitle VARCHAR(100),
+      user_email VARCHAR(255),
       status VARCHAR(50) NOT NULL DEFAULT 'Pending',
       color VARCHAR(50) DEFAULT 'blue',
       date VARCHAR(100)

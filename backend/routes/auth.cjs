@@ -8,6 +8,26 @@ const { getPool } = require('../db_mysql.cjs');
 const JWT_SECRET = process.env.JWT_SECRET || 'codigix_executive_os_secret_key_2026';
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+// ── Middleware: Verify Token ──
+function verifyToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'No authorization token provided.' });
+
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    return res.status(401).json({ error: 'Token error: Format is Bearer <token>' });
+  }
+
+  const token = parts[1];
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).json({ error: 'Invalid or expired token.' });
+    req.user = decoded; // { id, email, role }
+    // Enforce multi-tenant: ALWAYS set req.query.user_id (or similar) based on the token.
+    // Actually, setting req.user is enough. Route handlers will use req.user.email.
+    next();
+  });
+}
+
 // ── Helper: Format User Profile Object ──
 function formatUser(u) {
   return {
@@ -218,4 +238,4 @@ router.get('/me', async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = { router, verifyToken };
