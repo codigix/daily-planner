@@ -38,14 +38,14 @@ import {
   createClientAPI,
   getDietItemsAPI
 } from './services/api';
-import { customItemsForDate } from './utils/dietItems';
+import { buildReminders, readDietCompletions } from './utils/reminderSchedule';
+import { enablePush, syncReminderSchedule, importPushFiredKeys } from './utils/pushService';
 
 import { Lock, LogIn } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
 import { sendSystemNotification } from './utils/notificationService';
 import { deduplicateTasks, deduplicateTimeline } from './utils/plannerDeduplication';
-import { WEEKLY_DIET_PLAN, NEXT_DAY_PREP_CHECKLIST } from './data/weeklyDietData';
 
 const normalizeTab = (rawTab) => {
   if (!rawTab) return 'dashboard';
@@ -113,7 +113,11 @@ function AppContent() {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
       const askForNotificationPermission = () => {
-        Notification.requestPermission().catch(() => { });
+        Notification.requestPermission()
+          .then((result) => {
+            if (result === 'granted') window.dispatchEvent(new CustomEvent('app:push-permission-changed'));
+          })
+          .catch(() => { });
       };
       window.addEventListener('click', askForNotificationPermission, { once: true, passive: true });
       window.addEventListener('touchstart', askForNotificationPermission, { once: true, passive: true });
@@ -244,146 +248,86 @@ function AppContent() {
     });
   };
 
-  // ── Global Real-Time Background Notification Runner ──
-  // The single scheduler for task & diet reminders, active on every tab.
-  // Every alert carries a dedupeKey, so it fires once per day even if this effect
-  // restarts (task list changes) or the page reloads inside a reminder window.
+  // ── Reminders ──
+  // buildReminders() is the single source of truth. While the app is open this
+  // scheduler shows them (toast in foreground); the same list is uploaded to the
+  // backend so Web Push delivers them on time when the PWA is closed or backgrounded.
+  const [reminderInputsVersion, setReminderInputsVersion] = useState(0);
+  const [pushVersion, setPushVersion] = useState(0);
+
   useEffect(() => {
-    const parseStartMinutes = (timeStr) => {
-      if (!timeStr) return null;
-      // "09:45 AM – 10:45 AM" → use the start of the range
-      const startPart = String(timeStr).split('–')[0].split(' - ')[0].trim();
-      const match = startPart.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-      if (!match) return null;
-      let h = parseInt(match[1], 10);
-      const m = parseInt(match[2], 10);
-      const meridiem = match[3] ? match[3].toUpperCase() : null;
-      if (meridiem === 'PM' && h < 12) h += 12;
-      if (meridiem === 'AM' && h === 12) h = 0;
-      return h * 60 + m;
-    };
+    // Diet completions live in localStorage; WeeklyDietManager announces changes
+    const bump = () => setReminderInputsVersion(v => v + 1);
+    window.addEventListener('app:reminders-changed', bump);
+    return () => window.removeEventListener('app:reminders-changed', bump);
+  }, []);
 
-    const isTaskDoneForDate = (task, dateStr) => {
-      if (task.completedDates && typeof task.completedDates[dateStr] === 'boolean') {
-        return task.completedDates[dateStr];
-      }
-      return task.status === 'Completed' || task.status === 'Done' || !!task.completed;
-    };
-
-    const isTaskForDate = (task, dateStr) => {
-      if (!task.date) return true; // undated tasks are daily routines
-      const d = new Date(task.date);
-      return isNaN(d.getTime()) ? true : d.toDateString() === dateStr;
-    };
-
-    const checkGlobalReminders = () => {
-      const now = new Date();
-      const todayStr = now.toDateString();
-      const todayDayName = now.toLocaleDateString('en-US', { weekday: 'long' });
-      const currentTotalMins = now.getHours() * 60 + now.getMinutes();
-
-      // 1. Weekly Diet Plan items for today
-      let completions = {};
-      try {
-        const saved = localStorage.getItem('codigix_diet_completions_v2');
-        if (saved) completions = JSON.parse(saved);
-      } catch (e) { }
-
-      const todaysDietItems = [
-        ...WEEKLY_DIET_PLAN.filter(item => item.day === todayDayName),
-        ...customItemsForDate(customDietItems, now)
-      ];
-      todaysDietItems.forEach(item => {
-        const status = completions[`${todayDayName}_${item.id}`]?.status;
-        if (status === 'completed' || status === 'skipped') return;
-
-        const itemMins = parseStartMinutes(item.time);
-        if (itemMins === null) return;
-        const diff = itemMins - currentTotalMins;
-        const reminderLead = item.reminderMinutesBefore || 10;
-        const dietUrl = `/planner?openDietMealId=${item.id}&openDay=${todayDayName}`;
-
-        if (diff <= reminderLead && diff >= 1) {
-          sendSystemNotification(item.taskTitle, {
-            body: `In ${diff} min • ${item.timeFormatted || item.time}`,
-            mealId: item.id,
-            day: todayDayName,
-            url: dietUrl,
-            tag: `diet-lead-${item.id}`,
-            dedupeKey: `diet-lead-${todayStr}-${item.id}`
+  useEffect(() => {
+    let cancelled = false;
+    const checkReminders = async () => {
+      // Skip anything the service worker already showed while the app was closed
+      await importPushFiredKeys();
+      if (cancelled) return;
+      const now = Date.now();
+      buildReminders({ plannerTasks, customDietItems, completions: readDietCompletions(), days: 1 })
+        .filter(r => r.fireAt <= now && now < r.expiresAt)
+        .forEach(r => {
+          sendSystemNotification(r.title, {
+            body: r.body,
+            taskId: r.taskId,
+            mealId: r.mealId,
+            day: r.day,
+            type: r.type,
+            url: r.url,
+            tag: r.tag,
+            toastType: r.toastType,
+            dedupeKey: r.dedupeKey
           });
-        }
-
-        if (diff <= 0 && diff >= -15) {
-          sendSystemNotification(`🔔 NOW: ${item.taskTitle}`, {
-            body: item.timeFormatted || item.time,
-            mealId: item.id,
-            day: todayDayName,
-            url: dietUrl,
-            tag: `diet-exact-${item.id}`,
-            dedupeKey: `diet-exact-${todayStr}-${item.id}`
-          });
-        }
-      });
-
-      // 2. 8:00 PM Next Day Ingredients Prep Alert
-      const todayPrep = NEXT_DAY_PREP_CHECKLIST[todayDayName];
-      const prepDiff = 20 * 60 - currentTotalMins;
-      if (todayPrep && prepDiff <= 0 && prepDiff >= -30) {
-        sendSystemNotification(`🛒 8:00 PM: Prepare Tomorrow's Ingredients (${todayPrep.forNextDay})`, {
-          body: `Pantry checklist for ${todayPrep.forNextDay} is ready — tap to open.`,
-          tag: `diet-prep-${todayDayName}`,
-          type: 'nextDayPrep',
-          day: todayDayName,
-          url: `/planner?openNextDayPrep=1&openDay=${todayDayName}`,
-          toastType: 'warning',
-          dedupeKey: `prep-${todayStr}`
         });
-      }
-
-      // 3. Planner tasks scheduled for today: 5 min before, at start, then every
-      //    5 min while still pending (up to 3 hours)
-      (plannerTasks || []).forEach(t => {
-        if (!isTaskForDate(t, todayStr) || isTaskDoneForDate(t, todayStr)) return;
-        const taskMins = parseStartMinutes(t.time || t.scheduled_time);
-        if (taskMins === null) return;
-        const diff = taskMins - currentTotalMins;
-        const base = {
-          body: t.time || t.scheduled_time,
-          taskId: t.id,
-          url: `/planner?openTaskId=${t.id}`
-        };
-
-        if (diff <= 5 && diff >= 1) {
-          sendSystemNotification(`⏰ Starting in ${diff} min: ${t.title}`, {
-            ...base,
-            tag: `task-${t.id}`,
-            dedupeKey: `task-lead-${todayStr}-${t.id}`
-          });
-        } else if (diff <= 0 && diff >= -2) {
-          sendSystemNotification(`📋 Now: ${t.title}`, {
-            ...base,
-            tag: `task-${t.id}`,
-            dedupeKey: `task-exact-${todayStr}-${t.id}`
-          });
-        } else if (diff < -2 && diff >= -180) {
-          const bucket = Math.floor(Math.abs(diff) / 5) * 5;
-          if (bucket >= 5) {
-            sendSystemNotification(`⚠️ Still pending: ${t.title}`, {
-              ...base,
-              tag: `task-${t.id}`,
-              toastType: 'warning',
-              dedupeKey: `task-overdue-${todayStr}-${t.id}-${bucket}`
-            });
-          }
-        }
-      });
     };
 
-    checkGlobalReminders();
-    const timerId = setInterval(checkGlobalReminders, 20000);
-    return () => clearInterval(timerId);
-  }, [plannerTasks, customDietItems]);
+    checkReminders();
+    const timerId = setInterval(checkReminders, 20000);
+    const onVisible = () => { if (document.visibilityState === 'visible') checkReminders(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      cancelled = true;
+      clearInterval(timerId);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [plannerTasks, customDietItems, reminderInputsVersion]);
+
+  // Register this device for Web Push once signed in with permission granted
+  useEffect(() => {
+    if (!user || typeof window === 'undefined' || !('Notification' in window)) return;
+    const tryEnablePush = async () => {
+      if (Notification.permission !== 'granted') return;
+      const res = await enablePush();
+      if (res.ok) setPushVersion(v => v + 1);
+      else console.info('[Push] Background notifications unavailable:', res.reason);
+    };
+    tryEnablePush();
+    window.addEventListener('app:push-permission-changed', tryEnablePush);
+    return () => window.removeEventListener('app:push-permission-changed', tryEnablePush);
+  }, [user]);
+
+  // Upload the next 2 days of reminders for Web Push: shortly after any change, right
+  // when the app goes to the background, and hourly so the window keeps rolling
+  useEffect(() => {
+    if (!user) return;
+    const sync = () => syncReminderSchedule(
+      buildReminders({ plannerTasks, customDietItems, completions: readDietCompletions(), days: 2 })
+    );
+    const debounce = setTimeout(sync, 1500);
+    const hourly = setInterval(sync, 60 * 60 * 1000);
+    const onHidden = () => { if (document.visibilityState === 'hidden') sync(); };
+    document.addEventListener('visibilitychange', onHidden);
+    return () => {
+      clearTimeout(debounce);
+      clearInterval(hourly);
+      document.removeEventListener('visibilitychange', onHidden);
+    };
+  }, [user, plannerTasks, customDietItems, reminderInputsVersion, pushVersion]);
 
   // User-added diet items feed the reminder scheduler; reload whenever they change
   useEffect(() => {
@@ -422,6 +366,15 @@ function AppContent() {
     const handleSWMessage = (event) => {
       if (event.data?.type === 'NOTIFICATION_TASK_CLICKED') {
         openNotificationTarget(event.data.url || '/planner');
+      } else if (event.data?.type === 'PUSH_REMINDER') {
+        // A push arrived while the app is on screen: show it in-app (deduped with the local scheduler)
+        const p = event.data.payload || {};
+        sendSystemNotification(p.title || 'Reminder', {
+          body: p.body,
+          url: p.url,
+          tag: p.tag,
+          dedupeKey: p.dedupeKey
+        });
       }
     };
     navigator.serviceWorker.addEventListener('message', handleSWMessage);

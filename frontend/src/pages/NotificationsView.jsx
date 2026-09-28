@@ -18,7 +18,8 @@ import {
   X
 } from 'lucide-react';
 import { fetchNotificationsAPI, markNotificationsReadAPI } from '../services/api';
-import { requestNotificationPermission, sendSystemNotification } from '../utils/notificationService';
+import { requestNotificationPermission } from '../utils/notificationService';
+import { enablePush, sendTestPush } from '../utils/pushService';
 
 export default function NotificationsView({ plannerTasks = [], onNavigate, onOpenAI }) {
   const [notifications, setNotifications] = useState([]);
@@ -26,6 +27,7 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
   const [selectedCategory, setSelectedCategory] = useState('all'); // 'all', 'overdue', 'urgent', 'today', 'finance', 'system'
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileFilterModal, setShowMobileFilterModal] = useState(false);
+  const [pushMessage, setPushMessage] = useState(null);
 
   // Load real-time system notifications
   useEffect(() => {
@@ -176,16 +178,21 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={async () => {
+                setPushMessage({ tone: 'info', text: 'Setting up phone notifications…' });
                 const { granted } = await requestNotificationPermission();
-                if (granted) {
-                  sendSystemNotification('System Push Notifications Active 🔔', {
-                    body: 'You will receive real-time push alerts on Mobile & Desktop for tasks & meetings.',
-                    toastType: 'success',
-                    forceSystem: true
-                  });
-                } else {
-                  alert('Please allow notification permission in browser or mobile phone settings.');
+                if (!granted) {
+                  setPushMessage({ tone: 'error', text: 'Notifications are blocked. Allow them for this app in your phone/browser settings, then tap again.' });
+                  return;
                 }
+                const res = await enablePush();
+                if (!res.ok) {
+                  setPushMessage({ tone: 'error', text: res.reason });
+                  return;
+                }
+                const test = await sendTestPush();
+                setPushMessage(test.ok
+                  ? { tone: 'success', text: 'Done! A test notification was sent. Reminders will now arrive on time even when the app is closed.' }
+                  : { tone: 'error', text: test.data?.error || 'Registered, but the test notification could not be sent.' });
               }}
               className="px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-md sm:rounded-md shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
@@ -210,6 +217,19 @@ export default function NotificationsView({ plannerTasks = [], onNavigate, onOpe
             </button>
           </div>
         </div>
+
+        {pushMessage && (
+          <p
+            role="status"
+            className={`text-xs font-semibold rounded-md px-3 py-2 ${pushMessage.tone === 'success'
+              ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300'
+              : pushMessage.tone === 'error'
+                ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}
+          >
+            {pushMessage.text}
+          </p>
+        )}
 
         {/* Category Switcher Tabs (Desktop: visible pills | Mobile: scrollable bar) */}
         <div className="hidden sm:flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">

@@ -224,6 +224,48 @@ async function initializeTables() {
     );
   `);
 
+  // ── Web Push (reminders delivered while the PWA is closed) ──
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS app_settings (
+      setting_key VARCHAR(100) PRIMARY KEY,
+      setting_value TEXT NOT NULL
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id VARCHAR(255) NOT NULL,
+      endpoint_hash CHAR(64) NOT NULL UNIQUE,
+      endpoint TEXT NOT NULL,
+      p256dh VARCHAR(255) NOT NULL,
+      auth VARCHAR(255) NOT NULL,
+      user_agent VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      last_success_at TIMESTAMP NULL,
+      INDEX idx_push_subs_user (user_id)
+    );
+  `);
+
+  // Times are epoch milliseconds (UTC) computed on the device, so server timezone never matters
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS scheduled_reminders (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id VARCHAR(255) NOT NULL,
+      dedupe_key VARCHAR(191) NOT NULL,
+      fire_at_ms BIGINT NOT NULL,
+      expires_at_ms BIGINT NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      body VARCHAR(500),
+      url VARCHAR(500),
+      tag VARCHAR(191),
+      sent_at_ms BIGINT NULL,
+      status VARCHAR(20) NOT NULL DEFAULT 'pending',
+      UNIQUE KEY uq_reminder_user_key (user_id, dedupe_key),
+      INDEX idx_reminders_due (sent_at_ms, fire_at_ms)
+    );
+  `);
+
   // Dynamic schema migration — add missing columns to existing tables
   try {
     const [userCols] = await pool.query('SHOW COLUMNS FROM users');

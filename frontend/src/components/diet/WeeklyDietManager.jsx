@@ -466,6 +466,8 @@ export default function WeeklyDietManager({
   useEffect(() => {
     try {
       localStorage.setItem('codigix_diet_completions_v2', JSON.stringify(completions));
+      // Completed/skipped meals must cancel their pending reminders (in-app and push)
+      window.dispatchEvent(new CustomEvent('app:reminders-changed'));
     } catch (e) {
       console.warn('Failed to save diet completions to localStorage:', e);
     }

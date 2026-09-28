@@ -1,5 +1,5 @@
 // CODIGIX EXECUTIVE OS - Service Worker
-const CACHE_NAME = 'codigix-exec-os-v4';
+const CACHE_NAME = 'codigix-exec-os-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -27,7 +27,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
+          if (cache !== CACHE_NAME && cache !== 'codigix-push-fired') {
             console.log('[PWA SW] Deleting legacy cache:', cache);
             return caches.delete(cache);
           }
@@ -71,8 +71,19 @@ self.addEventListener('fetch', (event) => {
         
         // For HTML navigation requests, fallback to root index.html
         if (event.request.mode === 'navigate') {
-          return caches.match('/index.html') || caches.match('/');
+          const indexMatch = await caches.match('/index.html');
+          if (indexMatch) return indexMatch;
+          
+          const rootMatch = await caches.match('/');
+          if (rootMatch) return rootMatch;
         }
+        
+        // If everything fails, return a proper 503 Response
+        // This prevents the "Failed to convert value to 'Response'" TypeError
+        return new Response('Network error and no cache available', {
+          status: 503,
+          headers: new Headers({ 'Content-Type': 'text/plain' })
+        });
       })
   );
 });
@@ -124,25 +135,47 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Optional Web Push Event
+// ── Web Push: reminders sent by the backend at the scheduled time ──
+// Arrives even when the PWA is closed. If the app is open and on screen, hand the
+// reminder to the page (shown as an in-app toast) instead of a system notification.
+const FIRED_CACHE = 'codigix-push-fired';
+const IS_IOS = /iphone|ipad|ipod/i.test(self.navigator.userAgent || '');
+
 self.addEventListener('push', (event) => {
-  let payload = { title: 'Task Reminder', body: 'You have a scheduled reminder.' };
+  let payload = { title: 'Reminder', body: 'You have a scheduled reminder.' };
   try {
-    if (event.data) {
-      payload = event.data.json();
-    }
+    if (event.data) payload = event.data.json();
   } catch (e) {
     payload.body = event.data ? event.data.text() : payload.body;
   }
 
-  const options = {
-    body: payload.body,
-    icon: '/app-icon-192.png',
-    badge: '/app-icon-192.png',
-    vibrate: [300, 100, 300, 100, 300],
-    data: payload.data || {},
-    requireInteraction: true
-  };
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const visible = windows.find((c) => c.visibilityState === 'visible' && c.focused);
+    // iOS requires a visible notification for every push, so never skip there
+    if (visible && !IS_IOS) {
+      visible.postMessage({ type: 'PUSH_REMINDER', payload });
+      return;
+    }
 
-  event.waitUntil(self.registration.showNotification(payload.title, options));
+    // Remember what was shown so the page doesn't repeat it when opened
+    if (payload.dedupeKey) {
+      try {
+        const cache = await caches.open(FIRED_CACHE);
+        await cache.put(new Request(`/__fired/${encodeURIComponent(payload.dedupeKey)}`), new Response(String(Date.now())));
+      } catch (e) { }
+    }
+
+    await self.registration.showNotification(payload.title || 'Reminder', {
+      body: payload.body || '',
+      icon: '/app-icon-192.png',
+      badge: '/app-icon-192.png',
+      tag: payload.tag || payload.dedupeKey || undefined,
+      renotify: true,
+      vibrate: [300, 100, 300, 100, 400],
+      timestamp: payload.sentAt || Date.now(),
+      requireInteraction: false,
+      data: { url: payload.url || '/planner', dedupeKey: payload.dedupeKey || null }
+    });
+  })());
 });

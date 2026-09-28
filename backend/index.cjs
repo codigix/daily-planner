@@ -21,6 +21,8 @@ const googleRoutes = require('./routes/google.cjs');
 const linkedinRoutes = require('./routes/linkedin.cjs');
 const notificationsRoutes = require('./routes/notifications.cjs');
 const dietRoutes = require('./routes/diet.cjs');
+const pushRoutes = require('./routes/push.cjs');
+const { startPushDispatcher } = require('./services/pushService.cjs');
 
 const { checkDbConnection } = require('./db_mysql.cjs');
 
@@ -80,6 +82,7 @@ app.use('/api/linkedin', linkedinRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/diet', dietRoutes);
+app.use('/api/push', pushRoutes);
 app.use('/api/ai', aiRoutes);
 
 // Health Check Endpoint
@@ -106,6 +109,8 @@ function startServer(portToTry) {
   const numericPort = Number(portToTry);
   const server = app.listen(numericPort, () => {
     console.log(`🚀 CODIGIX Executive OS Express Server running on http://localhost:${numericPort}`);
+    // Sends due task/diet reminders as Web Push so they arrive while the PWA is closed
+    startPushDispatcher();
     try {
       const MetaSchedulerService = require('./services/meta/metaScheduler.service.cjs');
       MetaSchedulerService.initScheduler();

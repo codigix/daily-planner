@@ -111,6 +111,7 @@ export const requestNotificationPermission = async () => {
   playNotificationChime();
 
   if (Notification.permission === 'granted') {
+    window.dispatchEvent(new CustomEvent('app:push-permission-changed'));
     return { granted: true, permission: 'granted' };
   }
 
@@ -120,6 +121,8 @@ export const requestNotificationPermission = async () => {
 
   try {
     const permission = await Notification.requestPermission();
+    // Lets App.jsx register this device for background (Web Push) reminders
+    if (permission === 'granted') window.dispatchEvent(new CustomEvent('app:push-permission-changed'));
     return { granted: permission === 'granted', permission };
   } catch (e) {
     console.error('Permission request failed:', e);
@@ -237,6 +240,12 @@ export const sendSystemNotification = async (title, options = {}) => {
   }
 
   if (!canNotify || (foreground && !forceSystem)) return true;
+
+  // With server push active, background reminders are delivered by the service worker;
+  // sending one from the page too would double-alert
+  let pushActive = false;
+  try { pushActive = localStorage.getItem('codigix_push_enabled') === '1'; } catch (e) { }
+  if (pushActive && dedupeKey && !forceSystem) return true;
 
   try {
     const defaultOptions = {
